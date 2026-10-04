@@ -39,7 +39,7 @@ seu histórico (745 combinações marca+cor). Para trazer um `cores_bling.json` 
 Ao terminar, baixe o artefato `AutomacaoBling-windows` (instalador `Setup` e versão `portable`).
 Criando uma tag `v3.0.0` o `.exe` também é anexado a uma Release.
 
-**Opção 2 — no seu computador (Windows):** instale o [Node.js 22](https://nodejs.org) e, na pasta do projeto:
+**Opção 2 — no seu computador (Windows):** instale o [Node.js LTS](https://nodejs.org) e dê **dois cliques em `GERAR-EXE.bat`** (instala, testa, compila e abre a pasta `release`). Ou, manualmente, na pasta do projeto:
 
 ```bash
 npm install
