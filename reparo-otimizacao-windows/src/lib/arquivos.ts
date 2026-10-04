@@ -38,6 +38,8 @@ export function dicaArquivo(caminho: string, nome: string, modificado: number, a
 /** Pastas conhecidas: explica o que são e se mexer é seguro. */
 const NOTAS: [RegExp, string, "bom" | "atencao" | "perigo"][] = [
   [/\\windows\\winsxs$/, "Componentes do Windows. NUNCA apague na mão; use a limpeza de componentes.", "perigo"],
+  [/\\windows\\(assembly|microsoft\.net)(\\|$)/, "Componentes do .NET Framework (GAC e NativeImages). NUNCA apague: quebra programas e o Windows.", "perigo"],
+  [/\\windows\\(system32|syswow64|servicing|fonts|driverstore)(\\|$)/, "Arquivos essenciais do Windows. Não apague.", "perigo"],
   [/\\windows\\installer$/, "Cache do Windows Installer. Não apague (quebra desinstalação de programas).", "perigo"],
   [/\\windows\\softwaredistribution$/, "Atualizações do Windows. A parte \"Download\" pode ser limpa.", "atencao"],
   [/\\windows$/, "Sistema Windows. Não apague nada daqui.", "perigo"],

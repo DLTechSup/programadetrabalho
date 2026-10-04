@@ -132,6 +132,8 @@ describe("helpers", () => {
   });
   it("notas de pastas conhecidas", () => {
     expect(notaPasta("C:\\Windows\\WinSxS")!.tom).toBe("perigo");
+    expect(notaPasta("C:\\Windows\\assembly")!.texto).toMatch(/\.NET/);
+    expect(notaPasta("C:\\Windows\\assembly\\NativeImages_v4.0.30319_64")!.tom).toBe("perigo");
     expect(notaPasta("C:\\Users\\Ana\\Downloads")!.tom).toBe("bom");
     expect(notaPasta("C:\\Program Files (x86)")!.tom).toBe("perigo");
     expect(notaPasta("C:\\Pasta\\Qualquer")).toBeNull();
