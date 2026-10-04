@@ -39,7 +39,7 @@ SysMain em HD · programas pesados na inicialização · desfragmentar/TRIM · l
 - Gera **relatório** `.txt` do que foi feito.
 
 ## Como usar (técnico)
-1. Rode `GERAR-EXE.bat` (precisa do Node.js) ou baixe o executável do GitHub Actions (workflow *Reparo e Otimização do Windows*).
+1. Dê dois cliques em `GERAR-EXE-REPARO-WINDOWS.bat` (na raiz do repositório; precisa do Node.js) ou baixe o executável do GitHub Actions (workflow *Reparo e Otimização do Windows*).
 2. Instale `ReparoWindows-Instalador-*.exe` ou use o `ReparoWindows-Portatil-*.exe` direto do pendrive.
    O programa pede **permissão de administrador** (necessária para limpar o Windows).
 3. Em **Visão geral**, clique **Analisar este computador**, confira os problemas e **Resolver tudo** (ou só os selecionados).
