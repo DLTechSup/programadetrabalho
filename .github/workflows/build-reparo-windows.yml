@@ -1,0 +1,40 @@
+name: Reparo e Otimização do Windows (testes + executável)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "reparo-otimizacao-windows/**"
+      - ".github/workflows/build-reparo-windows.yml"
+    tags: ["reparo-v*"]
+
+defaults:
+  run:
+    working-directory: reparo-otimizacao-windows
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: reparo-otimizacao-windows/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Teste em Windows real (diagnóstico, limpeza, ajustes)
+        run: node scripts/smoke-windows.cjs --tarefas
+      - run: npm run dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ReparoWindows
+          path: reparo-otimizacao-windows/release/*.exe
+          if-no-files-found: error
+      - name: Publicar na Release (quando for uma tag)
+        if: startsWith(github.ref, 'refs/tags/reparo-v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: reparo-otimizacao-windows/release/*.exe

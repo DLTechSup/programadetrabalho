@@ -1,0 +1,154 @@
+{
+  "sintomas": [
+    { "id": "lento", "titulo": "Computador lento", "descricao": "Demora para responder, programas travando, tudo devagar.", "icone": "gauge" },
+    { "id": "pastas", "titulo": "Pastas demoram a abrir", "descricao": "O Explorador de Arquivos fica \"pensando\" ao abrir pastas.", "icone": "folder" },
+    { "id": "sites", "titulo": "Sites demoram a abrir", "descricao": "Internet com a conexão boa, mas as páginas carregam devagar.", "icone": "globe" },
+    { "id": "memoria", "titulo": "Pouca memória / travando", "descricao": "Mensagens de pouca memória, programas fechando sozinhos.", "icone": "memory" },
+    { "id": "disco", "titulo": "Disco cheio / sem espaço", "descricao": "Pouco espaço livre no C: ou o Windows pedindo para liberar espaço.", "icone": "disk" },
+    { "id": "erros", "titulo": "Erros e travamentos do Windows", "descricao": "Telas azuis, arquivos corrompidos, Windows Update falhando.", "icone": "wrench" }
+  ],
+  "categorias": [
+    { "id": "desempenho", "titulo": "Desempenho geral" },
+    { "id": "memoria", "titulo": "Memória" },
+    { "id": "pastas", "titulo": "Pastas e Explorador de Arquivos" },
+    { "id": "rede", "titulo": "Internet" },
+    { "id": "reparo", "titulo": "Reparo do Windows" },
+    { "id": "limpeza", "titulo": "Limpeza de disco" }
+  ],
+  "tarefas": [
+    {
+      "id": "energia_alto_desempenho", "categoria": "desempenho", "titulo": "Plano de energia: Alto desempenho",
+      "descricao": "Muitos PCs vêm no modo \"Economia\" ou \"Equilibrado\", que reduz a velocidade do processador. Ativa o plano de Alto desempenho.",
+      "aviso": "Em notebooks, a bateria dura menos.",
+      "risco": "baixo", "duracao": "rapida", "sintomas": ["lento"]
+    },
+    {
+      "id": "efeitos_visuais", "categoria": "desempenho", "titulo": "Reduzir efeitos visuais e transparências",
+      "descricao": "Desliga transparência e animações do Windows. Deixa o menu, a barra de tarefas e as janelas mais ágeis em PCs fracos.",
+      "aviso": "Aplica totalmente após sair e entrar de novo no Windows.",
+      "risco": "baixo", "duracao": "rapida", "sintomas": ["lento"]
+    },
+    {
+      "id": "apps_segundo_plano", "categoria": "desempenho", "titulo": "Bloquear aplicativos em segundo plano",
+      "descricao": "Impede que aplicativos da Microsoft Store fiquem rodando escondidos consumindo memória, disco e internet.",
+      "risco": "baixo", "duracao": "rapida", "sintomas": ["lento", "memoria"]
+    },
+    {
+      "id": "desativar_telemetria", "categoria": "desempenho", "titulo": "Desativar telemetria do Windows (DiagTrack)",
+      "descricao": "O serviço \"Experiências do Usuário Conectado e Telemetria\" vive lendo o disco e usando CPU. Desativá-lo alivia PCs fracos e HDs.",
+      "risco": "baixo", "duracao": "rapida", "sintomas": ["lento", "disco"]
+    },
+    {
+      "id": "sysmain_hdd", "categoria": "desempenho", "titulo": "Desativar SysMain (Superfetch) em HD",
+      "descricao": "Em computadores com HD (não SSD) o SysMain pode manter o disco em 100% o tempo todo. Desativar costuma resolver.",
+      "aviso": "Recomendado apenas se o disco C: for HD. Em SSD não faz diferença.",
+      "risco": "medio", "duracao": "rapida", "sintomas": ["lento", "disco"]
+    },
+    {
+      "id": "inicializacao_pesados", "categoria": "desempenho", "titulo": "Desativar programas pesados na inicialização",
+      "descricao": "Impede que programas de uso ocasional (Teams, Spotify, Discord, atualizadores...) abram junto com o Windows. Antivírus e drivers nunca são tocados. Para escolher um a um, use a aba Inicialização.",
+      "risco": "baixo", "duracao": "rapida", "sintomas": ["lento", "memoria"]
+    },
+    {
+      "id": "otimizar_unidade", "categoria": "desempenho", "titulo": "Otimizar a unidade C: (desfragmentar / TRIM)",
+      "descricao": "Em HD faz a desfragmentação; em SSD executa o TRIM. O Windows escolhe o método correto sozinho.",
+      "risco": "baixo", "duracao": "longa", "sintomas": ["lento", "pastas"]
+    },
+    {
+      "id": "liberar_memoria", "categoria": "memoria", "titulo": "Liberar memória RAM agora",
+      "descricao": "Pede a todos os programas abertos que devolvam a memória que não estão usando. Não fecha nenhum programa.",
+      "risco": "baixo", "duracao": "rapida", "sintomas": ["memoria", "lento"]
+    },
+    {
+      "id": "pagefile_auto", "categoria": "memoria", "titulo": "Arquivo de paginação (memória virtual) automático",
+      "descricao": "Se alguém configurou a memória virtual com tamanho pequeno, o Windows trava ao ficar sem RAM. Devolve o controle ao Windows.",
+      "risco": "baixo", "duracao": "rapida", "reinicia": true, "sintomas": ["memoria", "lento"]
+    },
+    {
+      "id": "explorer_reset_visualizacao", "categoria": "pastas", "titulo": "Corrigir pastas lentas (reiniciar modo de exibição)",
+      "descricao": "O Windows guarda a forma de exibir cada pasta; com o tempo isso se corrompe e as pastas passam a demorar para abrir. Apaga esse cache e usa o modo geral (mais rápido), sem apagar nenhum arquivo.",
+      "aviso": "As janelas das pastas voltam ao modo de exibição padrão.",
+      "risco": "baixo", "duracao": "rapida", "sintomas": ["pastas"]
+    },
+    {
+      "id": "explorer_miniaturas", "categoria": "pastas", "titulo": "Reconstruir cache de ícones e miniaturas",
+      "descricao": "Corrige ícones em branco ou trocados e a lentidão de pastas com muitas imagens/vídeos. O Windows recria o cache sozinho.",
+      "risco": "baixo", "duracao": "rapida", "sintomas": ["pastas"]
+    },
+    {
+      "id": "explorer_acesso_rapido", "categoria": "pastas", "titulo": "Abrir o Explorador em \"Este Computador\" e limpar histórico",
+      "descricao": "O \"Acesso rápido\" tenta consultar arquivos recentes e pastas de rede que não respondem, travando a abertura. Passa a abrir em \"Este Computador\" e limpa o histórico de recentes.",
+      "risco": "baixo", "duracao": "rapida", "sintomas": ["pastas"]
+    },
+    {
+      "id": "dns_limpar", "categoria": "rede", "titulo": "Limpar o cache de DNS",
+      "descricao": "Remove endereços de sites guardados que podem estar desatualizados ou corrompidos.",
+      "risco": "baixo", "duracao": "rapida", "sintomas": ["sites"]
+    },
+    {
+      "id": "dns_rapido", "categoria": "rede", "titulo": "Usar DNS rápido (Cloudflare 1.1.1.1 + Google 8.8.8.8)",
+      "descricao": "O DNS do provedor costuma ser lento e é a causa mais comum de \"sites demorando a abrir\" com internet boa. Troca nos adaptadores de rede ativos.",
+      "aviso": "Para desfazer, use \"Voltar DNS ao automático\".",
+      "risco": "baixo", "duracao": "rapida", "sintomas": ["sites"]
+    },
+    {
+      "id": "dns_automatico", "categoria": "rede", "titulo": "Voltar o DNS ao automático",
+      "descricao": "Desfaz a troca de DNS e volta a usar o DNS do provedor/roteador.",
+      "risco": "baixo", "duracao": "rapida", "sintomas": []
+    },
+    {
+      "id": "rede_reset", "categoria": "rede", "titulo": "Reparar a pilha de rede (Winsock e TCP/IP)",
+      "descricao": "Reinicia a configuração de rede do Windows. Resolve sites que não abrem ou conexão instável causada por programas/vírus que alteraram a rede.",
+      "aviso": "Pode perder configurações manuais de IP fixo. Reinício necessário.",
+      "risco": "medio", "duracao": "rapida", "reinicia": true, "sintomas": ["sites"]
+    },
+    {
+      "id": "entrega_otimizada", "categoria": "rede", "titulo": "Desativar compartilhamento de atualizações (Otimização de Entrega)",
+      "descricao": "Impede o Windows de usar sua internet para enviar atualizações a outros computadores, o que deixa a navegação lenta.",
+      "risco": "baixo", "duracao": "rapida", "sintomas": ["sites", "lento"]
+    },
+    {
+      "id": "chkdsk_scan", "categoria": "reparo", "titulo": "Verificar erros no disco (CHKDSK, sem reiniciar)",
+      "descricao": "Procura erros no sistema de arquivos do C: com o Windows ligado. Não altera nada, apenas informa se há problema.",
+      "risco": "baixo", "duracao": "longa", "sintomas": ["erros", "lento"]
+    },
+    {
+      "id": "sfc", "categoria": "reparo", "titulo": "Verificar e reparar arquivos do Windows (SFC)",
+      "descricao": "Compara os arquivos do sistema com os originais e repara os danificados. Resolve travamentos e erros inexplicáveis.",
+      "risco": "baixo", "duracao": "longa", "sintomas": ["erros"]
+    },
+    {
+      "id": "dism_restore", "categoria": "reparo", "titulo": "Reparar a imagem do Windows (DISM)",
+      "descricao": "Baixa/recupera componentes do Windows danificados. Execute antes do SFC quando o SFC não consegue reparar.",
+      "aviso": "Precisa de internet e pode levar mais de 20 minutos.",
+      "risco": "baixo", "duracao": "longa", "sintomas": ["erros"]
+    },
+    {
+      "id": "windows_update_reparar", "categoria": "reparo", "titulo": "Reparar o Windows Update",
+      "descricao": "Reinicia os serviços e zera as pastas temporárias do Windows Update. Resolve atualizações que falham ou ficam presas.",
+      "risco": "medio", "duracao": "media", "sintomas": ["erros"]
+    },
+    {
+      "id": "defender_rapido", "categoria": "reparo", "titulo": "Verificação rápida de vírus (Windows Defender)",
+      "descricao": "Vírus e mineradores de criptomoeda são causas frequentes de lentidão. Faz uma verificação rápida com o antivírus do Windows.",
+      "aviso": "Não funciona se outro antivírus estiver controlando o Windows.",
+      "risco": "baixo", "duracao": "longa", "sintomas": ["lento", "erros"]
+    }
+  ],
+  "limpeza": [
+    { "id": "temp_usuario", "nome": "Arquivos temporários dos usuários", "descricao": "Sobras de instalações e programas (pasta Temp de cada usuário).", "risco": "baixo", "padrao": true, "sintomas": ["lento", "disco"] },
+    { "id": "temp_windows", "nome": "Arquivos temporários do Windows", "descricao": "Pasta C:\\Windows\\Temp.", "risco": "baixo", "padrao": true, "sintomas": ["lento", "disco"] },
+    { "id": "cache_navegadores", "nome": "Cache dos navegadores (Chrome, Edge, Firefox, Brave)", "descricao": "Páginas e imagens guardadas. Não apaga senhas, favoritos nem histórico. O primeiro acesso aos sites pode ficar um pouco mais lento.", "risco": "baixo", "padrao": true, "sintomas": ["lento", "disco", "sites"] },
+    { "id": "cache_apps", "nome": "Cache de aplicativos (Teams, Discord, Slack, Spotify...)", "descricao": "Arquivos de cache que os aplicativos recriam sozinhos.", "risco": "baixo", "padrao": true, "sintomas": ["disco"] },
+    { "id": "miniaturas", "nome": "Miniaturas de imagens e vídeos", "descricao": "Cache de miniaturas do Explorador de Arquivos (recriado automaticamente).", "risco": "baixo", "padrao": true, "sintomas": ["disco", "pastas"] },
+    { "id": "shader_cache", "nome": "Cache de shaders gráficos (DirectX, NVIDIA, AMD)", "descricao": "Reconstruído automaticamente pelos jogos e programas gráficos.", "risco": "baixo", "padrao": true, "sintomas": ["disco"] },
+    { "id": "relatorios_erro", "nome": "Relatórios e despejos de erros do Windows", "descricao": "Dumps de telas azuis e relatórios de falhas (WER). Costumam ocupar vários GB.", "risco": "baixo", "padrao": true, "sintomas": ["disco", "erros"] },
+    { "id": "logs_windows", "nome": "Logs de manutenção do Windows", "descricao": "Logs antigos do CBS e DISM.", "risco": "baixo", "padrao": true, "sintomas": ["disco"] },
+    { "id": "windows_update", "nome": "Arquivos baixados do Windows Update", "descricao": "Atualizações já instaladas (SoftwareDistribution\\Download). O Windows baixa de novo se precisar.", "risco": "baixo", "padrao": true, "sintomas": ["disco", "erros"] },
+    { "id": "entrega_cache", "nome": "Cache da Otimização de Entrega", "descricao": "Atualizações guardadas para compartilhar com outros PCs.", "risco": "baixo", "padrao": true, "sintomas": ["disco"] },
+    { "id": "lixeira", "nome": "Lixeira", "descricao": "Arquivos já excluídos, aguardando esvaziar. Confira a Lixeira antes: não há como recuperar depois.", "risco": "medio", "padrao": true, "sintomas": ["disco"] },
+    { "id": "componentes", "nome": "Componentes antigos do Windows (WinSxS)", "descricao": "Remove versões antigas de componentes substituídos por atualizações. Demora alguns minutos; tamanho liberado só é conhecido ao final.", "risco": "baixo", "padrao": false, "sintomas": ["disco"] },
+    { "id": "windows_old", "nome": "Instalação anterior do Windows (Windows.old)", "descricao": "Sobra de uma atualização grande do Windows (10-30 GB). Depois de apagar não é mais possível voltar à versão anterior.", "aviso": "Confirme com o cliente que o computador está funcionando bem desde a atualização.", "risco": "alto", "padrao": false, "sintomas": ["disco"] },
+    { "id": "hibernacao", "nome": "Arquivo de hibernação (hiberfil.sys)", "descricao": "Ocupa cerca de 40-75% da RAM. Desativar desliga a hibernação e a \"Inicialização rápida\".", "aviso": "Só faça se o cliente não usa hibernação.", "risco": "alto", "padrao": false, "sintomas": ["disco"] }
+  ]
+}
