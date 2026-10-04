@@ -33,7 +33,6 @@
   "build": {
     "appId": "br.com.dltech.gradefacil",
     "productName": "GradeFacil",
-    "artifactName": "GradeFacil-${version}-${arch}.${ext}",
     "directories": {
       "output": "release"
     },
@@ -65,7 +64,11 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "language": "1046"
+      "language": "1046",
+      "artifactName": "GradeFacil-Instalador-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "GradeFacil-Portatil-${version}.${ext}"
     }
   }
 }

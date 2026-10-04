@@ -43,8 +43,8 @@ echo   PRONTO! Os arquivos estao na pasta "release":
 echo ==================================================
 dir /b release\*.exe
 echo.
-echo   - "...Setup..." = instalador (cria atalho na area de trabalho)
-echo   - o outro .exe = versao portatil (roda sem instalar)
+echo   - GradeFacil-Instalador = instala e cria atalho na area de trabalho
+echo   - GradeFacil-Portatil = roda direto, sem instalar
 echo.
 start "" explorer "%~dp0release"
 pause

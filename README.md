@@ -36,7 +36,7 @@ seu histórico (745 combinações marca+cor). Para trazer um `cores_bling.json` 
 ## Gerar o executável (.exe)
 
 **Opção 1 — automática (GitHub):** na aba *Actions* do repositório, rode **Gerar executável (Windows)**.
-Ao terminar, baixe o artefato `GradeFacil-windows` (instalador `Setup` e versão `portable`).
+Ao terminar, baixe o artefato `GradeFacil-windows` (`GradeFacil-Instalador-…exe` e `GradeFacil-Portatil-…exe`).
 Criando uma tag `v3.0.0` o `.exe` também é anexado a uma Release.
 
 **Opção 2 — no seu computador (Windows):** instale o [Node.js LTS](https://nodejs.org) e dê **dois cliques em `GERAR-EXE.bat`** (instala, testa, compila e abre a pasta `release`). Ou, manualmente, na pasta do projeto:
@@ -45,7 +45,7 @@ Criando uma tag `v3.0.0` o `.exe` também é anexado a uma Release.
 npm install
 npm run dist
 ```
-Os arquivos saem em `release\` (`GradeFacil-3.0.0-x64.exe`).
+Saem dois arquivos em `release\`: `GradeFacil-Instalador-3.0.0.exe` (instala, cria atalhos) e `GradeFacil-Portatil-3.0.0.exe` (executa direto, sem instalar).
 
 ## Desenvolvimento
 
