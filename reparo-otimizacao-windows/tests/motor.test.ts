@@ -92,7 +92,7 @@ describe("fsutil", () => {
     fs.writeFileSync(path.join(fora, "importante.txt"), "nao apague");
     escrever("limpar-aqui/x/y/z.bin", 1000);
     escrever("limpar-aqui/w.bin", 500);
-    fs.symlinkSync(fora, path.join(pasta, "link"));
+    fs.symlinkSync(fora, path.join(pasta, "link"), "junction"); // junção: funciona no Windows sem ser administrador
     const r = await fsutil.apagarConteudo(pasta);
     expect(r.liberado).toBe(1500);
     expect(fs.existsSync(pasta)).toBe(true);
@@ -159,8 +159,8 @@ describe("scanner de disco", () => {
     const base = fs.mkdtempSync(path.join(raiz, "scan-"));
     fs.mkdirSync(path.join(base, "a"));
     fs.writeFileSync(path.join(base, "a", "f.bin"), Buffer.alloc(100));
-    fs.symlinkSync(base, path.join(base, "a", "loop"));
-    fs.symlinkSync(path.join(base, "a"), path.join(base, "copia"));
+    fs.symlinkSync(base, path.join(base, "a", "loop"), "junction");
+    fs.symlinkSync(path.join(base, "a"), path.join(base, "copia"), "junction");
     const out = await escanearDisco(base);
     expect(out.totalBytes).toBe(100);
   });
