@@ -77,6 +77,9 @@ export function limpo(valor: Valor): string {
   return String(valor).trim();
 }
 
+/** Descrição de variação já preenchida pelo programa: "Cor:Preto;Tamanho:37". */
+const RE_DESCRICAO_PRONTA = /^cor\s*:.*;\s*tamanho\s*:/i;
+
 function faixa(n: number): boolean {
   return n >= TAMANHO_MIN && n <= TAMANHO_MAX;
 }
@@ -343,6 +346,17 @@ export function detectarLinhaPai(planilha: Planilha): number | null {
   });
   if (comCodigo.length === 1) return comCodigo[0];
   if (comCodigo.length > 1) {
+    // Arquivo já processado/reexportado do Bling: todas as linhas têm Código. O PAI é a
+    // que NÃO tem descrição "Cor:...;Tamanho:..." (essas são variações já preenchidas).
+    const naoVariacao = comCodigo.filter((i) => !RE_DESCRICAO_PRONTA.test(limpo(linhas[i]["Descrição"])));
+    if (naoVariacao.length === 1) return naoVariacao[0];
+    if (naoVariacao.length > 1) {
+      // desempata pelo Código que as outras linhas citam na coluna "Código Pai"
+      const citado = (i: number) =>
+        linhas.filter((l) => limpo(l["Código Pai"]) === limpo(linhas[i]["Código"])).length;
+      const melhor = [...naoVariacao].sort((a, b) => citado(b) - citado(a))[0];
+      if (citado(melhor) > 0) return melhor;
+    }
     for (const i of comCodigo) {
       if (limpo(linhas[i]["Marca"]) && limpo(linhas[i]["Categoria do produto"])) return i;
     }
@@ -433,6 +447,7 @@ export function agruparVariacoes(planilha: Planilha, linhaPaiIdx: number): Resul
   planilha.linhas.forEach((row, i) => {
     if (i === linhaPaiIdx) return;
     const r = analisarLinha(row["Descrição"], row["Cód. no fornecedor"]);
+    r.sugestao = limparNomeCor(r.sugestao); // reprocessando "Cor:Café;Tamanho:37" a sugestão vira "Café"
     analisadas.set(i, { tamanho: r.tamanho, chave: r.chave, sugestao: r.sugestao });
     let grupo = grupos.get(r.chave);
     if (!grupo) {

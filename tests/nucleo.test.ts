@@ -105,3 +105,34 @@ describe("fluxo completo", () => {
     expect(volta.linhas[1]["Categoria do produto"]).toBe("Chinelo");
   });
 });
+
+describe("arquivo já processado (reexportado do Bling, todas as linhas com Código)", () => {
+  function reexportada(): Planilha {
+    const p = planilhaExemplo();
+    p.linhas[0]["Código"] = "BT100"; // PAI
+    p.linhas[0]["Categoria do produto"] = null; // o programa deixa a categoria do PAI vazia
+    p.linhas = p.linhas.slice(0, 4);
+    p.linhas[1] = { ...p.linhas[1], Código: "BT100PT37", Descrição: "Cor:Preto;Tamanho:37", "Código Pai": "BT100", "Categoria do produto": "Sandalia" };
+    p.linhas[2] = { ...p.linhas[2], Código: "BT100PT38", Descrição: "Cor:Preto;Tamanho:38", "Código Pai": "BT100", "Categoria do produto": "Sandalia" };
+    p.linhas[3] = { ...p.linhas[3], Código: "BT100CAF37", Descrição: "Cor:Café;Tamanho:37", "Código Pai": "BT100", "Categoria do produto": "Sandalia" };
+    return p;
+  }
+
+  it("acha o PAI verdadeiro (e não a primeira variação)", () => {
+    const p = reexportada();
+    normalizarCodigos(p);
+    expect(detectarLinhaPai(p)).toBe(0);
+  });
+
+  it("reprocessar mantém os mesmos códigos, sem repetir abreviações", () => {
+    const p = reexportada();
+    normalizarCodigos(p);
+    processarVariacoes(p, 0, "Sandalia");
+    const { analisadas, grupos } = agruparVariacoes(p, 0);
+    expect([...grupos.values()].map((g) => g.sugestao).sort()).toEqual(["Café", "Preto"]);
+    const cores = new Map<string, [string, string]>();
+    for (const [chave, g] of grupos) cores.set(chave, [g.sugestao, g.sugestao === "Café" ? "CAF" : "PT"]);
+    gerarCodigoEDescricao(p, analisadas, grupos, "BT100", cores, bancoVazio(), "X");
+    expect(p.linhas.slice(1).map((l) => l["Código"])).toEqual(["BT100PT37", "BT100PT38", "BT100CAF37"]);
+  });
+});

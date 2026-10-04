@@ -133,6 +133,13 @@ export default function App() {
     if (idx !== null) {
       const codigoPai = limpo(planilha.linhas[idx]["Código"]);
       registrar(`PAI encontrado na linha ${idx + 2}: código = ${codigoPai || "(ainda sem código)"}`, "ok");
+      if (planilha.linhas.filter((l) => limpo(l["Código"])).length > 1) {
+        registrar(
+          "Atenção: este arquivo já tem Códigos preenchidos em várias linhas (parece já processado/importado). " +
+          "Os códigos das variações serão refeitos a partir do PAI acima — confira se a linha do PAI está certa.",
+          "aviso",
+        );
+      }
       processar(arquivo.nome, planilha, idx, limpo(planilha.linhas[idx]["Categoria do produto"]));
     } else {
       registrar("Nenhum PAI já cadastrado foi encontrado neste arquivo.", "aviso");
