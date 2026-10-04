@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { amostraCor } from "../cores";
 import {
-  consultarAbreviacao, tamanhosOrdenados, limpo, type BancoCores, type Grupo, type Planilha,
+  buscarCor, consultarAbreviacao, tamanhosOrdenados, titulo, limpo, type BancoCores, type Grupo, type Planilha,
 } from "../core/nucleo";
 import { IconeSeta } from "./Icons";
 import { Modal } from "./Modal";
@@ -30,8 +30,9 @@ export function TelaCores({ codigoPai, marca, categoria, totalVariacoes, grupos,
     [...grupos.entries()]
       .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
       .map(([chave, g]) => {
-        const conhecida = consultarAbreviacao(banco, marca, g.sugestao);
-        return { chave, cor: g.sugestao, abrev: conhecida ?? "", auto: !!conhecida };
+        // cor já conhecida (mesmo com acento diferente): usa a grafia do banco, ex. "Avela" -> "Avelã"
+        const achado = buscarCor(banco, marca, g.sugestao);
+        return { chave, cor: achado ? titulo(achado.nome) : g.sugestao, abrev: achado?.abrev ?? "", auto: !!achado };
       }),
   );
   const [soPendentes, setSoPendentes] = useState(false);

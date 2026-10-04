@@ -121,13 +121,33 @@ export function normalizarBanco(dados: unknown): BancoCores {
   };
 }
 
-export function consultarAbreviacao(banco: BancoCores, marca: string, cor: string): string | null {
+const semAcento = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+/**
+ * Procura a cor no banco: primeiro igual (marca e depois genérico); se não achar, ignora
+ * acentos — o fornecedor escreve "AVELA" e o banco tem "avelã". `nome` é a grafia do banco.
+ */
+export function buscarCor(banco: BancoCores, marca: string, cor: string): { abrev: string; nome: string } | null {
   const marcaNorm = (marca || "").trim().toUpperCase();
   const corNorm = (cor || "").trim().toLowerCase();
   const chaveMarca = `${marcaNorm}|${corNorm}`;
-  if (chaveMarca in banco.por_marca) return banco.por_marca[chaveMarca];
-  if (corNorm in banco.generico) return banco.generico[corNorm];
+  if (chaveMarca in banco.por_marca) return { abrev: banco.por_marca[chaveMarca], nome: corNorm };
+  if (corNorm in banco.generico) return { abrev: banco.generico[corNorm], nome: corNorm };
+
+  const alvo = semAcento(cor);
+  if (!alvo) return null;
+  for (const [k, v] of Object.entries(banco.por_marca)) {
+    const i = k.indexOf("|");
+    if (k.slice(0, i) === marcaNorm && semAcento(k.slice(i + 1)) === alvo) return { abrev: v, nome: k.slice(i + 1) };
+  }
+  for (const [k, v] of Object.entries(banco.generico)) {
+    if (semAcento(k) === alvo) return { abrev: v, nome: k };
+  }
   return null;
+}
+
+export function consultarAbreviacao(banco: BancoCores, marca: string, cor: string): string | null {
+  return buscarCor(banco, marca, cor)?.abrev ?? null;
 }
 
 export function aprenderAbreviacao(banco: BancoCores, marca: string, cor: string, abreviacao: string): void {
@@ -319,6 +339,16 @@ export function limparNomeCor(texto: Valor): string {
   return t.replace(/^[ ;:]+|[ ;:]+$/g, "");
 }
 
+const RE_PALAVRA_MATERIAL = /^(sint\.?|sint[eé]tico|cabedal|cab\.?)$/i;
+
+/** Nome de cor sugerido, sem sobras do material ("CABEDAL SINT. AVELA" -> "Avela"). */
+export function limparSugestao(texto: Valor): string {
+  return limparNomeCor(texto)
+    .split(/\s+/)
+    .filter((w) => !RE_PALAVRA_MATERIAL.test(w))
+    .join(" ");
+}
+
 // ---------------------------------------------------------------------------
 // Operações sobre a planilha
 // ---------------------------------------------------------------------------
@@ -447,7 +477,7 @@ export function agruparVariacoes(planilha: Planilha, linhaPaiIdx: number): Resul
   planilha.linhas.forEach((row, i) => {
     if (i === linhaPaiIdx) return;
     const r = analisarLinha(row["Descrição"], row["Cód. no fornecedor"]);
-    r.sugestao = limparNomeCor(r.sugestao); // reprocessando "Cor:Café;Tamanho:37" a sugestão vira "Café"
+    r.sugestao = limparSugestao(r.sugestao); // reprocessando "Cor:Café;Tamanho:37" a sugestão vira "Café"
     analisadas.set(i, { tamanho: r.tamanho, chave: r.chave, sugestao: r.sugestao });
     let grupo = grupos.get(r.chave);
     if (!grupo) {
