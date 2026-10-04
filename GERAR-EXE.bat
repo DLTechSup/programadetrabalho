@@ -2,10 +2,10 @@
 chcp 65001 >nul
 setlocal
 cd /d "%~dp0"
-title Gerar executavel - Automacao Bling
+title Gerar executavel - GradeFacil
 
 echo ==================================================
-echo   Automacao Bling - gerando o executavel (.exe)
+echo   GradeFacil - gerando o executavel (.exe)
 echo ==================================================
 echo.
 

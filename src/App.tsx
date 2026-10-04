@@ -277,7 +277,7 @@ export default function App() {
       <aside className="sidebar">
         <div className="brand">
           <img src={logo} alt="" />
-          <div><b>Automação Bling</b><small>Planilhas de produtos</small></div>
+          <div><b>GradeFácil</b><small>Cores e tamanhos</small></div>
         </div>
         <nav className="nav">
           <button className={vista === "planilha" ? "ativo" : ""} onClick={() => setVista("planilha")}>
@@ -354,6 +354,7 @@ export default function App() {
               categoria={sessao.categoria}
               totalVariacoes={sessao.planilha.linhas.length - 1}
               grupos={sessao.grupos}
+              planilha={sessao.planilha}
               banco={banco}
               onGerar={gerar}
               onCancelar={cancelarCores}

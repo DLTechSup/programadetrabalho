@@ -1,6 +1,6 @@
 {
-  "name": "automacao-bling",
-  "productName": "Automação Bling",
+  "name": "gradefacil",
+  "productName": "GradeFacil",
   "version": "3.0.0",
   "description": "Preenche planilhas de produtos do Bling: PAI, variações, cores, códigos e descrições.",
   "author": "DL Tech",
@@ -31,9 +31,9 @@
     "vitest": "^3.0.0"
   },
   "build": {
-    "appId": "br.com.dltech.automacaobling",
-    "productName": "Automação Bling",
-    "artifactName": "AutomacaoBling-${version}-${arch}.${ext}",
+    "appId": "br.com.dltech.gradefacil",
+    "productName": "GradeFacil",
+    "artifactName": "GradeFacil-${version}-${arch}.${ext}",
     "directories": {
       "output": "release"
     },

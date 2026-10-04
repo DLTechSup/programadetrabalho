@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { amostraCor } from "../cores";
 import {
-  consultarAbreviacao, tamanhosOrdenados, type BancoCores, type Grupo,
+  consultarAbreviacao, tamanhosOrdenados, limpo, type BancoCores, type Grupo, type Planilha,
 } from "../core/nucleo";
 import { IconeSeta } from "./Icons";
 import { Modal } from "./Modal";
@@ -12,6 +12,7 @@ interface Props {
   categoria: string;
   totalVariacoes: number;
   grupos: Map<string, Grupo>;
+  planilha: Planilha;
   banco: BancoCores;
   onGerar: (cores: Map<string, [string, string]>) => void;
   onCancelar: () => void;
@@ -24,7 +25,7 @@ interface LinhaCor {
   auto: boolean; // abreviação preenchida pelo histórico (pode ser refeita ao mudar o nome)
 }
 
-export function TelaCores({ codigoPai, marca, categoria, totalVariacoes, grupos, banco, onGerar, onCancelar }: Props) {
+export function TelaCores({ codigoPai, marca, categoria, totalVariacoes, grupos, planilha, banco, onGerar, onCancelar }: Props) {
   const [linhas, setLinhas] = useState<LinhaCor[]>(() =>
     [...grupos.entries()]
       .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
@@ -35,6 +36,11 @@ export function TelaCores({ codigoPai, marca, categoria, totalVariacoes, grupos,
   );
   const [soPendentes, setSoPendentes] = useState(false);
   const [confirmar, setConfirmar] = useState(false);
+  const original = (g: Grupo) => {
+    const l = planilha.linhas[g.indices[0]];
+    const cod = limpo(l["Cód. no fornecedor"]);
+    return `${limpo(l["Descrição"])}${cod ? `  ·  forn.: ${cod}` : ""}`;
+  };
   const refsAbrev = useRef<Array<HTMLInputElement | null>>([]);
 
   const prontas = linhas.filter((l) => l.cor.trim() && l.abrev.trim()).length;
@@ -113,13 +119,16 @@ export function TelaCores({ codigoPai, marca, categoria, totalVariacoes, grupos,
                     <td>
                       <div className="cor-cel">
                         <span className="amostra" style={{ background: amostraCor(l.cor) }} />
-                        <input
-                          className="input"
-                          value={l.cor}
-                          placeholder="Nome da cor"
-                          onChange={(e) => aoMudarCor(l, e.target.value)}
-                          onKeyDown={(e) => e.key === "Enter" && refsAbrev.current[i]?.focus()}
-                        />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <input
+                            className="input"
+                            value={l.cor}
+                            placeholder="Nome da cor"
+                            onChange={(e) => aoMudarCor(l, e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && refsAbrev.current[i]?.focus()}
+                          />
+                          <div className="orig" title={original(g)}>Original: {original(g)}</div>
+                        </div>
                       </div>
                     </td>
                     <td>

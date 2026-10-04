@@ -28,7 +28,7 @@ function criarJanela() {
     minWidth: 980,
     minHeight: 660,
     show: false,
-    title: "Automação Bling",
+    title: "GradeFácil",
     backgroundColor: "#0f1420",
     autoHideMenuBar: true,
     webPreferences: {

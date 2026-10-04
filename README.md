@@ -1,4 +1,4 @@
-# Automação Bling v3 (React + Electron)
+# GradeFácil v3 (antes "Automação Bling") (React + Electron)
 
 Versão nova do programa em **React + TypeScript**, empacotada como aplicativo de desktop
 (Electron) — instala no Windows com atalho na área de trabalho. Mantém **todas as funções**
@@ -29,14 +29,14 @@ corrompidas ou temporárias do Excel (`~$…`) são ignoradas e listadas no rela
 A marca usada é a da coluna *Marca* da planilha (a mesma que o programa consulta depois); se estiver vazia, usa o nome da pasta.
 
 ### Onde fica o banco de cores
-No app instalado: `%APPDATA%\Automação Bling\cores_bling.json`. Na primeira abertura ele nasce com o
+No app instalado: `%APPDATA%\GradeFacil\cores_bling.json`. Na primeira abertura ele nasce com o
 seu histórico (745 combinações marca+cor). Para trazer um `cores_bling.json` antigo, use
 **Banco de cores → Importar…** (as abreviações são somadas).
 
 ## Gerar o executável (.exe)
 
 **Opção 1 — automática (GitHub):** na aba *Actions* do repositório, rode **Gerar executável (Windows)**.
-Ao terminar, baixe o artefato `AutomacaoBling-windows` (instalador `Setup` e versão `portable`).
+Ao terminar, baixe o artefato `GradeFacil-windows` (instalador `Setup` e versão `portable`).
 Criando uma tag `v3.0.0` o `.exe` também é anexado a uma Release.
 
 **Opção 2 — no seu computador (Windows):** instale o [Node.js LTS](https://nodejs.org) e dê **dois cliques em `GERAR-EXE.bat`** (instala, testa, compila e abre a pasta `release`). Ou, manualmente, na pasta do projeto:
@@ -45,7 +45,7 @@ Criando uma tag `v3.0.0` o `.exe` também é anexado a uma Release.
 npm install
 npm run dist
 ```
-Os arquivos saem em `release\` (`AutomacaoBling-3.0.0-x64.exe`).
+Os arquivos saem em `release\` (`GradeFacil-3.0.0-x64.exe`).
 
 ## Desenvolvimento
 
