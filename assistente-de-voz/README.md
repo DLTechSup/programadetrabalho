@@ -29,11 +29,11 @@ Se o reconhecedor escrever o nome de outro jeito, a tela **Conversa** mostra o q
 ## Modos de escuta (Configurações › Como eu devo ouvir)
 | Modo | Como usa | Quando |
 |---|---|---|
-| **Pelo nome** (padrão) | “Jarvis, abre a marca Beira Rio” | gente falando por perto |
+| **Pelo nome** | “Jarvis, abre a marca Beira Rio” | gente falando por perto |
 | **Pelo atalho** (mais rápido) | aperta **Ctrl+Shift+Space** e fala “abre a marca Beira Rio” | o que você fala fora do atalho nem é processado: sem falsos comandos e mais leve |
-| **Direto** (como ditado) | só fala o comando | sozinho, em lugar silencioso |
+| **Direto** (padrão, como ditado) | só fala o comando | microfone sempre ligado; você silencia no próprio microfone/celular quando não quer ser ouvido |
 
-Sem resposta falada por padrão (o resultado aparece na tela e a ação acontece). Dá para ligar em Configurações.
+Use o botão **Microfone ligado/desligado** (lateral) para ligar e desligar a escuta. Sem resposta falada por padrão (o resultado aparece na tela e a ação acontece). Dá para ligar em Configurações.
 
 ### Deixar mais rápido
 - Modo **atalho**; **silêncio para terminar a frase** em ~400 ms; modelo **Equilibrado (base)** (o **Preciso (small)** acerta mais, mas demora mais). O Diagnóstico mostra em quantos segundos cada frase foi reconhecida.

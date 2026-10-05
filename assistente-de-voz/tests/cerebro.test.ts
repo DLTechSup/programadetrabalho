@@ -46,7 +46,7 @@ let janelasAbertas: any[];
 
 function montar(cfgInicial: Record<string, unknown> = {}) {
   const config = criarConfig(path.join(tmp, `cfg-${Math.random()}.json`));
-  config.set({ pastaRaiz: raiz, ...cfgInicial });
+  config.set({ pastaRaiz: raiz, modoEscuta: "nome", ...cfgInicial });
   const janelas = {
     listar: async () => janelasAbertas,
     focar: async () => {},
@@ -208,6 +208,10 @@ describe("modos de escuta", () => {
     cerebro.acordar();
     agoraMs += 20_000;
     expect((await dizer(cerebro, "abre a marca beira rio")).ignorado).toBe(true);
+  });
+  it("o padrão de quem instala é o modo direto", () => {
+    const c2 = criarConfig(path.join(tmp, `novo-${Math.random()}.json`));
+    expect(c2.get().modoEscuta).toBe("direto");
   });
   it("respostas faladas vêm desligadas por padrão", () => {
     expect(montar().config.get().falarRespostas).toBe(false);

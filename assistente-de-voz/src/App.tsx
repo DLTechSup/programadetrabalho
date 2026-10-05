@@ -25,8 +25,11 @@ export function App() {
             <button key={m.id} className={a.pagina === m.id ? "ativo" : ""} onClick={() => a.ir(m.id)}><Icone nome={m.icone} /> {m.nome}</button>
           ))}
         </nav>
-        <div className="estado-mic">
-          <span className={`ponto ${a.escutando ? "on" : ""}`} /> {a.escutando ? "Escutando" : a.api.demo ? "Demonstração" : "Escuta desligada"}
+        <div className="mic-lateral">
+          <button className={`btn-mic${a.escutando ? " on" : ""}`} onClick={a.escutando ? a.desligar : a.ligar} disabled={!a.escutando && !a.modelo.pronto && !a.api.demo} title={a.escutando ? "Clique para desligar o microfone" : "Clique para ligar o microfone"}>
+            <Icone nome={a.escutando ? "mic" : "micoff"} tam={20} />
+            <span><b>{a.escutando ? "Microfone ligado" : "Microfone desligado"}</b><small>{a.escutando ? "Ouvindo tudo o que você fala" : a.modelo.pronto || a.api.demo ? "Clique para ligar" : "Baixe o modelo de voz primeiro"}</small></span>
+          </button>
         </div>
       </aside>
       <main>

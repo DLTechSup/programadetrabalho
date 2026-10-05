@@ -132,3 +132,10 @@ input[type=range] { padding: 0; width: 100%; accent-color: var(--azul); }
 .modo { display: flex; gap: 12px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--borda); border-radius: 10px; cursor: pointer; }
 .modo.on { border-color: var(--azul); background: rgba(90,162,255,.08); }
 .modo input { margin-top: 3px; accent-color: var(--azul); }
+
+.mic-lateral { margin-top: auto; padding-top: 12px; }
+.btn-mic { width: 100%; display: flex; gap: 10px; align-items: center; text-align: left; padding: 11px 12px; border-radius: 11px; border: 1px solid var(--borda); background: var(--painel2); }
+.btn-mic small { color: var(--muted); }
+.btn-mic.on { border-color: rgba(52,199,123,.5); background: rgba(52,199,123,.1); color: var(--verde); }
+.btn-mic.on small { color: #8fd9b3; }
+.btn-mic:hover:not(:disabled) { filter: brightness(1.15); }

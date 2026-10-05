@@ -29,7 +29,7 @@ const EXEMPLOS: ExemplosGrupo[] = [
 
 export function criarApiDemo(): Api {
   let cfg: Config = {
-    nomeAtivacao: "Jarvis", modoEscuta: "nome", atalhoFalar: "Control+Shift+Space", silencioMs: 550, variantes: [], pastaRaiz: "D:\\Users\\LiraDanilo\\Desktop\\LANÇAMENTOS", ignorar: ["Nova pasta"],
+    nomeAtivacao: "Jarvis", modoEscuta: "direto", atalhoFalar: "Control+Shift+Space", silencioMs: 550, variantes: [], pastaRaiz: "D:\\Users\\LiraDanilo\\Desktop\\LANÇAMENTOS", ignorar: ["Nova pasta"],
     aliases: [{ falas: ["zap web", "whatsapp web"], tipo: "caminho", destino: "C:\\Users\\Lira\\Desktop\\WhatsApp Web.lnk" }],
     falarRespostas: false, janelaConversaSeg: 12, escutaAposAtivarSeg: 15, modelo: "base", microfoneId: "", filtrosDoNavegador: false, sensibilidade: 5, iniciarComWindows: false, minimizarParaBandeja: true,
   };

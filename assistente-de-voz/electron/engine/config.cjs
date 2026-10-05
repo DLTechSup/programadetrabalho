@@ -3,8 +3,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const PADRAO = {
-  versao: 2,
-  modoEscuta: "nome", // nome: só reage depois do nome | atalho: só quando aperta o atalho | direto: toda frase é um comando
+  versao: 3,
+  modoEscuta: "direto", // nome: só reage depois do nome | atalho: só quando aperta o atalho | direto: toda frase é um comando
   atalhoFalar: "Control+Shift+Space",
   silencioMs: 550, // quanto silêncio indica que a frase terminou (menor = mais rápido, mas pode cortar pausas)
   nomeAtivacao: "Jarvis",
@@ -28,11 +28,10 @@ const num = (v, min, max, pad) => (Number.isFinite(Number(v)) ? Math.min(max, Ma
 function validar(c) {
   const o = { ...PADRAO, ...(c || {}) };
   // arquivos de versões antigas: as respostas faladas passam a vir desligadas (o foco agora é rapidez)
-  if (c && (c.versao || 1) < 2) {
-    o.falarRespostas = false;
-    o.versao = 2;
-  }
-  o.versao = 2;
+  if (c && (c.versao || 1) < 2) o.falarRespostas = false;
+  // v3: o padrão passa a ser o modo direto (microfone sempre ligado; quem controla o silêncio é o mudo do microfone)
+  if (c && (c.versao || 1) < 3) o.modoEscuta = "direto";
+  o.versao = 3;
   o.modoEscuta = ["nome", "atalho", "direto"].includes(o.modoEscuta) ? o.modoEscuta : PADRAO.modoEscuta;
   o.atalhoFalar = String(o.atalhoFalar || PADRAO.atalhoFalar).trim().slice(0, 40) || PADRAO.atalhoFalar;
   o.silencioMs = num(o.silencioMs, 250, 1500, PADRAO.silencioMs);

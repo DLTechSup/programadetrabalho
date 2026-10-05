@@ -64,13 +64,15 @@ describe("configuração", () => {
     const a = criarConfig(arq);
     expect(a.get().nomeAtivacao).toBe("Zeca");
     expect(a.get().falarRespostas).toBe(false);
-    a.set({ falarRespostas: true });
+    expect(a.get().modoEscuta).toBe("direto"); // arquivos antigos passam para o modo direto
+    a.set({ falarRespostas: true, modoEscuta: "atalho" });
+    expect(criarConfig(arq).get().modoEscuta).toBe("atalho"); // escolha nova é respeitada
     expect(criarConfig(arq).get().falarRespostas).toBe(true);
   });
   it("limites do tempo de silêncio e modo inválido", () => {
     expect(validar({ silencioMs: 10 }).silencioMs).toBe(250);
     expect(validar({ silencioMs: 99999 }).silencioMs).toBe(1500);
-    expect(validar({ modoEscuta: "xyz" }).modoEscuta).toBe("nome");
+    expect(validar({ modoEscuta: "xyz" }).modoEscuta).toBe("direto");
   });
   it("salva e relê", () => {
     const arq = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "cfg-")), "sub", "c.json");
