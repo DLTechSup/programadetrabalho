@@ -23,7 +23,7 @@ Assistente: Ok, me chame de Assistente quando quiser algo.
 Também funciona numa frase só (“Jarvis, seu nome agora é Computador”). O nome fica salvo e vale na próxima vez que abrir.
 Se o reconhecedor escrever o nome de outro jeito, a tela **Conversa** mostra o que foi ouvido e dá para cadastrar variações em **Configurações**.
 
-### Depois de um comando ele continua ouvindo (8 s, ajustável)
+### Depois de um comando ele continua ouvindo (12 s, ajustável)
 “Jarvis, abre a marca Beira Rio” … “referência 8506 ponto 209” … “lista os arquivos” … “volta uma pasta”. Sem repetir o nome.
 
 ## O que ele faz

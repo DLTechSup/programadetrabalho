@@ -1,7 +1,7 @@
 // Executa as intenções: abre pastas/marcas/referências, programas, sites, controla navegador, janelas e volume.
 // Todas as dependências do sistema entram por `deps` (facilita testar sem Windows).
 const path = require("node:path");
-const { normalizar, digitosDoCodigo, falarCodigo, melhores, vencedorClaro } = require("./texto.cjs");
+const { normalizar, digitosDoCodigo, falarCodigo, melhores, vencedorClaro, similaridade } = require("./texto.cjs");
 const P = require("./pastas.cjs");
 const prog = require("./programas.cjs");
 
@@ -186,7 +186,7 @@ function criarAcoes(deps) {
     }
     const idx = await indice();
     if (idx && !idx.erro) {
-      if (/^(?:raiz|lancamentos)$/.test(n) || normalizar(path.basename(idx.raiz)) === n) {
+      if (/^(?:raiz|pasta raiz)$/.test(n) || similaridade(n, path.basename(idx.raiz)) >= 0.85) {
         const erro = await abrirDir(idx.raiz, { marca: null, ref: null });
         return erro || { ok: true, fala: "Abrindo a pasta raiz." };
       }

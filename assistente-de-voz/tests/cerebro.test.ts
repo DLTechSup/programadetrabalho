@@ -116,7 +116,7 @@ describe("ativação", () => {
   it("depois do tempo volta a dormir", async () => {
     const { cerebro } = montar();
     await dizer(cerebro, "Jarvis");
-    agoraMs += 11_000;
+    agoraMs += 16_000;
     expect(cerebro.estado().estado).toBe("dormindo");
     expect((await dizer(cerebro, "abre o excel")).ignorado).toBe(true);
   });
@@ -127,7 +127,7 @@ describe("ativação", () => {
     const r = await dizer(cerebro, "abre a referência 8506 209");
     expect(r.ok).toBe(true);
     expect(c.abertos[1]).toBe(path.join(raiz, "BEIRA RIO", "8506.209"));
-    agoraMs += 9000;
+    agoraMs += 13_000;
     expect(cerebro.estado().estado).toBe("dormindo");
   });
   it("texto digitado não precisa do nome", async () => {
@@ -140,6 +140,39 @@ describe("ativação", () => {
     await dizer(cerebro, "Jarvis");
     await dizer(cerebro, "pode dormir");
     expect(cerebro.estado().estado).toBe("dormindo");
+  });
+});
+
+describe("transcrição lenta (voz devagar / modelo pesado)", () => {
+  it("frase falada dentro da janela vale mesmo que a transcrição termine depois", async () => {
+    const { cerebro } = montar();
+    await dizer(cerebro, "Jarvis"); // janela: 15 s a partir de agoraMs
+    const falouEm = agoraMs + 6000;
+    agoraMs += 40_000; // a transcrição demorou muito: já passou da janela quando chega
+    const r = await cerebro.ouvir("abre a pasta downloads", { origem: "voz", quando: falouEm });
+    expect(r.ignorado).toBeUndefined();
+    expect(r.ok).toBe(true);
+    expect(c.abertos.at(-1)).toBe("C:\\Users\\x\\Downloads");
+  });
+  it("frase falada depois da janela é ignorada e explica o motivo", async () => {
+    const { cerebro } = montar();
+    await dizer(cerebro, "Jarvis");
+    const r = await cerebro.ouvir("abre a pasta downloads", { origem: "voz", quando: agoraMs + 20_000 });
+    expect(r.ignorado).toBe(true);
+    expect(r.motivo).toBe("expirou");
+  });
+  it("sem dizer o nome o motivo é 'sem_ativacao'", async () => {
+    const { cerebro } = montar();
+    expect((await dizer(cerebro, "abre a pasta downloads")).motivo).toBe("sem_ativacao");
+  });
+  it("pasta raiz pelo nome falado, mesmo no singular ou sem acento", async () => {
+    const { cerebro } = montar();
+    for (const f of ["abre a pasta lançamentos", "abre a pasta lancamento", "abre a pasta de lançamentos"]) {
+      c.abertos.length = 0;
+      const r = await dizer(cerebro, `Jarvis ${f}`);
+      expect(r.ok, f).toBe(true);
+      expect(c.abertos[0], f).toBe(raiz);
+    }
   });
 });
 

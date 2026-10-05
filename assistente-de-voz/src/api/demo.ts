@@ -31,7 +31,7 @@ export function criarApiDemo(): Api {
   let cfg: Config = {
     nomeAtivacao: "Jarvis", variantes: [], pastaRaiz: "D:\\Users\\LiraDanilo\\Desktop\\LANÇAMENTOS", ignorar: ["Nova pasta"],
     aliases: [{ falas: ["zap web", "whatsapp web"], tipo: "caminho", destino: "C:\\Users\\Lira\\Desktop\\WhatsApp Web.lnk" }],
-    falarRespostas: true, janelaConversaSeg: 8, escutaAposAtivarSeg: 10, modelo: "base", microfoneId: "", filtrosDoNavegador: false, sensibilidade: 5, iniciarComWindows: false, minimizarParaBandeja: true,
+    falarRespostas: true, janelaConversaSeg: 12, escutaAposAtivarSeg: 15, modelo: "base", microfoneId: "", filtrosDoNavegador: false, sensibilidade: 5, iniciarComWindows: false, minimizarParaBandeja: true,
   };
   const config = { get: () => cfg, set: (p: Partial<Config>) => (cfg = { ...cfg, ...p }) };
   const ctx: { marca: string | null; ref: string | null } = { marca: null, ref: null };
@@ -92,7 +92,7 @@ export function criarApiDemo(): Api {
     info: async () => ({ versao: "1.0.0", plataforma: "demo", exemplos: EXEMPLOS, pastaModelos: "" }),
     obterConfig: async () => cfg,
     salvarConfig: async (p) => config.set(p),
-    ouvir: (t, origem) => cerebro.ouvir(t, { origem }),
+    ouvir: (t, origem, quando) => cerebro.ouvir(t, { origem, quando }),
     estado: async (): Promise<EstadoAtual> => ({ ...cerebro.estado(), contexto: { marca: ctx.marca, ref: ctx.ref, pasta: null } }),
     dormir: async () => cerebro.dormir(),
     escolherPasta: async () => "D:\\Users\\LiraDanilo\\Desktop\\LANÇAMENTOS",

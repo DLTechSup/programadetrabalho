@@ -78,7 +78,7 @@ export function PaginaAssistente() {
             {a.log.length === 0 && <p className="muted vazio">O que eu ouvir e responder aparece aqui.</p>}
             {a.log.map((m) => (
               <div key={m.id} className={`msg ${m.tipo}${m.ok === false ? " falha" : ""}`}>
-                {m.tipo === "ignorado" && <small>ouvi, mas não era para mim:</small>}
+                {m.tipo === "ignorado" && <small>{m.motivo === "expirou" ? `o tempo de escuta já tinha acabado — diga “${a.config.nomeAtivacao}” de novo:` : `ouvi, mas faltou dizer “${a.config.nomeAtivacao}” antes:`}</small>}
                 {m.texto}
               </div>
             ))}

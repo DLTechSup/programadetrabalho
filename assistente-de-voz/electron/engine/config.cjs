@@ -9,8 +9,8 @@ const PADRAO = {
   ignorar: ["Nova pasta"],
   aliases: [], // [{ falas: ["zap web"], tipo: "programa"|"caminho"|"url", destino: "..." }]
   falarRespostas: true,
-  janelaConversaSeg: 8, // depois de um comando, continua ouvindo sem precisar da palavra de ativação
-  escutaAposAtivarSeg: 10,
+  janelaConversaSeg: 12, // depois de um comando, continua ouvindo sem precisar da palavra de ativação
+  escutaAposAtivarSeg: 15,
   modelo: "base", // tiny | base | small
   microfoneId: "",
   filtrosDoNavegador: false, // cancelamento de ruído/eco do Chrome: pode cortar sílabas (principalmente com celular como microfone)

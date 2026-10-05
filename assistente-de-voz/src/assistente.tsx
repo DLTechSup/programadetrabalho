@@ -7,7 +7,7 @@ import { Transcritor, type EstadoStt } from "./audio/stt";
 import { bip, falar, iniciarFala, pararDeFalar, tocarAudio } from "./audio/fala";
 
 export type Fase = "desligado" | "carregando" | "dormindo" | "ouvindo" | "escolhendo" | "nome" | "processando" | "falando";
-export interface EntradaLog { id: number; tipo: "ouvi" | "resposta" | "ignorado" | "sistema"; texto: string; hora: number; ok?: boolean }
+export interface EntradaLog { id: number; tipo: "ouvi" | "resposta" | "ignorado" | "sistema"; texto: string; hora: number; ok?: boolean; motivo?: string }
 export interface Captura { id: number; hora: number; audio: Float32Array; stats: EstatisticasAudio; texto: string; erro?: string }
 export type Pagina = "assistente" | "comandos" | "pastas" | "programas" | "config";
 
@@ -75,8 +75,8 @@ export function ProvedorAssistente({ api, info, configInicial, children }: { api
   const naFila = useRef(0);
   const escutaDesejada = useRef(localStorage.getItem("escutaLigada") !== "nao");
 
-  const add = useCallback((tipo: EntradaLog["tipo"], texto: string, ok?: boolean) => {
-    setLog((l) => [...l.slice(-79), { id: ++seqLog, tipo, texto, hora: Date.now(), ok }]);
+  const add = useCallback((tipo: EntradaLog["tipo"], texto: string, ok?: boolean, motivo?: string) => {
+    setLog((l) => [...l.slice(-79), { id: ++seqLog, tipo, texto, hora: Date.now(), ok, motivo }]);
   }, []);
 
   const falarResposta = useCallback(async (texto: string) => {
@@ -99,11 +99,11 @@ export function ProvedorAssistente({ api, info, configInicial, children }: { api
   }, []);
 
   const processar = useCallback(
-    async (texto: string, origem: "voz" | "texto"): Promise<RespostaVoz> => {
-      const r = await api.ouvir(texto, origem);
+    async (texto: string, origem: "voz" | "texto", quando?: number): Promise<RespostaVoz> => {
+      const r = await api.ouvir(texto, origem, quando);
       setCerebro((c) => ({ ...c, estado: r.estado, nome: r.nome, restanteMs: r.estado === "dormindo" ? 0 : Math.max(0, r.expiraEm - Date.now()) }));
       if (r.ignorado) {
-        if (origem === "voz") add("ignorado", texto);
+        if (origem === "voz" && r.motivo !== "ruido") add("ignorado", texto, undefined, r.motivo);
         return r;
       }
       setUltimoOuvido(r.entendido ?? texto);
@@ -126,7 +126,8 @@ export function ProvedorAssistente({ api, info, configInicial, children }: { api
   );
 
   const aoFala = useCallback(
-    (audio: Float32Array) => {
+    (audio: Float32Array, duracaoMs: number) => {
+      const falouEm = Date.now() - duracaoMs - 800; // início da frase (a detecção só confirma depois de ~0,8 s de silêncio)
       if (naFila.current >= 2) return; // fila cheia: descarta (o computador está ocupado)
       naFila.current++;
       fila.current = fila.current.then(async () => {
@@ -138,7 +139,7 @@ export function ProvedorAssistente({ api, info, configInicial, children }: { api
           const prep = prepararAudio(audio);
           stats.ganho = prep.ganho;
           texto = await transc.current!.transcrever(prep.audio);
-          if (texto) await processar(texto, "voz");
+          if (texto) await processar(texto, "voz", falouEm);
         } catch (e) {
           add("sistema", `Erro ao reconhecer a voz: ${(e as Error).message}`, false);
         } finally {

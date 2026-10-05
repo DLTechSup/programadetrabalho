@@ -165,7 +165,7 @@ ipcMain.handle("config:salvar", (_e, parcial) => {
   return nova;
 });
 
-ipcMain.handle("voz:ouvir", (_e, texto, origem) => cerebro.ouvir(String(texto || ""), { origem: origem === "texto" ? "texto" : "voz" }));
+ipcMain.handle("voz:ouvir", (_e, texto, origem, quando) => cerebro.ouvir(String(texto || ""), { origem: origem === "texto" ? "texto" : "voz", quando: Number.isFinite(quando) ? quando : undefined }));
 ipcMain.handle("voz:estado", () => ({ ...cerebro.estado(), contexto: acoes.contexto() }));
 ipcMain.handle("voz:dormir", () => cerebro.dormir());
 

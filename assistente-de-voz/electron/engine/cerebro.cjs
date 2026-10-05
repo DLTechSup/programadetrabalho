@@ -51,16 +51,19 @@ function criarCerebro({ config, acoes, agora = Date.now }) {
   let pendente = null;
   let ultimaFala = "";
   let tentativas = 0;
+  let expirouEm = 0; // quando a última janela de escuta terminou (para explicar por que uma frase foi ignorada)
 
   const seg = (s) => s * 1000;
   const acordar = (s) => {
     estado = "ouvindo";
     expiraEm = agora() + seg(s);
   };
-  const atualizar = () => {
-    if (estado !== "dormindo" && agora() > expiraEm) {
+  // `ref` = momento em que a pessoa FALOU (não quando a transcrição terminou): transcrever leva alguns segundos
+  const atualizar = (ref = agora()) => {
+    if (estado !== "dormindo" && ref > expiraEm) {
       estado = "dormindo";
       pendente = null;
+      expirouEm = expiraEm;
     }
   };
   const resp = (fala, extra = {}) => {
@@ -205,17 +208,18 @@ function criarCerebro({ config, acoes, agora = Date.now }) {
    * Entrada principal. `origem`: "voz" (precisa da palavra de ativação quando está dormindo) ou "texto"
    * (digitado na caixa: não precisa de ativação).
    */
-  async function ouvir(raw, { origem = "voz" } = {}) {
-    atualizar();
+  async function ouvir(raw, { origem = "voz", quando } = {}) {
+    const falouEm = Number.isFinite(quando) ? quando : agora();
+    atualizar(falouEm);
     const texto = String(raw ?? "").trim();
-    if (!texto || (origem === "voz" && ehRuido(texto))) return resp("", { ignorado: true, entendido: texto });
+    if (!texto || (origem === "voz" && ehRuido(texto))) return resp("", { ignorado: true, entendido: texto, motivo: "ruido" });
 
     if (estado === "nome") return aplicarNome(texto, { tipo: "renomear", nome: texto });
     if (estado === "escolhendo" && pendente) return responderEscolha(texto);
 
     if (origem === "voz" && estado === "dormindo") {
       const det = detectarAtivacao(texto, nomesAtivacao());
-      if (!det.achou) return resp("", { ignorado: true, entendido: texto });
+      if (!det.achou) return resp("", { ignorado: true, entendido: texto, motivo: expirouEm && falouEm - expirouEm < 60000 ? "expirou" : "sem_ativacao" });
       if (!normalizar(det.resto)) {
         acordar(config.get().escutaAposAtivarSeg);
         return resp("Pois não?", { ok: true, ativado: true, entendido: texto });

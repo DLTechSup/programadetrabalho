@@ -26,6 +26,7 @@ export interface RespostaVoz {
   nome: string;
   ok?: boolean;
   ignorado?: boolean;
+  motivo?: "ruido" | "sem_ativacao" | "expirou";
   ativado?: boolean;
   entendido?: string;
   escolha?: string[];
@@ -54,7 +55,7 @@ export interface Api {
   info(): Promise<InfoApp>;
   obterConfig(): Promise<Config>;
   salvarConfig(parcial: Partial<Config>): Promise<Config>;
-  ouvir(texto: string, origem: "voz" | "texto"): Promise<RespostaVoz>;
+  ouvir(texto: string, origem: "voz" | "texto", quando?: number): Promise<RespostaVoz>;
   estado(): Promise<EstadoAtual>;
   dormir(): Promise<void>;
   escolherPasta(): Promise<string | null>;
