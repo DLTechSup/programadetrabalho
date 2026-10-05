@@ -29,9 +29,9 @@ const EXEMPLOS: ExemplosGrupo[] = [
 
 export function criarApiDemo(): Api {
   let cfg: Config = {
-    nomeAtivacao: "Jarvis", variantes: [], pastaRaiz: "D:\\Users\\LiraDanilo\\Desktop\\LANÇAMENTOS", ignorar: ["Nova pasta"],
+    nomeAtivacao: "Jarvis", modoEscuta: "nome", atalhoFalar: "Control+Shift+Space", silencioMs: 550, variantes: [], pastaRaiz: "D:\\Users\\LiraDanilo\\Desktop\\LANÇAMENTOS", ignorar: ["Nova pasta"],
     aliases: [{ falas: ["zap web", "whatsapp web"], tipo: "caminho", destino: "C:\\Users\\Lira\\Desktop\\WhatsApp Web.lnk" }],
-    falarRespostas: true, janelaConversaSeg: 12, escutaAposAtivarSeg: 15, modelo: "base", microfoneId: "", filtrosDoNavegador: false, sensibilidade: 5, iniciarComWindows: false, minimizarParaBandeja: true,
+    falarRespostas: false, janelaConversaSeg: 12, escutaAposAtivarSeg: 15, modelo: "base", microfoneId: "", filtrosDoNavegador: false, sensibilidade: 5, iniciarComWindows: false, minimizarParaBandeja: true,
   };
   const config = { get: () => cfg, set: (p: Partial<Config>) => (cfg = { ...cfg, ...p }) };
   const ctx: { marca: string | null; ref: string | null } = { marca: null, ref: null };
@@ -95,6 +95,9 @@ export function criarApiDemo(): Api {
     ouvir: (t, origem, quando) => cerebro.ouvir(t, { origem, quando }),
     estado: async (): Promise<EstadoAtual> => ({ ...cerebro.estado(), contexto: { marca: ctx.marca, ref: ctx.ref, pasta: null } }),
     dormir: async () => cerebro.dormir(),
+    acordar: async () => cerebro.acordar(),
+    statusAtalho: async () => ({ atalho: cfg.atalhoFalar, registrado: true }),
+    aoAtencao: () => () => {},
     escolherPasta: async () => "D:\\Users\\LiraDanilo\\Desktop\\LANÇAMENTOS",
     reindexar: async () => ({ marcas: Object.keys(MARCAS).length, referencias: Object.values(MARCAS).flat().length, erro: "" }),
     resumoPastas: async () => ({ raiz: cfg.pastaRaiz, erro: "", total: Object.values(MARCAS).flat().length, marcas: Object.entries(MARCAS).map(([nome, r]) => ({ nome, refs: r.length })) }),

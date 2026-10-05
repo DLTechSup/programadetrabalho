@@ -176,6 +176,44 @@ describe("transcrição lenta (voz devagar / modelo pesado)", () => {
   });
 });
 
+describe("modos de escuta", () => {
+  it("modo direto: toda frase é comando, sem nome", async () => {
+    const { cerebro } = montar({ modoEscuta: "direto" });
+    const r = await dizer(cerebro, "abre a marca beira rio");
+    expect(r.ok).toBe(true);
+    expect(c.abertos[0]).toBe(path.join(raiz, "BEIRA RIO"));
+  });
+  it("modo direto ainda aceita o nome antes (e ignora ruído do Whisper)", async () => {
+    const { cerebro } = montar({ modoEscuta: "direto" });
+    expect((await dizer(cerebro, "Jarvis abre a marca bebece")).ok).toBe(true);
+    expect((await dizer(cerebro, "Obrigado.")).ignorado).toBe(true);
+  });
+  it("modo atalho: sem apertar o atalho a fala é ignorada", async () => {
+    const { cerebro } = montar({ modoEscuta: "atalho" });
+    const r = await dizer(cerebro, "abre a marca beira rio");
+    expect(r.ignorado).toBe(true);
+    expect(r.motivo).toBe("sem_atalho");
+    expect(c.abertos).toEqual([]);
+  });
+  it("modo atalho: depois do atalho o comando vale, sem dizer o nome", async () => {
+    const { cerebro } = montar({ modoEscuta: "atalho" });
+    cerebro.acordar();
+    expect(cerebro.estado().estado).toBe("ouvindo");
+    const r = await dizer(cerebro, "abre a marca beira rio");
+    expect(r.ok).toBe(true);
+    expect(c.abertos[0]).toBe(path.join(raiz, "BEIRA RIO"));
+  });
+  it("modo atalho: a janela expira", async () => {
+    const { cerebro } = montar({ modoEscuta: "atalho" });
+    cerebro.acordar();
+    agoraMs += 20_000;
+    expect((await dizer(cerebro, "abre a marca beira rio")).ignorado).toBe(true);
+  });
+  it("respostas faladas vêm desligadas por padrão", () => {
+    expect(montar().config.get().falarRespostas).toBe(false);
+  });
+});
+
 describe("trocar o nome de ativação por voz", () => {
   it("Jarvis -> seu nome agora é Assistente -> confirma e passa a responder só ao novo nome", async () => {
     const { cerebro, config } = montar();

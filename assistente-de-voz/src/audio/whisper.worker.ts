@@ -14,7 +14,7 @@ env.localModelPath = `${origem}/modelos/`;
 const onnx = env.backends.onnx as { wasm?: { wasmPaths?: string; numThreads?: number } };
 if (onnx.wasm) {
   onnx.wasm.wasmPaths = `${origem}/ort/`;
-  onnx.wasm.numThreads = self.crossOriginIsolated ? Math.max(1, Math.min(4, Math.floor((navigator.hardwareConcurrency || 4) / 2))) : 1;
+  onnx.wasm.numThreads = self.crossOriginIsolated ? Math.max(2, Math.min(8, (navigator.hardwareConcurrency || 4) - 1)) : 1;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -29,10 +29,16 @@ self.onmessage = async (e: MessageEvent<Msg>) => {
         dtype: { encoder_model: "q8", decoder_model_merged: "q8" },
         device: "wasm",
       } as never);
+      // aquecimento: a primeira transcrição é sempre mais lenta (compila o WebAssembly)
+      try {
+        await asr(new Float32Array(16000), { language: "portuguese", task: "transcribe", max_new_tokens: 4 });
+      } catch {
+        /* sem problema */
+      }
       self.postMessage({ tipo: "estado", estado: "pronto" });
     } else if (m.tipo === "transcrever") {
       if (!asr) throw new Error("Modelo de voz não carregado.");
-      const r = await asr(m.audio, { language: "portuguese", task: "transcribe", chunk_length_s: 30 });
+      const r = await asr(m.audio, { language: "portuguese", task: "transcribe", max_new_tokens: 48 });
       const texto = String(Array.isArray(r) ? r[0]?.text : r?.text ?? "").trim();
       self.postMessage({ tipo: "texto", id: m.id, texto });
     }

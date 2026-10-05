@@ -1,6 +1,9 @@
 export interface Alias { falas: string[]; tipo: "programa" | "caminho" | "url"; destino: string }
 
 export interface Config {
+  modoEscuta: "nome" | "atalho" | "direto";
+  atalhoFalar: string;
+  silencioMs: number;
   nomeAtivacao: string;
   variantes: string[];
   pastaRaiz: string;
@@ -26,7 +29,7 @@ export interface RespostaVoz {
   nome: string;
   ok?: boolean;
   ignorado?: boolean;
-  motivo?: "ruido" | "sem_ativacao" | "expirou";
+  motivo?: "ruido" | "sem_ativacao" | "sem_atalho" | "expirou";
   ativado?: boolean;
   entendido?: string;
   escolha?: string[];
@@ -58,6 +61,9 @@ export interface Api {
   ouvir(texto: string, origem: "voz" | "texto", quando?: number): Promise<RespostaVoz>;
   estado(): Promise<EstadoAtual>;
   dormir(): Promise<void>;
+  acordar(): Promise<{ expiraEm: number }>;
+  statusAtalho(): Promise<{ atalho: string; registrado: boolean }>;
+  aoAtencao(cb: (p: { expiraEm: number }) => void): () => void;
   escolherPasta(): Promise<string | null>;
   reindexar(): Promise<{ marcas: number; referencias: number; erro: string } | null>;
   resumoPastas(): Promise<ResumoPastas | null>;

@@ -58,6 +58,20 @@ describe("configuração", () => {
     fs.writeFileSync(arq, "{ não é json");
     expect(criarConfig(arq).get().nomeAtivacao).toBe("Jarvis");
   });
+  it("arquivo de versão antiga: respostas faladas passam a vir desligadas, mas escolha nova é respeitada", () => {
+    const arq = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "cfg-")), "c.json");
+    fs.writeFileSync(arq, JSON.stringify({ nomeAtivacao: "Zeca", falarRespostas: true }));
+    const a = criarConfig(arq);
+    expect(a.get().nomeAtivacao).toBe("Zeca");
+    expect(a.get().falarRespostas).toBe(false);
+    a.set({ falarRespostas: true });
+    expect(criarConfig(arq).get().falarRespostas).toBe(true);
+  });
+  it("limites do tempo de silêncio e modo inválido", () => {
+    expect(validar({ silencioMs: 10 }).silencioMs).toBe(250);
+    expect(validar({ silencioMs: 99999 }).silencioMs).toBe(1500);
+    expect(validar({ modoEscuta: "xyz" }).modoEscuta).toBe("nome");
+  });
   it("salva e relê", () => {
     const arq = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "cfg-")), "sub", "c.json");
     const a = criarConfig(arq);

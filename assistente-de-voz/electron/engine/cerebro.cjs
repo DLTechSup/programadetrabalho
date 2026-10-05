@@ -217,6 +217,16 @@ function criarCerebro({ config, acoes, agora = Date.now }) {
     if (estado === "nome") return aplicarNome(texto, { tipo: "renomear", nome: texto });
     if (estado === "escolhendo" && pendente) return responderEscolha(texto);
 
+    const modo = config.get().modoEscuta;
+    // modo "direto": toda frase é um comando (sem precisar do nome); "atalho": só vale com o atalho apertado
+    if (origem === "voz" && estado === "dormindo" && modo === "direto") {
+      const det = detectarAtivacao(texto, nomesAtivacao());
+      const r = await comando(det.achou && normalizar(det.resto) ? det.resto : texto);
+      return { ...r, entendido: texto };
+    }
+    if (origem === "voz" && estado === "dormindo" && modo === "atalho") {
+      return resp("", { ignorado: true, entendido: texto, motivo: expirouEm && falouEm - expirouEm < 60000 ? "expirou" : "sem_atalho" });
+    }
     if (origem === "voz" && estado === "dormindo") {
       const det = detectarAtivacao(texto, nomesAtivacao());
       if (!det.achou) return resp("", { ignorado: true, entendido: texto, motivo: expirouEm && falouEm - expirouEm < 60000 ? "expirou" : "sem_ativacao" });
@@ -248,6 +258,11 @@ function criarCerebro({ config, acoes, agora = Date.now }) {
     dormir: () => {
       estado = "dormindo";
       pendente = null;
+    },
+    /** Atalho de teclado apertado: a próxima frase é um comando, sem precisar do nome. */
+    acordar: () => {
+      acordar(config.get().escutaAposAtivarSeg);
+      return { expiraEm };
     },
   };
 }

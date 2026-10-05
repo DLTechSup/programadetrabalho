@@ -10,14 +10,41 @@ export function PaginaConfig() {
   const a = useAssistente();
   const [nome, setNome] = useState(a.config.nomeAtivacao);
   const [variantes, setVariantes] = useState(a.config.variantes.join(", "));
+  const [atalho, setAtalho] = useState(a.config.atalhoFalar);
+  const [atalhoOk, setAtalhoOk] = useState<boolean | null>(null);
   const [mics, setMics] = useState<{ id: string; nome: string }[]>([]);
   useEffect(() => setNome(a.config.nomeAtivacao), [a.config.nomeAtivacao]);
+  useEffect(() => { a.api.statusAtalho().then((s) => setAtalhoOk(s.registrado)); }, [a.api]);
   useEffect(() => { if (!a.api.demo) listarMicrofones().then(setMics); }, [a.api.demo]);
   const c = a.config;
 
   return (
     <div className="pagina estreita">
       <header className="topo"><div><h1>Configurações</h1></div></header>
+
+      <section className="cartao">
+        <h3>Como eu devo ouvir</h3>
+        <div className="modos">
+          {([
+            ["nome", "Pelo nome", `Só reajo depois de ouvir “${c.nomeAtivacao}”. Mais seguro com gente falando por perto.`],
+            ["atalho", "Pelo atalho (mais rápido)", "Aperte o atalho e fale. O que você fala fora disso nem é processado: sem falsos comandos e sem esperar o nome."],
+            ["direto", "Direto (como ditado)", "Toda frase é um comando, sem nome nem atalho. Use só em lugar silencioso e sozinho."],
+          ] as const).map(([id, nomeModo, desc]) => (
+            <label key={id} className={`modo${c.modoEscuta === id ? " on" : ""}`}>
+              <input type="radio" name="modo" checked={c.modoEscuta === id} onChange={() => a.salvarConfig({ modoEscuta: id })} />
+              <div><b>{nomeModo}</b><small>{desc}</small></div>
+            </label>
+          ))}
+        </div>
+        <label className="rotulo">Atalho para falar <small>(funciona de qualquer programa)</small></label>
+        <div className="linha-form">
+          <input value={atalho} onChange={(e) => setAtalho(e.target.value)} placeholder="Control+Shift+Space" />
+          <button className="btn" disabled={!atalho.trim() || atalho.trim() === c.atalhoFalar} onClick={async () => { await a.salvarConfig({ atalhoFalar: atalho.trim() }); setAtalhoOk((await a.api.statusAtalho()).registrado); }}>Salvar</button>
+        </div>
+        <small>Exemplos: Control+Shift+Space · F8 · Control+Alt+V · Alt+Q {atalhoOk === false && <span className="v-erro"> — esse atalho não pôde ser registrado (já está em uso). Escolha outro.</span>}</small>
+        <label className="rotulo">Silêncio para eu considerar que você terminou: {c.silencioMs} ms <small>(menor = responde mais rápido, mas pode cortar uma pausa)</small></label>
+        <input type="range" min={250} max={1200} step={50} value={c.silencioMs} onChange={(e) => a.salvarConfig({ silencioMs: Number(e.target.value) })} />
+      </section>
 
       <section className="cartao">
         <h3>Nome do assistente</h3>
@@ -51,7 +78,7 @@ export function PaginaConfig() {
           <option value="small">Preciso (small, ~250 MB) — mais lento</option>
         </select>
         {!a.modelo.pronto && !a.api.demo && <p className="aviso-linha"><Icone nome="alert" tam={14} /> Esse modelo ainda não foi baixado. <button className="link" onClick={a.baixarModelo}>Baixar agora</button></p>}
-        <div className="linha-chave"><div><b>Falar as respostas</b><small>Usa a voz do Windows{!temVozPortugues() && " (não achei voz em português instalada)"}.</small></div><Chave ligado={c.falarRespostas} onChange={(v) => a.salvarConfig({ falarRespostas: v })} /></div>
+        <div className="linha-chave"><div><b>Falar as respostas em voz alta</b><small>Desligado por padrão: o resultado aparece na tela e a ação acontece. Usa a voz do Windows{!temVozPortugues() && " (não achei voz em português instalada)"}.</small></div><Chave ligado={c.falarRespostas} onChange={(v) => a.salvarConfig({ falarRespostas: v })} /></div>
         <button className="btn" onClick={() => falar(`Olá! Me chame de ${c.nomeAtivacao} quando quiser algo.`)}>Testar a voz</button>
       </section>
 

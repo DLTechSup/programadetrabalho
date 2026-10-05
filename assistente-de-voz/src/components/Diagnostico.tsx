@@ -28,7 +28,7 @@ export function Diagnostico() {
               <div className="cap-corpo">
                 <div className="cap-texto">{c.texto ? <>“{c.texto}”</> : <i className="muted">(nada reconhecido)</i>}</div>
                 <div className="cap-nivel"><div className={`cap-barra ${v.tom}`} style={{ width: `${Math.min(100, c.stats.pico * 100)}%` }} /></div>
-                <small>{(c.stats.duracaoMs / 1000).toFixed(1)} s · volume {Math.round(c.stats.pico * 100)}% {c.stats.ganho > 1.5 ? `(amplificado ${c.stats.ganho.toFixed(0)}x)` : ""} · <span className={`v-${v.tom}`}>{v.texto}</span></small>
+                <small>{(c.stats.duracaoMs / 1000).toFixed(1)} s · reconheci em {(c.ms / 1000).toFixed(1)} s · volume {Math.round(c.stats.pico * 100)}% {c.stats.ganho > 1.5 ? `(amplificado ${c.stats.ganho.toFixed(0)}x)` : ""} · <span className={`v-${v.tom}`}>{v.texto}</span></small>
               </div>
             </li>
           );

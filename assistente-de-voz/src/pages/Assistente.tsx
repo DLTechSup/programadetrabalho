@@ -22,9 +22,9 @@ export function PaginaAssistente() {
     <div className="pagina assistente">
       <section className="palco">
         <Orbe fase={a.fase} nivel={a.nivel} falando={a.falandoNivel} />
-        <h1>{a.fase === "dormindo" || a.fase === "desligado" ? <>Diga <b>“{a.config.nomeAtivacao}”</b></> : a.fase === "ouvindo" ? <>Pode falar{segundos > 0 ? <small> · {segundos}s</small> : null}</> : a.fase === "escolhendo" ? "Diga o número da opção" : a.fase === "nome" ? "Diga o novo nome" : " "}</h1>
+        <h1>{a.fase === "dormindo" || a.fase === "desligado" ? (a.config.modoEscuta === "atalho" ? <>Aperte <b>{a.config.atalhoFalar.replace("Control", "Ctrl")}</b> e fale</> : a.config.modoEscuta === "direto" ? <>Pode falar o <b>comando</b></> : <>Diga <b>“{a.config.nomeAtivacao}”</b></>) : a.fase === "ouvindo" ? <>Pode falar{segundos > 0 ? <small> · {segundos}s</small> : null}</> : a.fase === "escolhendo" ? "Diga o número da opção" : a.fase === "nome" ? "Diga o novo nome" : " "}</h1>
         <p className="dica">
-          {a.fase === "dormindo" && "Exemplo: “" + a.config.nomeAtivacao + ", abre a marca Beira Rio”"}
+          {a.fase === "dormindo" && (a.config.modoEscuta === "nome" ? "Exemplo: “" + a.config.nomeAtivacao + ", abre a marca Beira Rio”" : "Exemplo: “abre a marca Beira Rio, referência 8506 209”")}
           {a.fase === "ouvindo" && "Estou ouvindo o seu comando"}
           {a.fase === "desligado" && "Ligue a escuta para falar com o assistente"}
         </p>
@@ -78,7 +78,7 @@ export function PaginaAssistente() {
             {a.log.length === 0 && <p className="muted vazio">O que eu ouvir e responder aparece aqui.</p>}
             {a.log.map((m) => (
               <div key={m.id} className={`msg ${m.tipo}${m.ok === false ? " falha" : ""}`}>
-                {m.tipo === "ignorado" && <small>{m.motivo === "expirou" ? `o tempo de escuta já tinha acabado — diga “${a.config.nomeAtivacao}” de novo:` : `ouvi, mas faltou dizer “${a.config.nomeAtivacao}” antes:`}</small>}
+                {m.tipo === "ignorado" && <small>{m.motivo === "expirou" ? `o tempo de escuta já tinha acabado — diga “${a.config.nomeAtivacao}” de novo:` : `${m.motivo === "sem_atalho" ? "aperte o atalho antes de falar:" : `ouvi, mas faltou dizer “${a.config.nomeAtivacao}” antes:`}`}</small>}
                 {m.texto}
               </div>
             ))}

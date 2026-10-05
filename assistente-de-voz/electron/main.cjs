@@ -1,6 +1,6 @@
 // Processo principal: janela, bandeja do sistema, protocolo app:// (serve a interface e o modelo de voz)
 // e a ponte (IPC) para o motor em electron/engine. O áudio e o reconhecimento de voz ficam na interface.
-const { app, BrowserWindow, Tray, Menu, dialog, ipcMain, shell, protocol, net, session, nativeImage } = require("electron");
+const { app, BrowserWindow, Tray, Menu, dialog, ipcMain, shell, protocol, net, session, nativeImage, globalShortcut } = require("electron");
 const { execFile, spawn } = require("node:child_process");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -161,6 +161,7 @@ ipcMain.handle("config:salvar", (_e, parcial) => {
   const antes = config.get();
   const nova = config.set(parcial || {});
   if (nova.pastaRaiz !== antes.pastaRaiz || JSON.stringify(nova.ignorar) !== JSON.stringify(antes.ignorar)) acoes.reindexar().catch(() => {});
+  if (nova.atalhoFalar !== antes.atalhoFalar) registrarAtalho();
   if (nova.iniciarComWindows !== antes.iniciarComWindows) app.setLoginItemSettings({ openAtLogin: nova.iniciarComWindows, args: ["--oculto"] });
   return nova;
 });
@@ -168,6 +169,22 @@ ipcMain.handle("config:salvar", (_e, parcial) => {
 ipcMain.handle("voz:ouvir", (_e, texto, origem, quando) => cerebro.ouvir(String(texto || ""), { origem: origem === "texto" ? "texto" : "voz", quando: Number.isFinite(quando) ? quando : undefined }));
 ipcMain.handle("voz:estado", () => ({ ...cerebro.estado(), contexto: acoes.contexto() }));
 ipcMain.handle("voz:dormir", () => cerebro.dormir());
+ipcMain.handle("voz:acordar", () => cerebro.acordar());
+
+// atalho global de "falar": aperta, fala o comando (sem dizer o nome)
+let atalhoAtual = "";
+function registrarAtalho() {
+  const acc = config.get().atalhoFalar;
+  if (atalhoAtual) globalShortcut.unregister(atalhoAtual);
+  atalhoAtual = "";
+  try {
+    if (globalShortcut.register(acc, () => enviar("escuta:atencao", cerebro.acordar()))) atalhoAtual = acc;
+  } catch {
+    /* atalho inválido */
+  }
+  return !!atalhoAtual;
+}
+ipcMain.handle("atalho:status", () => ({ atalho: config.get().atalhoFalar, registrado: !!atalhoAtual }));
 
 ipcMain.handle("pastas:escolher", async () => {
   const r = await dialog.showOpenDialog(janela, { title: "Escolha a pasta raiz (a que contém as pastas das marcas)", properties: ["openDirectory"] });
@@ -240,9 +257,11 @@ if (!app.requestSingleInstanceLock()) {
     session.defaultSession.setPermissionCheckHandler((_wc, permissao) => permissao === "media");
     criarJanela();
     criarBandeja();
+    registrarAtalho();
     app.on("activate", () => janela && janela.show());
   });
   app.on("before-quit", () => (saindo = true));
+  app.on("will-quit", () => globalShortcut.unregisterAll());
   app.on("window-all-closed", () => {
     if (saindo || !config.get().minimizarParaBandeja) app.quit();
   });

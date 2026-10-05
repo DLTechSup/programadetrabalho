@@ -3,12 +3,16 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const PADRAO = {
+  versao: 2,
+  modoEscuta: "nome", // nome: só reage depois do nome | atalho: só quando aperta o atalho | direto: toda frase é um comando
+  atalhoFalar: "Control+Shift+Space",
+  silencioMs: 550, // quanto silêncio indica que a frase terminou (menor = mais rápido, mas pode cortar pausas)
   nomeAtivacao: "Jarvis",
   variantes: [], // outras formas que o reconhecedor costuma escrever o nome
   pastaRaiz: "",
   ignorar: ["Nova pasta"],
   aliases: [], // [{ falas: ["zap web"], tipo: "programa"|"caminho"|"url", destino: "..." }]
-  falarRespostas: true,
+  falarRespostas: false,
   janelaConversaSeg: 12, // depois de um comando, continua ouvindo sem precisar da palavra de ativação
   escutaAposAtivarSeg: 15,
   modelo: "base", // tiny | base | small
@@ -23,6 +27,15 @@ const num = (v, min, max, pad) => (Number.isFinite(Number(v)) ? Math.min(max, Ma
 
 function validar(c) {
   const o = { ...PADRAO, ...(c || {}) };
+  // arquivos de versões antigas: as respostas faladas passam a vir desligadas (o foco agora é rapidez)
+  if (c && (c.versao || 1) < 2) {
+    o.falarRespostas = false;
+    o.versao = 2;
+  }
+  o.versao = 2;
+  o.modoEscuta = ["nome", "atalho", "direto"].includes(o.modoEscuta) ? o.modoEscuta : PADRAO.modoEscuta;
+  o.atalhoFalar = String(o.atalhoFalar || PADRAO.atalhoFalar).trim().slice(0, 40) || PADRAO.atalhoFalar;
+  o.silencioMs = num(o.silencioMs, 250, 1500, PADRAO.silencioMs);
   o.nomeAtivacao = String(o.nomeAtivacao || PADRAO.nomeAtivacao).trim().slice(0, 30) || PADRAO.nomeAtivacao;
   o.variantes = Array.isArray(o.variantes) ? o.variantes.map(String).map((x) => x.trim()).filter(Boolean).slice(0, 20) : [];
   o.pastaRaiz = String(o.pastaRaiz || "");

@@ -8,7 +8,7 @@ import { bip, falar, iniciarFala, pararDeFalar, tocarAudio } from "./audio/fala"
 
 export type Fase = "desligado" | "carregando" | "dormindo" | "ouvindo" | "escolhendo" | "nome" | "processando" | "falando";
 export interface EntradaLog { id: number; tipo: "ouvi" | "resposta" | "ignorado" | "sistema"; texto: string; hora: number; ok?: boolean; motivo?: string }
-export interface Captura { id: number; hora: number; audio: Float32Array; stats: EstatisticasAudio; texto: string; erro?: string }
+export interface Captura { id: number; hora: number; audio: Float32Array; stats: EstatisticasAudio; texto: string; ms: number; erro?: string }
 export type Pagina = "assistente" | "comandos" | "pastas" | "programas" | "config";
 
 export interface Assistente {
@@ -73,6 +73,7 @@ export function ProvedorAssistente({ api, info, configInicial, children }: { api
   const transc = useRef<Transcritor | null>(null);
   const fila = useRef<Promise<void>>(Promise.resolve());
   const naFila = useRef(0);
+  const expiraRef = useRef(0); // até quando a escuta está "acordada" (nome dito ou atalho apertado)
   const escutaDesejada = useRef(localStorage.getItem("escutaLigada") !== "nao");
 
   const add = useCallback((tipo: EntradaLog["tipo"], texto: string, ok?: boolean, motivo?: string) => {
@@ -101,6 +102,7 @@ export function ProvedorAssistente({ api, info, configInicial, children }: { api
   const processar = useCallback(
     async (texto: string, origem: "voz" | "texto", quando?: number): Promise<RespostaVoz> => {
       const r = await api.ouvir(texto, origem, quando);
+      expiraRef.current = r.estado === "dormindo" ? 0 : r.expiraEm;
       setCerebro((c) => ({ ...c, estado: r.estado, nome: r.nome, restanteMs: r.estado === "dormindo" ? 0 : Math.max(0, r.expiraEm - Date.now()) }));
       if (r.ignorado) {
         if (origem === "voz" && r.motivo !== "ruido") add("ignorado", texto, undefined, r.motivo);
@@ -128,6 +130,8 @@ export function ProvedorAssistente({ api, info, configInicial, children }: { api
   const aoFala = useCallback(
     (audio: Float32Array, duracaoMs: number) => {
       const falouEm = Date.now() - duracaoMs - 800; // início da frase (a detecção só confirma depois de ~0,8 s de silêncio)
+      // modo "atalho": frases sem o atalho apertado nem chegam ao Whisper (mais rápido e sem falsos comandos)
+      if (cfgRef.current.modoEscuta === "atalho" && falouEm > expiraRef.current + 300) return;
       if (naFila.current >= 2) return; // fila cheia: descarta (o computador está ocupado)
       naFila.current++;
       fila.current = fila.current.then(async () => {
@@ -135,15 +139,18 @@ export function ProvedorAssistente({ api, info, configInicial, children }: { api
         const id = ++seqLog;
         const stats = estatisticas(audio);
         let texto = "";
+        let ms = 0;
         try {
           const prep = prepararAudio(audio);
           stats.ganho = prep.ganho;
+          const t0 = performance.now();
           texto = await transc.current!.transcrever(prep.audio);
+          ms = Math.round(performance.now() - t0);
           if (texto) await processar(texto, "voz", falouEm);
         } catch (e) {
           add("sistema", `Erro ao reconhecer a voz: ${(e as Error).message}`, false);
         } finally {
-          setCapturas((c) => [...c.slice(-5), { id, hora: Date.now(), audio, stats, texto }]);
+          setCapturas((c) => [...c.slice(-5), { id, hora: Date.now(), audio, stats, texto, ms }]);
           naFila.current--;
           setProcessando(false);
         }
@@ -163,7 +170,7 @@ export function ProvedorAssistente({ api, info, configInicial, children }: { api
       if (!transc.current) transc.current = new Transcritor((estado, msg) => setStt({ estado, msg }));
       if (transc.current.estado !== "pronto") await transc.current.carregar(cfgRef.current.modelo);
       mic.current = await abrirMicrofone((f) => seg.current?.processar(f), cfgRef.current.microfoneId, cfgRef.current.filtrosDoNavegador);
-      seg.current = new Segmentador({ sampleRate: 16000, sensibilidade: cfgRef.current.sensibilidade }, aoFala, (n, f) => {
+      seg.current = new Segmentador({ sampleRate: 16000, sensibilidade: cfgRef.current.sensibilidade, silencioMs: cfgRef.current.silencioMs }, aoFala, (n, f) => {
         setNivel(n);
         setFalandoNivel(f);
       });
@@ -203,7 +210,7 @@ export function ProvedorAssistente({ api, info, configInicial, children }: { api
         desligar();
         const s = await atualizarModelo();
         if (s.pronto && escutaDesejada.current) await ligar();
-      } else if ((nova.sensibilidade !== antes.sensibilidade || nova.microfoneId !== antes.microfoneId || nova.filtrosDoNavegador !== antes.filtrosDoNavegador) && mic.current) {
+      } else if ((nova.sensibilidade !== antes.sensibilidade || nova.microfoneId !== antes.microfoneId || nova.filtrosDoNavegador !== antes.filtrosDoNavegador || nova.silencioMs !== antes.silencioMs) && mic.current) {
         desligar();
         await ligar();
       }
@@ -218,9 +225,16 @@ export function ProvedorAssistente({ api, info, configInicial, children }: { api
       const s = await atualizarModelo();
       if (s.pronto && escutaDesejada.current) await ligar();
     })();
+    const offAtencao = api.aoAtencao((p) => {
+      expiraRef.current = p.expiraEm;
+      setCerebro((c) => ({ ...c, estado: "ouvindo", restanteMs: Math.max(0, p.expiraEm - Date.now()) }));
+      bip("ativar");
+      if (!mic.current) { localStorage.setItem("escutaLigada", "sim"); escutaDesejada.current = true; void ligar(); }
+    });
     const off = api.aoAlternarEscuta(() => (mic.current ? (localStorage.setItem("escutaLigada", "nao"), (escutaDesejada.current = false), desligar()) : ligar()));
     return () => {
       off();
+      offAtencao();
       desligar();
       transc.current?.descartar();
       pararDeFalar();
@@ -230,7 +244,7 @@ export function ProvedorAssistente({ api, info, configInicial, children }: { api
 
   // atualiza o estado do cérebro (contagem regressiva da escuta) a cada segundo
   useEffect(() => {
-    const t = setInterval(() => api.estado().then(setCerebro).catch(() => {}), 1000);
+    const t = setInterval(() => api.estado().then((e) => { if (e.estado !== "dormindo") expiraRef.current = Date.now() + e.restanteMs; setCerebro(e); }).catch(() => {}), 1000);
     return () => clearInterval(t);
   }, [api]);
 

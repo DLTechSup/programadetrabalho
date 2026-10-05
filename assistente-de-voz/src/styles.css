@@ -127,3 +127,8 @@ input[type=range] { padding: 0; width: 100%; accent-color: var(--azul); }
 .v-ok { color: var(--verde); } .v-aviso { color: var(--ambar); } .v-erro { color: #ffb1ae; }
 .vazio-diag { margin: 12px 0 0; }
 .rodape-conversa { padding: 0 18px 8px; }
+
+.modos { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.modo { display: flex; gap: 12px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--borda); border-radius: 10px; cursor: pointer; }
+.modo.on { border-color: var(--azul); background: rgba(90,162,255,.08); }
+.modo input { margin-top: 3px; accent-color: var(--azul); }

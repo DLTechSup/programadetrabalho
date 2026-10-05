@@ -26,6 +26,19 @@ Se o reconhecedor escrever o nome de outro jeito, a tela **Conversa** mostra o q
 ### Depois de um comando ele continua ouvindo (12 s, ajustável)
 “Jarvis, abre a marca Beira Rio” … “referência 8506 ponto 209” … “lista os arquivos” … “volta uma pasta”. Sem repetir o nome.
 
+## Modos de escuta (Configurações › Como eu devo ouvir)
+| Modo | Como usa | Quando |
+|---|---|---|
+| **Pelo nome** (padrão) | “Jarvis, abre a marca Beira Rio” | gente falando por perto |
+| **Pelo atalho** (mais rápido) | aperta **Ctrl+Shift+Space** e fala “abre a marca Beira Rio” | o que você fala fora do atalho nem é processado: sem falsos comandos e mais leve |
+| **Direto** (como ditado) | só fala o comando | sozinho, em lugar silencioso |
+
+Sem resposta falada por padrão (o resultado aparece na tela e a ação acontece). Dá para ligar em Configurações.
+
+### Deixar mais rápido
+- Modo **atalho**; **silêncio para terminar a frase** em ~400 ms; modelo **Equilibrado (base)** (o **Preciso (small)** acerta mais, mas demora mais). O Diagnóstico mostra em quantos segundos cada frase foi reconhecida.
+- O Whisper sempre processa uma janela de 30 s, então há um tempo mínimo de ~1–3 s por frase em computadores comuns; o programa já usa vários núcleos e “aquece” o modelo ao abrir.
+
 ## O que ele faz
 
 | Categoria | Exemplos |
