@@ -92,6 +92,24 @@ describe("interpretar", () => {
   });
 });
 
+describe("erros de reconhecimento nas palavras de comando", () => {
+  const casos: [string, Record<string, unknown>][] = [
+    ["abre a pasto downloads", { tipo: "abrir_pasta", nome: "downloads" }],
+    ["abre a past downloads", { tipo: "abrir_pasta", nome: "downloads" }],
+    ["abre a pata downloads", { tipo: "abrir_pasta", nome: "downloads" }],
+    ["abri a marca beira rio", { tipo: "abrir_marca", marca: "beira rio" }],
+    ["abre a marcar beira rio", { tipo: "abrir_marca", marca: "beira rio" }],
+    ["fexa o chrome", { tipo: "fechar_programa", nome: "chrome" }],
+    ["abre a referencial 8506", { tipo: "abrir_ref", ref: "8506" }],
+    ["lista os arquivo", { tipo: "listar_arquivos" }],
+  ];
+  for (const [f, e] of casos) it(f, () => expect(interpretar(f)).toMatchObject(e));
+  it("não estraga nomes de marcas parecidos com palavras de comando", () => {
+    expect(interpretar("abre a marca pastel")).toMatchObject({ tipo: "abrir_marca", marca: "pastel" });
+    expect(interpretar("abre pastel")).toMatchObject({ tipo: "abrir", alvo: "pastel" });
+  });
+});
+
 describe("exemplos da ajuda", () => {
   it("todo exemplo é entendido (a documentação não mente)", () => {
     for (const g of EXEMPLOS) {

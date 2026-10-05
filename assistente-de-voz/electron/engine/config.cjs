@@ -13,6 +13,7 @@ const PADRAO = {
   escutaAposAtivarSeg: 10,
   modelo: "base", // tiny | base | small
   microfoneId: "",
+  filtrosDoNavegador: false, // cancelamento de ruído/eco do Chrome: pode cortar sílabas (principalmente com celular como microfone)
   sensibilidade: 5, // 1..10
   iniciarComWindows: false,
   minimizarParaBandeja: true,
@@ -36,6 +37,7 @@ function validar(c) {
   o.escutaAposAtivarSeg = num(o.escutaAposAtivarSeg, 3, 60, PADRAO.escutaAposAtivarSeg);
   o.modelo = ["tiny", "base", "small"].includes(o.modelo) ? o.modelo : PADRAO.modelo;
   o.microfoneId = String(o.microfoneId || "");
+  o.filtrosDoNavegador = !!o.filtrosDoNavegador;
   o.sensibilidade = num(o.sensibilidade, 1, 10, PADRAO.sensibilidade);
   o.iniciarComWindows = !!o.iniciarComWindows;
   o.minimizarParaBandeja = !!o.minimizarParaBandeja;

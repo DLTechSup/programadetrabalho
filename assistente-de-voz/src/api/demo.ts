@@ -31,7 +31,7 @@ export function criarApiDemo(): Api {
   let cfg: Config = {
     nomeAtivacao: "Jarvis", variantes: [], pastaRaiz: "D:\\Users\\LiraDanilo\\Desktop\\LANÇAMENTOS", ignorar: ["Nova pasta"],
     aliases: [{ falas: ["zap web", "whatsapp web"], tipo: "caminho", destino: "C:\\Users\\Lira\\Desktop\\WhatsApp Web.lnk" }],
-    falarRespostas: true, janelaConversaSeg: 8, escutaAposAtivarSeg: 10, modelo: "base", microfoneId: "", sensibilidade: 5, iniciarComWindows: false, minimizarParaBandeja: true,
+    falarRespostas: true, janelaConversaSeg: 8, escutaAposAtivarSeg: 10, modelo: "base", microfoneId: "", filtrosDoNavegador: false, sensibilidade: 5, iniciarComWindows: false, minimizarParaBandeja: true,
   };
   const config = { get: () => cfg, set: (p: Partial<Config>) => (cfg = { ...cfg, ...p }) };
   const ctx: { marca: string | null; ref: string | null } = { marca: null, ref: null };

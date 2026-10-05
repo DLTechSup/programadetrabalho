@@ -1,6 +1,6 @@
 // Interpretador de comandos em português: transforma a frase falada em uma "intenção".
 // É baseado em regras (offline, sem custo e previsível). Cada regra tem exemplos em EXEMPLOS.
-const { normalizar, extrairNumero, numeroOuOrdinal } = require("./texto.cjs");
+const { normalizar, extrairNumero, numeroOuOrdinal, similaridade } = require("./texto.cjs");
 
 const ABRIR = "(?:abre|abra|abrir|abri|inicia|inicie|iniciar|executa|execute|executar|roda|rode|rodar|lanca|lance|chama|chame|carrega|carregue|liga|ligue|me abre|me abra)";
 const FECHAR = "(?:fecha|feche|fechar|encerra|encerre|encerrar|finaliza|finalize|finalizar|termina|termine|sai d[eao]|sair d[eao]|mata|mate|matar)";
@@ -38,6 +38,28 @@ function limpar(n) {
   return t;
 }
 
+// Palavras de comando que o reconhecedor costuma errar um pouco ("pasto", "past" -> "pasta").
+const VOCAB = ["abre", "abra", "abrir", "fecha", "feche", "fechar", "pasta", "pastas", "marca", "referencia", "arquivo", "arquivos", "volume", "aba", "abas", "janela", "pesquisa", "pesquisar", "procura", "procurar", "lista", "volta", "troca", "minimiza", "maximiza", "proxima", "anterior", "mostra", "aumenta", "abaixa", "navegador", "programa", "site"];
+const OK_SOLTAS = new Set(["a", "o", "as", "os", "de", "da", "do", "no", "na", "em", "um", "uma", "e", "que", "para", "pra", "por", "com", "se", "me", "te", "vai", "va", "ir", "ali", "ai", "la"]);
+
+/** Corrige só a palavra do verbo (1ª) e o substantivo logo depois ("abre a pasto") — nunca nomes de marcas/programas. */
+function corrigirFrase(n) {
+  const t = n.split(" ");
+  const alvo = new Set([0]);
+  for (let i = 1; i < Math.min(t.length, 3); i++) if (OK_SOLTAS.has(t[i - 1]) || VOCAB.includes(t[i - 1])) alvo.add(i);
+  for (const i of alvo) {
+    const w = t[i];
+    if (!w || w.length < 3 || /\d/.test(w) || VOCAB.includes(w) || OK_SOLTAS.has(w)) continue;
+    let melhor = null;
+    for (const v of VOCAB) {
+      const s = similaridade(w, v);
+      if (s >= 0.88 && (!melhor || s > melhor.s)) melhor = { v, s };
+    }
+    if (melhor) t[i] = melhor.v;
+  }
+  return t.join(" ");
+}
+
 const TIPOS_SITE = /\b(?:google|internet|web|youtube|navegador|net)\b/;
 
 /**
@@ -46,7 +68,7 @@ const TIPOS_SITE = /\b(?:google|internet|web|youtube|navegador|net)\b/;
  */
 function interpretar(raw) {
   const n0 = normalizar(raw);
-  const n = limpar(n0);
+  const n = corrigirFrase(limpar(n0));
   if (!n) return { tipo: "vazio" };
   const nav = detectarNavegador(n);
   const nn = n.replace(RE_NAV_CALDA, " ").replace(/\s+/g, " ").trim(); // sem "no chrome" (para as regras do navegador)
@@ -124,7 +146,7 @@ function interpretar(raw) {
     if (explicito || /\d/.test(m[1])) return { tipo: "pesquisar_em", termo: m[1].trim(), onde: m[2].trim() };
   }
   if ((m = n.match(new RegExp(`^${PROCURAR}(?: (?:pela|pelo|por|a|o))? ${REF} (.+)$`)))) return { tipo: "pesquisar", termo: m[1].trim(), destino: "pasta" };
-  if (new RegExp(`^(?:lista|listar|liste|mostra|mostrar|mostre|quais sao|quais|le|ler|fala|diz|me diz)(?: os| as| todos os| todas as)? (?:arquivos|fotos|imagens|planilhas|itens|conteudo)(?: (?:da|do|dessa|desta|nessa|nesta|dentro).*)?$`).test(n)) return { tipo: "listar_arquivos" };
+  if (new RegExp(`^(?:lista|listar|liste|mostra|mostrar|mostre|quais sao|quais|le|ler|fala|diz|me diz)(?: os| as| todos os| todas as)? (?:arquivos?|fotos?|imagens|planilhas?|itens|conteudo)(?: (?:da|do|dessa|desta|nessa|nesta|dentro).*)?$`).test(n)) return { tipo: "listar_arquivos" };
   if ((m = n.match(new RegExp(`^${ABRIR}(?: o| a)? (?:arquivo|pdf|planilha|foto|imagem|documento|video|excel|word) (.+)$`)))) return { tipo: "abrir_arquivo", nome: m[1].trim() };
   if ((m = n.match(new RegExp(`^(?:${ABRIR.slice(3, -1)}|mostra|mostrar|vai para|va para)(?: a| o)? (?:pasta|diretorio|unidade|disco|drive) (?:de |do |da )?(.+)$`)))) return { tipo: "abrir_pasta", nome: m[1].trim() };
   if (/(?:volta|voltar|sobe|subir|sai)(?: uma| para a| pra)? pasta(?: acima| anterior| de cima)?$|^pasta (?:acima|anterior)$/.test(n)) return { tipo: "pasta_acima" };
@@ -184,4 +206,4 @@ const EXEMPLOS = [
   { titulo: "O próprio assistente", itens: ["Seu nome agora é Assistente", "Pode dormir", "Cancela", "Ajuda"] },
 ];
 
-module.exports = { interpretar, interpretarEscolha, ehSim, ehNao, detectarNavegador, EXEMPLOS };
+module.exports = { corrigirFrase, interpretar, interpretarEscolha, ehSim, ehNao, detectarNavegador, EXEMPLOS };

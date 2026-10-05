@@ -84,6 +84,7 @@ export function PaginaAssistente() {
             ))}
             <div ref={fim} />
           </div>
+          <div className="rodape-conversa"><small>Não me entendeu? <button className="link" onClick={() => a.ir("config")}>Ouvir o que o microfone captou</button></small></div>
           <form className="entrada" onSubmit={(e) => { e.preventDefault(); enviar(); }}>
             <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Ou digite um comando (não precisa chamar pelo nome)…" />
             <button className="btn primario" type="submit" disabled={!texto.trim()}><Icone nome="send" /></button>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Icone } from "../components/Icons";
 import { Chave } from "../components/Chave";
+import { Diagnostico } from "../components/Diagnostico";
 import { useAssistente } from "../assistente";
 import { listarMicrofones } from "../audio/microfone";
 import { falar, temVozPortugues } from "../audio/fala";
@@ -42,7 +43,8 @@ export function PaginaConfig() {
         </select>
         <label className="rotulo">Sensibilidade: {c.sensibilidade} <small>(aumente se eu não te ouço; diminua se eu pego barulho)</small></label>
         <input type="range" min={1} max={10} value={c.sensibilidade} onChange={(e) => a.salvarConfig({ sensibilidade: Number(e.target.value) })} />
-        <label className="rotulo">Qualidade do reconhecimento</label>
+        <div className="linha-chave"><div><b>Filtros de áudio do navegador</b><small>Cancelamento de ruído e eco. Deixe <b>desligado</b> com celular como microfone: o filtro costuma cortar sílabas (“pasta” vira “pa”).</small></div><Chave ligado={c.filtrosDoNavegador} onChange={(v) => a.salvarConfig({ filtrosDoNavegador: v })} /></div>
+        <label className="rotulo">Qualidade do reconhecimento <small>(com microfone de celular, prefira “Preciso”)</small></label>
         <select value={c.modelo} onChange={(e) => a.salvarConfig({ modelo: e.target.value as typeof c.modelo })}>
           <option value="tiny">Rápido (tiny, ~40 MB) — menos preciso</option>
           <option value="base">Equilibrado (base, ~80 MB) — recomendado</option>
@@ -52,6 +54,8 @@ export function PaginaConfig() {
         <div className="linha-chave"><div><b>Falar as respostas</b><small>Usa a voz do Windows{!temVozPortugues() && " (não achei voz em português instalada)"}.</small></div><Chave ligado={c.falarRespostas} onChange={(v) => a.salvarConfig({ falarRespostas: v })} /></div>
         <button className="btn" onClick={() => falar(`Olá! Me chame de ${c.nomeAtivacao} quando quiser algo.`)}>Testar a voz</button>
       </section>
+
+      <Diagnostico />
 
       <section className="cartao">
         <h3>Conversa</h3>

@@ -56,3 +56,19 @@ export function bip(tipo: "ativar" | "erro" = "ativar") {
     /* sem áudio: ignora */
   }
 }
+
+/** Toca um trecho captado pelo microfone (16 kHz) — para o diagnóstico. */
+export function tocarAudio(amostras: Float32Array) {
+  try {
+    const ctx = new AudioContext();
+    const buf = ctx.createBuffer(1, amostras.length, 16000);
+    buf.copyToChannel(new Float32Array(amostras), 0);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(ctx.destination);
+    src.start();
+    src.onended = () => ctx.close();
+  } catch {
+    /* sem áudio */
+  }
+}

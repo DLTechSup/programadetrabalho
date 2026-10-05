@@ -1,12 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { Api, Config, EstadoAtual, InfoApp, ProgressoModelo, RespostaVoz } from "./api/types";
 import { Segmentador } from "./audio/vad";
+import { estatisticas, prepararAudio, type EstatisticasAudio } from "./audio/preparar";
 import { abrirMicrofone, type Microfone } from "./audio/microfone";
 import { Transcritor, type EstadoStt } from "./audio/stt";
-import { bip, falar, iniciarFala, pararDeFalar } from "./audio/fala";
+import { bip, falar, iniciarFala, pararDeFalar, tocarAudio } from "./audio/fala";
 
 export type Fase = "desligado" | "carregando" | "dormindo" | "ouvindo" | "escolhendo" | "nome" | "processando" | "falando";
 export interface EntradaLog { id: number; tipo: "ouvi" | "resposta" | "ignorado" | "sistema"; texto: string; hora: number; ok?: boolean }
+export interface Captura { id: number; hora: number; audio: Float32Array; stats: EstatisticasAudio; texto: string; erro?: string }
 export type Pagina = "assistente" | "comandos" | "pastas" | "programas" | "config";
 
 export interface Assistente {
@@ -24,6 +26,8 @@ export interface Assistente {
   modelo: { pronto: boolean; baixando: boolean; progresso: number; erro: string };
   ultimoOuvido: string;
   ultimaResposta: string;
+  capturas: Captura[];
+  tocarCaptura(id: number): void;
   ligar(): Promise<void>;
   desligar(): void;
   enviarTexto(t: string): Promise<RespostaVoz>;
@@ -60,6 +64,7 @@ export function ProvedorAssistente({ api, info, configInicial, children }: { api
   const [pagina, setPagina] = useState<Pagina>("assistente");
   const [ultimoOuvido, setUltimoOuvido] = useState("");
   const [ultimaResposta, setUltimaResposta] = useState("");
+  const [capturas, setCapturas] = useState<Captura[]>([]);
 
   const cfgRef = useRef(config);
   cfgRef.current = config;
@@ -126,12 +131,18 @@ export function ProvedorAssistente({ api, info, configInicial, children }: { api
       naFila.current++;
       fila.current = fila.current.then(async () => {
         setProcessando(true);
+        const id = ++seqLog;
+        const stats = estatisticas(audio);
+        let texto = "";
         try {
-          const texto = await transc.current!.transcrever(audio);
+          const prep = prepararAudio(audio);
+          stats.ganho = prep.ganho;
+          texto = await transc.current!.transcrever(prep.audio);
           if (texto) await processar(texto, "voz");
         } catch (e) {
           add("sistema", `Erro ao reconhecer a voz: ${(e as Error).message}`, false);
         } finally {
+          setCapturas((c) => [...c.slice(-5), { id, hora: Date.now(), audio, stats, texto }]);
           naFila.current--;
           setProcessando(false);
         }
@@ -150,7 +161,7 @@ export function ProvedorAssistente({ api, info, configInicial, children }: { api
     try {
       if (!transc.current) transc.current = new Transcritor((estado, msg) => setStt({ estado, msg }));
       if (transc.current.estado !== "pronto") await transc.current.carregar(cfgRef.current.modelo);
-      mic.current = await abrirMicrofone((f) => seg.current?.processar(f), cfgRef.current.microfoneId);
+      mic.current = await abrirMicrofone((f) => seg.current?.processar(f), cfgRef.current.microfoneId, cfgRef.current.filtrosDoNavegador);
       seg.current = new Segmentador({ sampleRate: 16000, sensibilidade: cfgRef.current.sensibilidade }, aoFala, (n, f) => {
         setNivel(n);
         setFalandoNivel(f);
@@ -191,7 +202,7 @@ export function ProvedorAssistente({ api, info, configInicial, children }: { api
         desligar();
         const s = await atualizarModelo();
         if (s.pronto && escutaDesejada.current) await ligar();
-      } else if ((nova.sensibilidade !== antes.sensibilidade || nova.microfoneId !== antes.microfoneId) && mic.current) {
+      } else if ((nova.sensibilidade !== antes.sensibilidade || nova.microfoneId !== antes.microfoneId || nova.filtrosDoNavegador !== antes.filtrosDoNavegador) && mic.current) {
         desligar();
         await ligar();
       }
@@ -226,13 +237,14 @@ export function ProvedorAssistente({ api, info, configInicial, children }: { api
 
   const valor = useMemo<Assistente>(
     () => ({
-      api, info, config, cerebro, fase, nivel, falandoNivel, log, escutando, erroMic, stt, modelo, ultimoOuvido, ultimaResposta, pagina,
+      api, info, config, cerebro, fase, nivel, falandoNivel, log, escutando, erroMic, stt, modelo, ultimoOuvido, ultimaResposta, pagina, capturas,
+      tocarCaptura: (id) => { const c = capturas.find((x) => x.id === id); if (c) tocarAudio(c.audio); },
       ligar, desligar: () => { localStorage.setItem("escutaLigada", "nao"); escutaDesejada.current = false; desligar(); },
       enviarTexto: (t) => processar(t, "texto"),
       salvarConfig, baixarModelo, cancelarModelo: () => void api.cancelarModelo(),
       limparLog: () => setLog([]), ir: setPagina,
     }),
-    [api, info, config, cerebro, fase, nivel, falandoNivel, log, escutando, erroMic, stt, modelo, ultimoOuvido, ultimaResposta, pagina, ligar, desligar, processar, salvarConfig, baixarModelo],
+    [api, info, config, cerebro, fase, nivel, falandoNivel, log, escutando, erroMic, stt, modelo, ultimoOuvido, ultimaResposta, pagina, capturas, ligar, desligar, processar, salvarConfig, baixarModelo],
   );
   return <Ctx.Provider value={valor}>{children}</Ctx.Provider>;
 }

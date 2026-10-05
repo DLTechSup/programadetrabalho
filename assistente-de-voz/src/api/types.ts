@@ -11,6 +11,7 @@ export interface Config {
   escutaAposAtivarSeg: number;
   modelo: "tiny" | "base" | "small";
   microfoneId: string;
+  filtrosDoNavegador: boolean;
   sensibilidade: number;
   iniciarComWindows: boolean;
   minimizarParaBandeja: boolean;

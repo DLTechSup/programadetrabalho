@@ -26,6 +26,7 @@ export class Segmentador {
   private falando = false;
   private acima = 0;
   private silencio = 0;
+  private prefixo = 0; // quadros de pré-roll no começo da frase (não contam como fala)
   private ruido = 0.004;
   private pausado = false;
   private readonly o: Required<OpcoesVad>;
@@ -35,7 +36,7 @@ export class Segmentador {
     private aoFalar: (audio: Float32Array, duracaoMs: number) => void,
     private aoNivel: (nivel: number, falando: boolean) => void = () => {},
   ) {
-    this.o = { silencioMs: 800, minFalaMs: 350, maxFalaMs: 14000, preRollMs: 300, ...opcoes };
+    this.o = { silencioMs: 800, minFalaMs: 350, maxFalaMs: 14000, preRollMs: 500, ...opcoes };
     this.quadro = Math.round(this.o.sampleRate * 0.02); // 20 ms
   }
 
@@ -72,16 +73,18 @@ export class Segmentador {
 
   private quadro20(q: Float32Array) {
     const nivel = rms(q);
-    const alto = nivel > this.limiar;
+    // histerese: para continuar falando basta 60% do nível exigido para começar (não corta o fim suave de "pasta")
+    const alto = nivel > this.limiar * (this.falando ? 0.6 : 1);
     const maxPre = Math.round(this.o.preRollMs / 20);
     if (!this.falando) {
       this.ruido = Math.min(0.05, this.ruido * 0.95 + nivel * 0.05);
       this.preRoll.push(q);
       if (this.preRoll.length > maxPre) this.preRoll.shift();
       this.acima = alto ? this.acima + 1 : 0;
-      if (this.acima >= 3) {
+      if (this.acima >= 2) {
         this.falando = true;
         this.fala = [...this.preRoll];
+        this.prefixo = this.preRoll.length;
         this.preRoll = [];
         this.silencio = 0;
       }
@@ -95,9 +98,9 @@ export class Segmentador {
   }
 
   private finalizar() {
-    const util = this.fala.length - Math.max(0, this.silencio - 10); // mantém ~200 ms de silêncio no fim
+    const util = this.fala.length - Math.max(0, this.silencio - 15); // mantém ~300 ms de silêncio no fim
     const quadros = this.fala.slice(0, Math.max(1, util));
-    const falaMs = (this.fala.length - this.silencio) * 20;
+    const falaMs = (this.fala.length - this.prefixo - this.silencio) * 20;
     this.fala = [];
     this.falando = false;
     this.acima = 0;

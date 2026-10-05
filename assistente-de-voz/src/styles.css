@@ -118,3 +118,12 @@ input[type=range] { padding: 0; width: 100%; accent-color: var(--azul); }
 .programas { max-height: 360px; overflow-y: auto; columns: 2; column-gap: 24px; }
 .programas li { display: flex; justify-content: space-between; gap: 10px; padding: 5px 0; border-bottom: 1px solid #1d2532; break-inside: avoid; }
 @media (max-width: 1000px) { .pagina.assistente { grid-template-columns: 1fr; } .palco { position: static; } .form-alias { grid-template-columns: 1fr; } .programas { columns: 1; } }
+
+.capturas { list-style: none; padding: 0; margin: 10px 0 0; display: flex; flex-direction: column; gap: 8px; }
+.capturas li { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--borda); }
+.cap-corpo { flex: 1; min-width: 0; } .cap-texto { font-weight: 600; margin-bottom: 4px; }
+.cap-nivel { background: var(--painel2); height: 6px; border-radius: 99px; overflow: hidden; margin-bottom: 4px; }
+.cap-barra { height: 100%; } .cap-barra.ok { background: var(--verde); } .cap-barra.aviso { background: var(--ambar); } .cap-barra.erro { background: var(--verm); }
+.v-ok { color: var(--verde); } .v-aviso { color: var(--ambar); } .v-erro { color: #ffb1ae; }
+.vazio-diag { margin: 12px 0 0; }
+.rodape-conversa { padding: 0 18px 8px; }

@@ -91,6 +91,13 @@ src/pages/                           telas: Assistente, Comandos, Pastas, Progra
 - **Não testado (precisa de um Windows com microfone):** captação do microfone e o Whisper reconhecendo sua voz de verdade, a voz falada do Windows, e as ações de janela/aba/volume/abrir programa em um Windows real. O workflow do GitHub Actions roda `scripts/smoke-windows.cjs` para os comandos de janelas/programas/volume.
 - Se algo não responder: a Conversa mostra o que foi ouvido; ajuste **Sensibilidade**, escolha o modelo **small** (mais preciso) ou cadastre **variações** do nome.
 
+## Reconhecimento ruim? (ex.: celular como microfone)
+1. **Configurações › Diagnóstico do microfone**: toque ▶ para ouvir o que o programa recebeu. Se estiver baixo, abafado ou cortado, o problema é o microfone/aplicativo.
+2. Deixe **“Filtros de áudio do navegador” desligado** (padrão): o cancelamento de ruído do Chrome corta sílabas.
+3. Use **Qualidade: Preciso (small)** — bem melhor que o “base” com áudio de celular (baixa ~250 MB uma vez).
+4. Aumente o volume do microfone no aplicativo do celular e chegue perto; fale a frase inteira sem pausar no começo.
+5. O programa já amplifica voz baixa, adiciona silêncio nas pontas e corrige erros comuns nas palavras de comando (“pasto/past” → “pasta”, “abri” → “abre”, “fexa” → “fecha”), mas **não** altera nomes de marcas.
+
 ## Limitações
 - Trocar de aba **por nome** usa a busca de abas do navegador (Ctrl+Shift+A no Chrome/Edge; barra de endereço `% texto` no Firefox).
 - Controlar **conversas de WhatsApp** (abrir um contato, escrever mensagem) não está incluído: abrir o WhatsApp/WhatsApp Web está.

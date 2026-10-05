@@ -17,9 +17,9 @@ function reamostrar(entrada: Float32Array, de: number, para: number): Float32Arr
   return saida;
 }
 
-export async function abrirMicrofone(aoAudio: (amostras: Float32Array) => void, dispositivoId = ""): Promise<Microfone> {
+export async function abrirMicrofone(aoAudio: (amostras: Float32Array) => void, dispositivoId = "", filtros = false): Promise<Microfone> {
   const stream = await navigator.mediaDevices.getUserMedia({
-    audio: { deviceId: dispositivoId ? { exact: dispositivoId } : undefined, channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+    audio: { deviceId: dispositivoId ? { exact: dispositivoId } : undefined, channelCount: 1, echoCancellation: filtros, noiseSuppression: filtros, autoGainControl: true },
   });
   let ctx: AudioContext;
   try {
