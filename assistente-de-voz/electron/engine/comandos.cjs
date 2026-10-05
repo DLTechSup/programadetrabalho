@@ -150,6 +150,7 @@ function interpretar(raw) {
   if ((m = n.match(new RegExp(`^${ABRIR}(?: o| a)? (?:arquivo|pdf|planilha|foto|imagem|documento|video|excel|word) (.+)$`)))) return { tipo: "abrir_arquivo", nome: m[1].trim() };
   if ((m = n.match(new RegExp(`^(?:${ABRIR.slice(3, -1)}|mostra|mostrar|vai para|va para)(?: a| o)? (?:pasta|diretorio|unidade|disco|drive) (?:de |do |da )?(.+)$`)))) return { tipo: "abrir_pasta", nome: m[1].trim() };
   if (/(?:volta|voltar|sobe|subir|sai)(?: uma| para a| pra)? pasta(?: acima| anterior| de cima)?$|^pasta (?:acima|anterior)$/.test(n)) return { tipo: "pasta_acima" };
+  if ((m = n.match(/^(?:a |o )?(?:pasta|diretorio) (?:de |do |da )?(.+)$/)) && !/^(?:acima|anterior|atual)$/.test(m[1])) return { tipo: "abrir_pasta", nome: m[1].trim() };
   if (new RegExp(`^${FECHAR}(?: (?:essa|esta|a|todas as|todas|as))? ?(?:pasta|pastas|explorador|janelas de pasta)(?: atual)?$`).test(n)) return { tipo: "fechar_pasta", todas: /\btodas?\b|\bpastas\b/.test(n) };
 
   // ---------- pesquisa na web / sites

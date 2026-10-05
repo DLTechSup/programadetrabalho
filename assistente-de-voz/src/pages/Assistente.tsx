@@ -15,6 +15,26 @@ export function PaginaAssistente() {
     setTexto("");
     await a.enviarTexto(t);
   }
+  const [copiado, setCopiado] = useState(false);
+  async function copiarRelatorio() {
+    const c = a.config;
+    const linhas = [
+      `Assistente de Voz v${a.info.versao} — relatório`,
+      `modo=${c.modoEscuta} nome="${c.nomeAtivacao}" modelo=${c.modelo} silencio=${c.silencioMs}ms sensibilidade=${c.sensibilidade} filtros=${c.filtrosDoNavegador}`,
+      `pastaRaiz=${c.pastaRaiz || "(vazia)"} estado=${a.cerebro.estado} escutando=${a.escutando} modeloPronto=${a.modelo.pronto}`,
+      "",
+      ...a.log.slice(-25).map((m) => `[${new Date(m.hora).toLocaleTimeString("pt-BR")}] ${m.tipo}${m.motivo ? `(${m.motivo})` : ""}${m.ok === false ? " FALHOU" : ""}: ${m.texto}${m.intent ? `  => ${JSON.stringify(m.intent)}` : ""}`),
+      "",
+      ...a.capturas.slice(-5).map((x) => `captura: ${(x.stats.duracaoMs / 1000).toFixed(1)}s pico=${Math.round(x.stats.pico * 100)}% reconheceu em ${(x.ms / 1000).toFixed(1)}s => "${x.texto}"`),
+    ];
+    try {
+      await navigator.clipboard.writeText(linhas.join("\n"));
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2500);
+    } catch {
+      /* sem permissão da área de transferência */
+    }
+  }
   const semRaiz = !a.config.pastaRaiz;
   const segundos = Math.ceil(a.cerebro.restanteMs / 1000);
 
@@ -84,7 +104,7 @@ export function PaginaAssistente() {
             ))}
             <div ref={fim} />
           </div>
-          <div className="rodape-conversa"><small>Não me entendeu? <button className="link" onClick={() => a.ir("config")}>Ouvir o que o microfone captou</button></small></div>
+          <div className="rodape-conversa"><small>Não me entendeu? <button className="link" onClick={() => a.ir("config")}>Ouvir o que o microfone captou</button> · <button className="link" onClick={copiarRelatorio}>{copiado ? "Copiado!" : "Copiar relatório"}</button></small></div>
           <form className="entrada" onSubmit={(e) => { e.preventDefault(); enviar(); }}>
             <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Ou digite um comando (não precisa chamar pelo nome)…" />
             <button className="btn primario" type="submit" disabled={!texto.trim()}><Icone nome="send" /></button>

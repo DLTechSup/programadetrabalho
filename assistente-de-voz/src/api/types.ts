@@ -36,6 +36,7 @@ export interface RespostaVoz {
   renomeado?: string;
   pausarEscuta?: boolean;
   lista?: string[];
+  intent?: Record<string, unknown>;
 }
 
 export interface EstadoAtual {

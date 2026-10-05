@@ -55,6 +55,7 @@ function iniciarMotor() {
         setTimeout(resolve, 150);
       }),
     listarProgramas: programas.listarInstalados,
+    locaisComuns: [dir("desktop"), dir("documents"), dir("downloads"), dir("home")].filter(Boolean),
     pastasConhecidas: pastasConhecidas({ HOME: dir("home"), DESKTOP: dir("desktop"), DOCUMENTS: dir("documents"), DOWNLOADS: dir("downloads"), PICTURES: dir("pictures"), VIDEOS: dir("videos"), MUSIC: dir("music") }),
   });
   cerebro = criarCerebro({ config, acoes });

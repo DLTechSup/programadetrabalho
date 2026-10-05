@@ -7,7 +7,7 @@ import { Transcritor, type EstadoStt } from "./audio/stt";
 import { bip, falar, iniciarFala, pararDeFalar, tocarAudio } from "./audio/fala";
 
 export type Fase = "desligado" | "carregando" | "dormindo" | "ouvindo" | "escolhendo" | "nome" | "processando" | "falando";
-export interface EntradaLog { id: number; tipo: "ouvi" | "resposta" | "ignorado" | "sistema"; texto: string; hora: number; ok?: boolean; motivo?: string }
+export interface EntradaLog { id: number; tipo: "ouvi" | "resposta" | "ignorado" | "sistema"; texto: string; hora: number; ok?: boolean; motivo?: string; intent?: unknown }
 export interface Captura { id: number; hora: number; audio: Float32Array; stats: EstatisticasAudio; texto: string; ms: number; erro?: string }
 export type Pagina = "assistente" | "comandos" | "pastas" | "programas" | "config";
 
@@ -76,8 +76,8 @@ export function ProvedorAssistente({ api, info, configInicial, children }: { api
   const expiraRef = useRef(0); // até quando a escuta está "acordada" (nome dito ou atalho apertado)
   const escutaDesejada = useRef(localStorage.getItem("escutaLigada") !== "nao");
 
-  const add = useCallback((tipo: EntradaLog["tipo"], texto: string, ok?: boolean, motivo?: string) => {
-    setLog((l) => [...l.slice(-79), { id: ++seqLog, tipo, texto, hora: Date.now(), ok, motivo }]);
+  const add = useCallback((tipo: EntradaLog["tipo"], texto: string, ok?: boolean, motivo?: string, intent?: unknown) => {
+    setLog((l) => [...l.slice(-79), { id: ++seqLog, tipo, texto, hora: Date.now(), ok, motivo, intent }]);
   }, []);
 
   const falarResposta = useCallback(async (texto: string) => {
@@ -109,7 +109,7 @@ export function ProvedorAssistente({ api, info, configInicial, children }: { api
         return r;
       }
       setUltimoOuvido(r.entendido ?? texto);
-      add("ouvi", r.entendido ?? texto);
+      add("ouvi", r.entendido ?? texto, undefined, undefined, r.intent);
       if (r.fala) {
         add("resposta", r.fala, r.ok);
         setUltimaResposta(r.fala);

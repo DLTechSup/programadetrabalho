@@ -11,7 +11,7 @@ const NOME_NAV = { chrome: "Chrome", edge: "Edge", firefox: "Firefox", brave: "B
 const ORDEM_NAV = ["chrome", "edge", "firefox", "brave", "opera"];
 
 function criarAcoes(deps) {
-  const { config, janelas, abrirCaminho, abrirUrl, executarProcesso, listarProgramas, pastasConhecidas = [], ignorarPid = 0, agora = Date.now } = deps;
+  const { config, janelas, abrirCaminho, abrirUrl, executarProcesso, listarProgramas, pastasConhecidas = [], locaisComuns = [], ignorarPid = 0, agora = Date.now } = deps;
   const mem = { idx: null, idxQuando: 0, marca: null, ref: null, pastaAtual: null, quando: 0, programas: null, programasQuando: 0 };
   const fresco = () => agora() - mem.quando < QUINZE_MIN;
   const lembrar = (p) => Object.assign(mem, { quando: agora() }, p);
@@ -193,7 +193,25 @@ function criarAcoes(deps) {
       const m = P.acharMarcas(idx, it.nome);
       if (m.length) return abrirMarca({ tipo: "abrir_marca", marca: it.nome, ref: "" });
     }
-    return { ok: false, fala: `Não encontrei a pasta ${it.nome}.` };
+    // pastas que ficam na área de trabalho, em Documentos, Downloads ou ao lado da pasta raiz
+    const bases = [...locaisComuns, ...(idx && idx.raiz ? [path.dirname(idx.raiz)] : [])].filter(Boolean);
+    const achadas = [];
+    for (const base of new Set(bases)) {
+      try {
+        for (const d of await require("node:fs").promises.readdir(base, { withFileTypes: true })) {
+          if (d.isDirectory() && P.pastaValida(d.name)) achadas.push({ nome: d.name, caminho: path.join(base, d.name) });
+        }
+      } catch {
+        /* pasta sem acesso */
+      }
+    }
+    const r = melhores(it.nome, achadas, { nome: (x) => x.nome, minimo: 0.85 });
+    if (r.length) {
+      if (!vencedorClaro(r)) return escolher(`Achei ${r.length} pastas parecidas.`, r.map((x) => ({ rotulo: x.item.nome, intent: { tipo: "abrir_pasta", caminho: x.item.caminho } })));
+      const erro = await abrirDir(r[0].item.caminho, idx && r[0].item.caminho === idx.raiz ? { marca: null, ref: null } : {});
+      return erro || { ok: true, fala: `Abrindo ${r[0].item.nome}.` };
+    }
+    return { ok: false, fala: config.get().pastaRaiz ? `Não encontrei a pasta ${it.nome}.` : `Não encontrei a pasta ${it.nome}. Se for a pasta das marcas, escolha a pasta raiz na aba Pastas.` };
   }
 
   async function pastaAcima() {
@@ -270,6 +288,9 @@ function criarAcoes(deps) {
     }
     const pasta = pastasConhecidas.find((p) => p.falas.some((f) => normalizar(f) === n));
     if (pasta) return abrirPasta({ nome: alvo });
+    // "abre lançamentos" (sem dizer "pasta"): tenta como pasta
+    const comoPasta = await abrirPasta({ nome: alvo });
+    if (comoPasta.ok || comoPasta.escolha) return comoPasta;
     return { ok: false, naoEncontrado: true, fala: `Não encontrei ${alvo} entre os programas, pastas ou sites.` };
   }
 

@@ -44,7 +44,7 @@ let c: Chamadas;
 let agoraMs: number;
 let janelasAbertas: any[];
 
-function montar(cfgInicial: Record<string, unknown> = {}) {
+function montar(cfgInicial: Record<string, unknown> = {}, locais: string[] = []) {
   const config = criarConfig(path.join(tmp, `cfg-${Math.random()}.json`));
   config.set({ pastaRaiz: raiz, modoEscuta: "nome", ...cfgInicial });
   const janelas = {
@@ -71,6 +71,7 @@ function montar(cfgInicial: Record<string, unknown> = {}) {
       { nome: "Zap Web", tipo: "arquivo", caminho: "C:\\Users\\x\\Desktop\\Zap Web.lnk" },
     ],
     pastasConhecidas: [{ falas: ["downloads"], caminho: "C:\\Users\\x\\Downloads" }],
+    locaisComuns: locais,
   });
   const cerebro = criarCerebro({ config, acoes, agora: () => agoraMs });
   return { cerebro, config, acoes };
@@ -140,6 +141,37 @@ describe("ativação", () => {
     await dizer(cerebro, "Jarvis");
     await dizer(cerebro, "pode dormir");
     expect(cerebro.estado().estado).toBe("dormindo");
+  });
+});
+
+describe("abrir a pasta raiz por voz (variações do que o Whisper pode escrever)", () => {
+  const frases = [
+    "Abre a pasta lançamentos", "Abre a pasta Lançamentos.", "abre a pasta de lançamentos", "abre a pasta lançamento", "Abrir pasta lançamentos",
+    "abra a pasta lançamentos", "abre pasta lançamentos", "pasta lançamentos", "a pasta lançamentos", "abre lançamentos", "lançamentos",
+    "abre a pasta lança mentos", "abre a pasta lancamentos", "vai para a pasta lançamentos", "Abre a pasta, lançamentos.", "mostra a pasta lançamentos",
+  ];
+  for (const f of frases) {
+    it(`"${f}" (modo direto)`, async () => {
+      const { cerebro } = montar({ modoEscuta: "direto" });
+      const r = await dizer(cerebro, f);
+      expect(r.ok, r.fala).toBe(true);
+      expect(c.abertos[0]).toBe(raiz);
+    });
+  }
+  it("com o nome: 'Jarvis, abre a pasta lançamentos'", async () => {
+    const { cerebro } = montar();
+    const r = await dizer(cerebro, "Jarvis, abre a pasta lançamentos.");
+    expect(r.ok, r.fala).toBe(true);
+    expect(c.abertos[0]).toBe(raiz);
+  });
+  it("pasta que fica na área de trabalho mesmo sem pasta raiz configurada", async () => {
+    const desk = path.join(tmp, "Desktop");
+    fs.mkdirSync(path.join(desk, "CLIENTES 2026"), { recursive: true });
+    const { cerebro } = montar({ modoEscuta: "direto", pastaRaiz: "" }, [desk]);
+    const r = await dizer(cerebro, "abre a pasta clientes 2026");
+    expect(r.ok, r.fala).toBe(true);
+    expect(c.abertos[0]).toBe(path.join(desk, "CLIENTES 2026"));
+    expect((await dizer(cerebro, "abre a pasta xyzxyz")).fala).toMatch(/pasta raiz/);
   });
 });
 
