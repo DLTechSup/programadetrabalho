@@ -12,6 +12,8 @@ interface Props {
   categoria: string;
   totalVariacoes: number;
   grupos: Map<string, Grupo>;
+  /** grupos que parecem de outro produto: já vêm marcados para sair (dá para restaurar) */
+  suspeitos: Set<string>;
   planilha: Planilha;
   banco: BancoCores;
   /** `removidas`: chaves dos grupos de cor cujas linhas devem ser apagadas da planilha final. */
@@ -27,14 +29,14 @@ interface LinhaCor {
   removida: boolean; // cor marcada para sair da planilha final
 }
 
-export function TelaCores({ codigoPai, marca, categoria, totalVariacoes, grupos, planilha, banco, onGerar, onCancelar }: Props) {
+export function TelaCores({ codigoPai, marca, categoria, totalVariacoes, grupos, suspeitos, planilha, banco, onGerar, onCancelar }: Props) {
   const [linhas, setLinhas] = useState<LinhaCor[]>(() =>
     [...grupos.entries()]
       .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
       .map(([chave, g]) => {
         // cor já conhecida (mesmo com acento diferente): usa a grafia do banco, ex. "Avela" -> "Avelã"
         const achado = buscarCor(banco, marca, g.sugestao);
-        return { chave, cor: achado ? titulo(achado.nome) : g.sugestao, abrev: achado?.abrev ?? "", auto: !!achado, removida: false };
+        return { chave, cor: achado ? titulo(achado.nome) : g.sugestao, abrev: achado?.abrev ?? "", auto: !!achado, removida: suspeitos.has(chave) };
       }),
   );
   const [soPendentes, setSoPendentes] = useState(false);
@@ -122,7 +124,7 @@ export function TelaCores({ codigoPai, marca, categoria, totalVariacoes, grupos,
                 <th style={{ width: 120 }}>Situação</th>
                 <th>Tamanhos</th>
                 <th style={{ width: 48 }}>Qtd.</th>
-                <th>Exemplo de código</th>
+                <th className="col-exemplo">Exemplo de código</th>
                 <th style={{ width: 70 }} />
               </tr>
             </thead>
@@ -166,7 +168,7 @@ export function TelaCores({ codigoPai, marca, categoria, totalVariacoes, grupos,
                       />
                     </td>
                     <td>
-                      {l.removida && <span className="badge vazio">Será removida</span>}
+                      {l.removida && <span className="badge vazio" title={suspeitos.has(l.chave) ? "A descrição não combina com o resto do arquivo" : undefined}>{suspeitos.has(l.chave) ? "Outro produto?" : "Será removida"}</span>}
                       {!l.removida && situacao === "ok" && <span className="badge ok">✓ Do histórico</span>}
                       {!l.removida && situacao === "novo" && <span className="badge novo">● Nova</span>}
                       {!l.removida && situacao === "vazio" && <span className="badge vazio">Pendente</span>}
@@ -175,7 +177,7 @@ export function TelaCores({ codigoPai, marca, categoria, totalVariacoes, grupos,
                       <div className="tams">{tams.map((t) => <span key={t} className="chip">{t}</span>)}</div>
                     </td>
                     <td className="mono">{g.indices.length}</td>
-                    <td className="exemplo">
+                    <td className="exemplo col-exemplo">
                       {l.abrev.trim()
                         ? <><b>{codigoPai}</b><i>{l.abrev.trim().toUpperCase()}</i>{tams[0] !== "?" ? tams[0] : "?"}</>
                         : "—"}

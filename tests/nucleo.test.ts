@@ -161,3 +161,37 @@ describe("remover pendentes e mesclar banco", () => {
     expect(Object.keys(bancoVazio().por_marca)).toEqual([]); // descartar não deixa rastro
   });
 });
+
+describe("linha de outro produto no meio do arquivo (ex.: Polo Go dentro da Beira Rio)", () => {
+  function beiraRio(): Planilha {
+    const base = (d: string): Linha => ({ Código: "", Descrição: d, "Cód. no fornecedor": "\t28706683", Marca: null, "Categoria do produto": null });
+    const linhas: Linha[] = [{ Código: "BR8571102SAFE", Descrição: "SANDÁLIA BEIRA RIO", Marca: "BEIRA RIO", "Categoria do produto": "Sandálias", "Cód. no fornecedor": null }];
+    for (const t of [34, 35, 36, 37, 38, 39]) linhas.push(base(`SANDALIA FEM. DE USO COMUM C/ SOLA SINT. CABEDAL TEXTIL NATURAL/CAMEL tam: ${t} 8571.102`));
+    linhas.push(base("TÊNIS POLO GO REX GO-462 MASC. PRETO"));
+    return { colunas: ["Código", "Descrição", "Cód. no fornecedor", "Marca", "Categoria do produto"], linhas };
+  }
+
+  it("marca só o grupo estranho", () => {
+    const p = beiraRio();
+    normalizarCodigos(p);
+    const { grupos, suspeitos } = agruparVariacoes(p, detectarLinhaPai(p)!);
+    expect(grupos.size).toBe(2);
+    expect(suspeitos.size).toBe(1);
+    const [chave] = [...suspeitos];
+    expect(p.linhas[grupos.get(chave)!.indices[0]]["Descrição"]).toContain("POLO GO");
+  });
+
+  it("não marca nada quando todas as linhas são do mesmo produto", () => {
+    const p = beiraRio();
+    p.linhas.pop();
+    normalizarCodigos(p);
+    expect(agruparVariacoes(p, 0).suspeitos.size).toBe(0);
+  });
+
+  it("não marca quando não há maioria clara (60% x 40%)", () => {
+    const p = beiraRio();
+    for (let i = 0; i < 3; i++) p.linhas.push({ ...p.linhas.at(-1)!, Descrição: `CHINELO SLIDE ${i}` });
+    normalizarCodigos(p);
+    expect(agruparVariacoes(p, 0).suspeitos.size).toBe(0);
+  });
+});

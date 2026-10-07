@@ -490,6 +490,40 @@ export function removerLinhas(planilha: Planilha, indices: number[]): (indiceAnt
 export interface ResultadoAgrupamento {
   analisadas: Map<number, Analise>;
   grupos: Map<string, Grupo>;
+  /** chaves de grupos que parecem ser de OUTRO produto (o Bling às vezes exporta linhas soltas) */
+  suspeitos: Set<string>;
+}
+
+const primeiraPalavra = (d: Valor) =>
+  semAcento(limpo(d)).split(/[^a-z0-9]+/).filter(Boolean)[0] ?? "";
+
+/**
+ * Detecta grupos de cor que provavelmente não pertencem a este produto: quase todas as linhas
+ * começam com a mesma palavra ("SANDALIA ...") e este grupo é pequeno, começa com outra ("TENIS ...")
+ * e não tem nenhum tamanho reconhecido. Conservador de propósito; o usuário sempre pode restaurar.
+ */
+export function detectarGruposDeOutroProduto(
+  planilha: Planilha,
+  analisadas: Map<number, Analise>,
+  grupos: Map<string, Grupo>,
+): Set<string> {
+  const suspeitos = new Set<string>();
+  const total = analisadas.size;
+  if (total < 4) return suspeitos;
+  const contagem = new Map<string, number>();
+  for (const i of analisadas.keys()) {
+    const w = primeiraPalavra(planilha.linhas[i]["Descrição"]);
+    contagem.set(w, (contagem.get(w) ?? 0) + 1);
+  }
+  const [dominante, n] = [...contagem.entries()].sort((a, b) => b[1] - a[1])[0];
+  if (!dominante || n / total < 0.7) return suspeitos; // sem maioria clara: não arrisca
+  for (const [chave, g] of grupos) {
+    const estranho =
+      g.indices.length <= Math.max(2, Math.floor(total * 0.2)) &&
+      g.indices.every((i) => !analisadas.get(i)!.tamanho && primeiraPalavra(planilha.linhas[i]["Descrição"]) !== dominante);
+    if (estranho) suspeitos.add(chave);
+  }
+  return suspeitos;
 }
 
 /** Analisa todas as linhas filhas e agrupa por cor detectada. */
@@ -510,7 +544,7 @@ export function agruparVariacoes(planilha: Planilha, linhaPaiIdx: number): Resul
     grupo.tamanhos.push(r.tamanho || "?");
     if (r.veioCodFornecedor && r.sugestao.length > grupo.sugestao.length) grupo.sugestao = r.sugestao;
   });
-  return { analisadas, grupos };
+  return { analisadas, grupos, suspeitos: detectarGruposDeOutroProduto(planilha, analisadas, grupos) };
 }
 
 /** Ordena tamanhos como o app original: por comprimento e depois alfabético. */

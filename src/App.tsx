@@ -33,6 +33,7 @@ interface Sessao {
   categoria: string;
   analisadas: Map<number, Analise>;
   grupos: Map<string, Grupo>;
+  suspeitos: Set<string>;
 }
 
 function carregarTema(): "light" | "dark" {
@@ -193,7 +194,7 @@ export default function App() {
     const base: Sessao = {
       id: ++sequenciaSessao.current,
       nomeArquivo, planilha, paiIdx, codigoPai, marca, categoria,
-      analisadas: new Map(), grupos: new Map(),
+      analisadas: new Map(), grupos: new Map(), suspeitos: new Set(),
     };
     if (!codigoPai) {
       registrar(
@@ -204,9 +205,13 @@ export default function App() {
       setSessao(base); setResumo(null); setFase("pronto");
       return;
     }
-    const { analisadas, grupos } = agruparVariacoes(planilha, paiIdx);
+    const { analisadas, grupos, suspeitos } = agruparVariacoes(planilha, paiIdx);
     registrar(`${grupos.size} cor(es) detectada(s) automaticamente.`, "ok");
-    setSessao({ ...base, analisadas, grupos });
+    if (suspeitos.size) {
+      const exemplos = [...suspeitos].flatMap((k) => grupos.get(k)!.indices.map((i) => `linha ${i + 2}: ${limpo(planilha.linhas[i]["Descrição"]).slice(0, 50)}`));
+      registrar(`Atenção: ${exemplos.length} linha(s) parecem ser de OUTRO produto e já vieram marcadas para remoção — ${exemplos.join("; ")}. Confira na tela de cores (dá para restaurar).`, "aviso");
+    }
+    setSessao({ ...base, analisadas, grupos, suspeitos });
     setFase("cores");
   }
 
@@ -410,6 +415,7 @@ export default function App() {
               categoria={sessao.categoria}
               totalVariacoes={sessao.planilha.linhas.length - 1}
               grupos={sessao.grupos}
+              suspeitos={sessao.suspeitos}
               planilha={sessao.planilha}
               banco={banco}
               onGerar={gerar}
