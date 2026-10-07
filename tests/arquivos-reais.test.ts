@@ -83,3 +83,18 @@ describe("arquivo original do Bling (descrições com 'CABEDAL SINT. AVELA 1248 
     }
   });
 });
+
+describe("MOLEKINHO: cor escrita como combinação de códigos", () => {
+  it("sugere Preto/Amarelo/Branco em vez de '99 Tam'", () => {
+    const p = abrir("molekinho-original.xls");
+    normalizarCodigos(p);
+    const pai = detectarLinhaPai(p)!;
+    expect(limpo(p.linhas[pai]["Código"])).toBe("MK2653206SAIF");
+    const { grupos } = agruparVariacoes(p, pai);
+    expect(grupos.size).toBe(1);
+    const [g] = [...grupos.values()];
+    expect(g.sugestao).toBe("Preto/Amarelo/Branco");
+    expect(g.indices.length).toBe(5);
+    expect(g.tamanhos).toEqual(["17/18", "19/20", "21/22", "23/24", "25/26"]);
+  });
+});

@@ -1,5 +1,5 @@
 /** Amostra visual aproximada da cor a partir do nome (só enfeite — não afeta nenhum dado). */
-const PALETA: Record<string, string> = {
+export const PALETA: Record<string, string> = {
   preto: "#1b1b20", black: "#1b1b20", nero: "#1b1b20", carvao: "#2c2f36",
   branco: "#f6f6f8", white: "#f6f6f8", off: "#efe9db", gelo: "#e3edf2", neve: "#f3f6f8", nuvem: "#e8edf3",
   cinza: "#9ba1ab", chumbo: "#565c68", grafite: "#454a54", prata: "#c4c9d1", gris: "#9ba1ab", rato: "#7b808a", iron: "#4b505a",

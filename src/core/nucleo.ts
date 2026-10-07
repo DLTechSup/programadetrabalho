@@ -77,6 +77,8 @@ export function limpo(valor: Valor): string {
   return String(valor).trim();
 }
 
+import { PALETA } from "../cores";
+
 /** Descrição de variação já preenchida pelo programa: "Cor:Preto;Tamanho:37". */
 const RE_DESCRICAO_PRONTA = /^cor\s*:.*;\s*tamanho\s*:/i;
 
@@ -350,7 +352,7 @@ export function limparNomeCor(texto: Valor): string {
   return t.replace(/^[ ;:]+|[ ;:]+$/g, "");
 }
 
-const RE_PALAVRA_MATERIAL = /^(sint\.?|sint[eé]tico|cabedal|cab\.?)$/i;
+const RE_PALAVRA_MATERIAL = /^(sint\.?|sint[eé]tico|cabedal|cab\.?|tam[.:]*)$/i;
 
 /** Nome de cor sugerido, sem sobras do material ("CABEDAL SINT. AVELA" -> "Avela"). */
 export function limparSugestao(texto: Valor): string {
@@ -358,6 +360,34 @@ export function limparSugestao(texto: Valor): string {
     .split(/\s+/)
     .filter((w) => !RE_PALAVRA_MATERIAL.test(w))
     .join(" ");
+}
+
+/** "preta" -> "preto", "AMARELO" -> "amarelo"; null se não for uma cor conhecida. */
+function corConhecida(palavra: string): string | null {
+  const n = semAcento(palavra);
+  if (PALETA[n]) return n;
+  if (n.length > 3 && n.endsWith("a") && PALETA[`${n.slice(0, -1)}o`]) return `${n.slice(0, -1)}o`;
+  return null;
+}
+
+const palavrasDe = (texto: string) => semAcento(texto).split(/[^a-z]+/).filter(Boolean);
+
+export function temPalavraDeCor(texto: string): boolean {
+  return palavrasDe(texto).some((w) => corConhecida(w) !== null);
+}
+
+/**
+ * Plano B quando a sugestão normal não contém nenhuma cor (ex.: "99 Tam" em
+ * "PRETO 01-AMARELO 815/PRETO 01-AMARELO 815-BRANCO 99 tam: 17/18"): junta as palavras de
+ * cor da descrição, na ordem, sem repetir -> "Preto/Amarelo/Branco".
+ */
+export function extrairCoresPorPalavras(descricao: Valor): string {
+  const vistas: string[] = [];
+  for (const w of palavrasDe(limpo(descricao))) {
+    const c = corConhecida(w);
+    if (c && !vistas.includes(c)) vistas.push(c);
+  }
+  return vistas.slice(0, 3).map((c) => titulo(c)).join("/");
 }
 
 // ---------------------------------------------------------------------------
@@ -534,6 +564,7 @@ export function agruparVariacoes(planilha: Planilha, linhaPaiIdx: number): Resul
     if (i === linhaPaiIdx) return;
     const r = analisarLinha(row["Descrição"], row["Cód. no fornecedor"]);
     r.sugestao = limparSugestao(r.sugestao); // reprocessando "Cor:Café;Tamanho:37" a sugestão vira "Café"
+    if (!temPalavraDeCor(r.sugestao)) r.sugestao = extrairCoresPorPalavras(row["Descrição"]) || r.sugestao;
     analisadas.set(i, { tamanho: r.tamanho, chave: r.chave, sugestao: r.sugestao });
     let grupo = grupos.get(r.chave);
     if (!grupo) {
