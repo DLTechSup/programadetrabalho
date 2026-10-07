@@ -19,6 +19,14 @@ original em 937 casos de teste, com resultado idêntico) e ganhou:
    e aperte **Enter** para ir para a próxima. Clique em **Gerar Código e Descrição**.
 4. **Salvar planilha pronta…** e importe no Bling.
 
+### Cancelar, descartar e "Novo documento"
+- **Cancelar e descartar** (tela de cores) e **Novo documento** apagam *tudo* do arquivo anterior: planilha, cores
+  digitadas, registro de atividade e avisos. Se houver trabalho ainda não salvo, o programa pergunta antes.
+- As abreviações que você digita só entram no **banco de cores quando a planilha é salva**. Se você descartar um
+  arquivo de teste, nada dele fica aprendido.
+- Cores pendentes: use **Remover** na linha da cor, ou **Remover pendentes** ao gerar, para apagar essas linhas da
+  planilha final (ou **Manter sem código** para deixá-las como estão).
+
 ### Scanner de pastas
 Estrutura esperada: `Pasta raiz / Marca / Referência / planilha.xlsx` (qualquer profundidade funciona).
 O scanner lê **Código** e **Descrição** das variações já prontas (`Cor:Preto;Tamanho:37`) e deduz a

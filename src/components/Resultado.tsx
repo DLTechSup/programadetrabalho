@@ -6,6 +6,7 @@ export interface ResumoGeracao {
   total: number;
   cores: number;
   linhasSemTamanho: number[];
+  removidas?: number;
 }
 
 interface Props {
@@ -17,11 +18,12 @@ interface Props {
   onSalvar: () => void;
   onMostrarPasta: () => void;
   onNova: () => void;
+  abreviacoesAGuardar?: number;
 }
 
 const LIMITE = 80;
 
-export function Resultado({ planilha, paiIdx, codigoPai, resumo, caminhoSalvo, onSalvar, onMostrarPasta, onNova }: Props) {
+export function Resultado({ planilha, paiIdx, codigoPai, resumo, caminhoSalvo, onSalvar, onMostrarPasta, onNova, abreviacoesAGuardar = 0 }: Props) {
   const semCodigo = !codigoPai;
   const aviso = semCodigo || !resumo;
   const mostrar = planilha.linhas.slice(0, LIMITE).map((l, i) => ({ l, i }));
@@ -42,18 +44,25 @@ export function Resultado({ planilha, paiIdx, codigoPai, resumo, caminhoSalvo, o
             {semCodigo
               ? "O PAI ainda não tem 'Código'. Preencha-o, exporte de novo e rode o programa novamente para gerar os SKUs."
               : resumo
-                ? `${resumo.cores} cor(es) aplicada(s) · PAI ${codigoPai}`
+                ? `${resumo.cores} cor(es) aplicada(s) · PAI ${codigoPai}${resumo.removidas ? ` · ${resumo.removidas} linha(s) pendente(s) removida(s)` : ""}`
                 : "Os demais campos já preenchidos continuam disponíveis para salvar."}
           </div>
         </div>
         <div className="acoes">
-          <button className="btn sec" onClick={onNova}>Nova planilha</button>
+          <button className="btn sec" onClick={onNova}>Novo documento</button>
           {caminhoSalvo && (
             <button className="btn sec" onClick={onMostrarPasta}><IconePasta size={17} /> Mostrar na pasta</button>
           )}
           <button className="btn lg" onClick={onSalvar}><IconeSalvar size={18} /> Salvar planilha pronta…</button>
         </div>
       </div>
+
+      {!caminhoSalvo && abreviacoesAGuardar > 0 && (
+        <div className="aviso-box" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
+          As abreviações deste arquivo só entram no banco de cores quando você <b>salvar</b> a planilha.
+          Se descartar, nada é aprendido.
+        </div>
+      )}
 
       {caminhoSalvo && (
         <div className="aviso-box" style={{ background: "var(--success-soft)", color: "var(--success)" }}>

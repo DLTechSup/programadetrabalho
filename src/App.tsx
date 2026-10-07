@@ -3,7 +3,7 @@ import logo from "./assets/logo.svg";
 import seed from "./core/cores_bling_seed.json";
 import {
   agruparVariacoes, bancoVazio, criarLinhaPai, detectarLinhaPai, gerarCodigoEDescricao, limpo,
-  normalizarBanco, normalizarCodigos, processarVariacoes, serializarBanco,
+  mesclarBanco, normalizarBanco, normalizarCodigos, processarVariacoes, removerLinhas, serializarBanco,
   type Analise, type BancoCores, type DadosNovoPai, type Grupo, type Planilha,
 } from "./core/nucleo";
 import { gerarXlsx, lerPlanilha } from "./core/planilha";
@@ -24,6 +24,7 @@ interface EntradaLog { id: number; tipo: TipoLog; texto: string }
 interface Toast { id: number; texto: string; erro?: boolean }
 
 interface Sessao {
+  id: number; // muda a cada arquivo aberto: garante que nenhuma tela reaproveite dados do anterior
   nomeArquivo: string;
   planilha: Planilha;
   paiIdx: number;
@@ -57,7 +58,11 @@ export default function App() {
   const [erroModal, setErroModal] = useState<string | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [arrastando, setArrastando] = useState(false);
+  // abreviações digitadas neste arquivo: só entram no banco quando a planilha é SALVA
+  const [aprendido, setAprendido] = useState<BancoCores | null>(null);
+  const [confirmarNovo, setConfirmarNovo] = useState(false);
   const contador = useRef(0);
+  const sequenciaSessao = useRef(0);
 
   // ---------- tema ----------
   useEffect(() => {
@@ -100,8 +105,26 @@ export default function App() {
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 4200);
   }, []);
 
-  function reiniciar() {
-    setFase("inicio"); setSessao(null); setResumo(null); setCaminhoSalvo(null); setPendentePai(null); setLog([]);
+  /** Esquece TUDO do documento anterior: planilha, cores digitadas, abreviações não salvas, registro e avisos. */
+  function limparTudo() {
+    setFase("inicio");
+    setSessao(null);
+    setResumo(null);
+    setCaminhoSalvo(null);
+    setPendentePai(null);
+    setAprendido(null);
+    setErroModal(null);
+    setConfirmarNovo(false);
+    setArrastando(false);
+    setToasts([]);
+    setLog([]);
+  }
+
+  /** Botão "Novo documento": pede confirmação só se houver trabalho que ainda não foi salvo. */
+  function novoDocumento() {
+    const trabalhoNaoSalvo = fase === "cores" || (fase === "pronto" && !!resumo && !caminhoSalvo);
+    if (trabalhoNaoSalvo) setConfirmarNovo(true);
+    else limparTudo();
   }
 
   // ---------- fluxo principal ----------
@@ -111,7 +134,7 @@ export default function App() {
   }
 
   function abrir(arquivo: ArquivoAberto) {
-    reiniciar();
+    limparTudo();
     setVista("planilha");
     registrar(`Lendo arquivo: ${arquivo.nome}`);
     let planilha: Planilha;
@@ -168,6 +191,7 @@ export default function App() {
     const codigoPai = limpo(planilha.linhas[paiIdx]["Código"]);
     const marca = limpo(planilha.linhas[paiIdx]["Marca"]);
     const base: Sessao = {
+      id: ++sequenciaSessao.current,
       nomeArquivo, planilha, paiIdx, codigoPai, marca, categoria,
       analisadas: new Map(), grupos: new Map(),
     };
@@ -186,26 +210,39 @@ export default function App() {
     setFase("cores");
   }
 
-  function gerar(cores: Map<string, [string, string]>) {
+  function gerar(cores: Map<string, [string, string]>, removidas: string[]) {
     if (!sessao) return;
-    const novoBanco = normalizarBanco(banco);
+    // o aprendizado vai para um banco à parte; só é gravado de verdade ao salvar a planilha
+    const novoAprendido = bancoVazio();
     const { total, linhasSemTamanho } = gerarCodigoEDescricao(
-      sessao.planilha, sessao.analisadas, sessao.grupos, sessao.codigoPai, cores, novoBanco, sessao.marca,
+      sessao.planilha, sessao.analisadas, sessao.grupos, sessao.codigoPai, cores, novoAprendido, sessao.marca,
     );
-    persistirBanco(novoBanco);
+    let paiIdx = sessao.paiIdx;
+    let semTamanho = linhasSemTamanho;
+    let linhasRemovidas = 0;
+    if (removidas.length) {
+      const indices = removidas.flatMap((k) => sessao.grupos.get(k)?.indices ?? []);
+      const novoIndice = removerLinhas(sessao.planilha, indices);
+      paiIdx = novoIndice(paiIdx);
+      semTamanho = linhasSemTamanho.map((r) => novoIndice(r - 2) + 2);
+      linhasRemovidas = indices.length;
+      registrar(`${linhasRemovidas} linha(s) de ${removidas.length} cor(es) pendente(s) removida(s) da planilha.`, "aviso");
+    }
+    setAprendido(novoAprendido);
+    setSessao({ ...sessao, paiIdx });
     registrar(`${total} variação(ões) preenchida(s) com Código e Descrição.`, "ok");
-    if (linhasSemTamanho.length) {
-      registrar(`ATENÇÃO: não identifiquei o tamanho automaticamente nas linhas ${linhasSemTamanho.join(", ")} — preencha essas manualmente.`, "aviso");
+    if (semTamanho.length) {
+      registrar(`ATENÇÃO: não identifiquei o tamanho automaticamente nas linhas ${semTamanho.join(", ")} — preencha essas manualmente.`, "aviso");
     }
     registrar("Pronto! Clique em 'Salvar planilha pronta…' para escolher onde salvar.", "ok");
-    setResumo({ total, cores: cores.size, linhasSemTamanho });
+    setResumo({ total, cores: cores.size, linhasSemTamanho: semTamanho, removidas: linhasRemovidas });
     setFase("pronto");
   }
 
-  function cancelarCores() {
-    registrar("Geração de cores cancelada — os demais campos já preenchidos continuam disponíveis para salvar.", "aviso");
-    setResumo(null);
-    setFase("pronto");
+  /** Cancelar na tela de cores: descarta o arquivo por completo, como se nunca tivesse sido aberto. */
+  function descartarArquivo() {
+    limparTudo();
+    avisar("Arquivo descartado. Nada foi salvo nem aprendido.");
   }
 
   async function salvar() {
@@ -216,6 +253,13 @@ export default function App() {
       if (destino) {
         setCaminhoSalvo(destino);
         registrar(`Arquivo salvo em: ${destino}`, "ok");
+        if (aprendido) {
+          const copia = normalizarBanco(banco);
+          const novas = mesclarBanco(copia, aprendido);
+          await persistirBanco(copia);
+          setAprendido(null);
+          if (novas) registrar(`${novas} abreviação(ões) nova(s) ou alterada(s) guardada(s) no banco de cores.`, "ok");
+        }
         avisar("Planilha salva com sucesso!");
       }
     } catch (e) {
@@ -307,9 +351,14 @@ export default function App() {
       </aside>
 
       <main className="main">
-        <header className="topbar">
+        <header className="topbar" style={{ position: "relative" }}>
           <h1>{titulos[vista][0]}</h1>
           <p>{titulos[vista][1]}</p>
+          {vista === "planilha" && fase !== "inicio" && (
+            <button className="btn sec sm" style={{ position: "absolute", right: 32, top: 24 }} onClick={novoDocumento}>
+              Novo documento
+            </button>
+          )}
           {vista === "planilha" && (
             <div className="stepper">
               {["Arquivo", "Cores", "Salvar"].map((nome, i) => {
@@ -355,7 +404,7 @@ export default function App() {
 
           {fase === "cores" && sessao && (
             <TelaCores
-              key={sessao.nomeArquivo + sessao.codigoPai}
+              key={sessao.id}
               codigoPai={sessao.codigoPai}
               marca={sessao.marca}
               categoria={sessao.categoria}
@@ -364,7 +413,7 @@ export default function App() {
               planilha={sessao.planilha}
               banco={banco}
               onGerar={gerar}
-              onCancelar={cancelarCores}
+              onCancelar={descartarArquivo}
             />
           )}
 
@@ -377,7 +426,8 @@ export default function App() {
               caminhoSalvo={caminhoSalvo}
               onSalvar={salvar}
               onMostrarPasta={() => caminhoSalvo && plataforma.mostrarNaPasta(caminhoSalvo)}
-              onNova={reiniciar}
+              onNova={novoDocumento}
+              abreviacoesAGuardar={aprendido ? Object.keys(aprendido.por_marca).length : 0}
             />
           )}
 
@@ -417,6 +467,20 @@ export default function App() {
       </main>
 
       {pendentePai && <NovoPaiDialog onConfirmar={aoCriarPai} onCancelar={() => { setPendentePai(null); registrar("Criação do PAI cancelada.", "aviso"); }} />}
+      {confirmarNovo && (
+        <Modal titulo="Começar um novo documento?" largura={480} onFechar={() => setConfirmarNovo(false)}
+          rodape={
+            <>
+              <button className="btn sec" onClick={() => setConfirmarNovo(false)}>Voltar</button>
+              <button className="btn danger" onClick={limparTudo}>Descartar e começar de novo</button>
+            </>
+          }>
+          <p style={{ marginTop: 0 }}>
+            O arquivo atual ainda <b>não foi salvo</b>. Se continuar, tudo o que foi preenchido nele é apagado e
+            nenhuma abreviação nova é aprendida.
+          </p>
+        </Modal>
+      )}
       {erroModal && (
         <Modal titulo="Erro ao ler arquivo" largura={480} onFechar={() => setErroModal(null)}
           rodape={<button className="btn" onClick={() => setErroModal(null)}>Entendi</button>}>

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import {
   agruparVariacoes, analisarLinha, bancoVazio, consultarAbreviacao, criarLinhaPai, detectarLinhaPai,
-  gerarCodigoEDescricao, limparNomeCor, normalizarCodigos, processarVariacoes, serializarBanco, titulo,
+  gerarCodigoEDescricao, limparNomeCor, mesclarBanco, normalizarCodigos, removerLinhas, processarVariacoes, serializarBanco, titulo,
   type Linha, type Planilha,
 } from "../src/core/nucleo";
 import { gerarXlsx, lerPlanilha } from "../src/core/planilha";
@@ -134,5 +134,30 @@ describe("arquivo já processado (reexportado do Bling, todas as linhas com Cód
     for (const [chave, g] of grupos) cores.set(chave, [g.sugestao, g.sugestao === "Café" ? "CAF" : "PT"]);
     gerarCodigoEDescricao(p, analisadas, grupos, "BT100", cores, bancoVazio(), "X");
     expect(p.linhas.slice(1).map((l) => l["Código"])).toEqual(["BT100PT37", "BT100PT38", "BT100CAF37"]);
+  });
+});
+
+describe("remover pendentes e mesclar banco", () => {
+  it("removerLinhas apaga e corrige o índice do PAI", () => {
+    const p = planilhaExemplo(); // PAI na linha 0, variações 1..4
+    const novo = removerLinhas(p, [1, 2]);
+    expect(p.linhas.length).toBe(3);
+    expect(novo(0)).toBe(0);
+    expect(novo(3)).toBe(1);
+    expect(novo(4)).toBe(2);
+    const q = planilhaExemplo();
+    q.linhas.push(q.linhas.shift()!); // PAI vira a última linha (como no Bling)
+    const idx = removerLinhas(q, [0, 1])(4);
+    expect(q.linhas[idx]["Código"]).toBe("SAND100");
+  });
+
+  it("mesclarBanco só grava o que veio do arquivo salvo", () => {
+    const atual = bancoVazio();
+    atual.por_marca["A|preto"] = "OLD";
+    const aprendido = bancoVazio();
+    aprendido.por_marca["A|azul"] = "AZ";
+    expect(mesclarBanco(atual, aprendido)).toBe(1);
+    expect(atual.por_marca).toEqual({ "A|preto": "OLD", "A|azul": "AZ" });
+    expect(Object.keys(bancoVazio().por_marca)).toEqual([]); // descartar não deixa rastro
   });
 });

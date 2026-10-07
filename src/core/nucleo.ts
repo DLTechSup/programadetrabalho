@@ -157,6 +157,17 @@ export function aprenderAbreviacao(banco: BancoCores, marca: string, cor: string
   banco.generico[corNorm] = abreviacao;
 }
 
+/** Soma as abreviações de `origem` em `destino` (as de `origem` prevalecem). */
+export function mesclarBanco(destino: BancoCores, origem: BancoCores): number {
+  let total = 0;
+  for (const [k, v] of Object.entries(origem.por_marca)) {
+    if (destino.por_marca[k] !== v) total++;
+    destino.por_marca[k] = v;
+  }
+  for (const [k, v] of Object.entries(origem.generico)) destino.generico[k] = v;
+  return total;
+}
+
 /** Serializa com chaves ordenadas (igual ao `sort_keys=True` do Python). */
 export function serializarBanco(banco: BancoCores): string {
   const ordenar = (o: Record<string, string>) =>
@@ -463,6 +474,17 @@ export function processarVariacoes(
     log("O PAI ainda não tem 'Código' preenchido — gere o código do PAI antes de gerar os SKUs das variações.");
   }
   return planilha;
+}
+
+/**
+ * Apaga linhas da planilha (ex.: cores que ficaram pendentes). Retorna uma função que converte
+ * um índice antigo no novo, para corrigir referências como a linha do PAI.
+ */
+export function removerLinhas(planilha: Planilha, indices: number[]): (indiceAntigo: number) => number {
+  const apagar = new Set(indices);
+  const ordenados = [...apagar].sort((a, b) => a - b);
+  planilha.linhas = planilha.linhas.filter((_, i) => !apagar.has(i));
+  return (i) => i - ordenados.filter((r) => r < i).length;
 }
 
 export interface ResultadoAgrupamento {

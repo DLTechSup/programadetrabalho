@@ -14,7 +14,8 @@ interface Props {
   grupos: Map<string, Grupo>;
   planilha: Planilha;
   banco: BancoCores;
-  onGerar: (cores: Map<string, [string, string]>) => void;
+  /** `removidas`: chaves dos grupos de cor cujas linhas devem ser apagadas da planilha final. */
+  onGerar: (cores: Map<string, [string, string]>, removidas: string[]) => void;
   onCancelar: () => void;
 }
 
@@ -23,6 +24,7 @@ interface LinhaCor {
   cor: string;
   abrev: string;
   auto: boolean; // abreviação preenchida pelo histórico (pode ser refeita ao mudar o nome)
+  removida: boolean; // cor marcada para sair da planilha final
 }
 
 export function TelaCores({ codigoPai, marca, categoria, totalVariacoes, grupos, planilha, banco, onGerar, onCancelar }: Props) {
@@ -32,11 +34,14 @@ export function TelaCores({ codigoPai, marca, categoria, totalVariacoes, grupos,
       .map(([chave, g]) => {
         // cor já conhecida (mesmo com acento diferente): usa a grafia do banco, ex. "Avela" -> "Avelã"
         const achado = buscarCor(banco, marca, g.sugestao);
-        return { chave, cor: achado ? titulo(achado.nome) : g.sugestao, abrev: achado?.abrev ?? "", auto: !!achado };
+        return { chave, cor: achado ? titulo(achado.nome) : g.sugestao, abrev: achado?.abrev ?? "", auto: !!achado, removida: false };
       }),
   );
   const [soPendentes, setSoPendentes] = useState(false);
   const [confirmar, setConfirmar] = useState(false);
+  const [confirmarCancelar, setConfirmarCancelar] = useState(false);
+  const inicial = useRef(JSON.stringify(linhas.map((l) => [l.cor, l.abrev, l.removida])));
+  const alterado = JSON.stringify(linhas.map((l) => [l.cor, l.abrev, l.removida])) !== inicial.current;
   const original = (g: Grupo) => {
     const l = planilha.linhas[g.indices[0]];
     const cod = limpo(l["Cód. no fornecedor"]);
@@ -44,9 +49,13 @@ export function TelaCores({ codigoPai, marca, categoria, totalVariacoes, grupos,
   };
   const refsAbrev = useRef<Array<HTMLInputElement | null>>([]);
 
-  const prontas = linhas.filter((l) => l.cor.trim() && l.abrev.trim()).length;
-  const pendentes = linhas.length - prontas;
-  const pct = linhas.length ? Math.round((prontas / linhas.length) * 100) : 100;
+  const ehPronta = (l: LinhaCor) => !!(l.cor.trim() && l.abrev.trim());
+  const ativas = linhas.filter((l) => !l.removida);
+  const prontas = ativas.filter(ehPronta).length;
+  const pendentes = ativas.length - prontas;
+  const removidas = linhas.filter((l) => l.removida);
+  const linhasPendentes = ativas.filter((l) => !ehPronta(l)).reduce((s, l) => s + grupos.get(l.chave)!.indices.length, 0);
+  const pct = ativas.length ? Math.round((prontas / ativas.length) * 100) : 100;
 
   function mudar(chave: string, parcial: Partial<LinhaCor>) {
     setLinhas((ls) => ls.map((l) => (l.chave === chave ? { ...l, ...parcial } : l)));
@@ -62,15 +71,23 @@ export function TelaCores({ codigoPai, marca, categoria, totalVariacoes, grupos,
     }
   }
 
-  function gerar(forcar = false) {
-    if (pendentes > 0 && !forcar) return setConfirmar(true);
+  /** `pendentes`: "manter" deixa as cores incompletas sem código; "remover" apaga as linhas delas. */
+  function gerar(pendentesNoFim: "perguntar" | "manter" | "remover" = "perguntar") {
+    if (pendentes > 0 && pendentesNoFim === "perguntar") return setConfirmar(true);
     const mapa = new Map<string, [string, string]>();
-    for (const l of linhas) if (l.cor.trim() && l.abrev.trim()) mapa.set(l.chave, [l.cor.trim(), l.abrev.trim()]);
-    onGerar(mapa);
+    for (const l of ativas) if (ehPronta(l)) mapa.set(l.chave, [l.cor.trim(), l.abrev.trim()]);
+    const apagar = removidas.map((l) => l.chave);
+    if (pendentesNoFim === "remover") for (const l of ativas) if (!ehPronta(l)) apagar.push(l.chave);
+    onGerar(mapa, apagar);
+  }
+
+  function cancelar() {
+    if (alterado) setConfirmarCancelar(true);
+    else onCancelar();
   }
 
   const visiveis = useMemo(
-    () => linhas.map((l, i) => ({ l, i })).filter(({ l }) => !soPendentes || !(l.cor.trim() && l.abrev.trim())),
+    () => linhas.map((l, i) => ({ l, i })).filter(({ l }) => !soPendentes || (!l.removida && !ehPronta(l))),
     [linhas, soPendentes],
   );
 
@@ -86,7 +103,7 @@ export function TelaCores({ codigoPai, marca, categoria, totalVariacoes, grupos,
 
       <div className="barra">
         <div className="progresso">
-          <small>{prontas} de {linhas.length} cores prontas {pendentes > 0 && `· ${pendentes} pendente(s)`}</small>
+          <small>{prontas} de {ativas.length} cores prontas {pendentes > 0 && `· ${pendentes} pendente(s)`}{removidas.length > 0 && ` · ${removidas.length} removida(s)`}</small>
           <div className="trilho"><div className="preench" style={{ width: `${pct}%` }} /></div>
         </div>
         <label className="switch">
@@ -101,22 +118,23 @@ export function TelaCores({ codigoPai, marca, categoria, totalVariacoes, grupos,
             <thead>
               <tr>
                 <th>Cor (confira / edite)</th>
-                <th style={{ width: 170 }}>Abreviação</th>
-                <th style={{ width: 130 }}>Situação</th>
+                <th style={{ width: 120 }}>Abreviação</th>
+                <th style={{ width: 120 }}>Situação</th>
                 <th>Tamanhos</th>
-                <th style={{ width: 60 }}>Qtd.</th>
+                <th style={{ width: 48 }}>Qtd.</th>
                 <th>Exemplo de código</th>
+                <th style={{ width: 70 }} />
               </tr>
             </thead>
             <tbody>
               {visiveis.map(({ l, i }) => {
                 const g = grupos.get(l.chave)!;
                 const tams = tamanhosOrdenados(g.tamanhos);
-                const pronto = l.cor.trim() && l.abrev.trim();
+                const pronto = ehPronta(l);
                 const conhecida = consultarAbreviacao(banco, marca, l.cor);
                 const situacao = !pronto ? "vazio" : conhecida && conhecida === l.abrev.trim().toUpperCase() ? "ok" : "novo";
                 return (
-                  <tr key={l.chave}>
+                  <tr key={l.chave} className={l.removida ? "removida" : ""}>
                     <td>
                       <div className="cor-cel">
                         <span className="amostra" style={{ background: amostraCor(l.cor) }} />
@@ -148,9 +166,10 @@ export function TelaCores({ codigoPai, marca, categoria, totalVariacoes, grupos,
                       />
                     </td>
                     <td>
-                      {situacao === "ok" && <span className="badge ok">✓ Do histórico</span>}
-                      {situacao === "novo" && <span className="badge novo">● Nova</span>}
-                      {situacao === "vazio" && <span className="badge vazio">Pendente</span>}
+                      {l.removida && <span className="badge vazio">Será removida</span>}
+                      {!l.removida && situacao === "ok" && <span className="badge ok">✓ Do histórico</span>}
+                      {!l.removida && situacao === "novo" && <span className="badge novo">● Nova</span>}
+                      {!l.removida && situacao === "vazio" && <span className="badge vazio">Pendente</span>}
                     </td>
                     <td>
                       <div className="tams">{tams.map((t) => <span key={t} className="chip">{t}</span>)}</div>
@@ -161,11 +180,20 @@ export function TelaCores({ codigoPai, marca, categoria, totalVariacoes, grupos,
                         ? <><b>{codigoPai}</b><i>{l.abrev.trim().toUpperCase()}</i>{tams[0] !== "?" ? tams[0] : "?"}</>
                         : "—"}
                     </td>
+                    <td>
+                      <button
+                        className="btn ghost sm"
+                        title={l.removida ? "Voltar a usar esta cor" : "Apagar as linhas desta cor da planilha final"}
+                        onClick={() => mudar(l.chave, { removida: !l.removida })}
+                      >
+                        {l.removida ? "Restaurar" : "Remover"}
+                      </button>
+                    </td>
                   </tr>
                 );
               })}
               {visiveis.length === 0 && (
-                <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--muted)", padding: 28 }}>Nenhuma cor pendente 🎉</td></tr>
+                <tr><td colSpan={7} style={{ textAlign: "center", color: "var(--muted)", padding: 28 }}>Nenhuma cor pendente 🎉</td></tr>
               )}
             </tbody>
           </table>
@@ -178,7 +206,7 @@ export function TelaCores({ codigoPai, marca, categoria, totalVariacoes, grupos,
       </p>
 
       <div className="rodape-acoes">
-        <button className="btn ghost" onClick={onCancelar}>Cancelar</button>
+        <button className="btn ghost" onClick={cancelar}>Cancelar e descartar</button>
         <div className="dir">
           <button className="btn lg" onClick={() => gerar()}>
             Gerar Código e Descrição <IconeSeta size={18} />
@@ -194,13 +222,35 @@ export function TelaCores({ codigoPai, marca, categoria, totalVariacoes, grupos,
           rodape={
             <>
               <button className="btn sec" onClick={() => setConfirmar(false)}>Voltar e completar</button>
-              <button className="btn" onClick={() => { setConfirmar(false); gerar(true); }}>Continuar mesmo assim</button>
+              <button className="btn sec" onClick={() => { setConfirmar(false); gerar("manter"); }}>Manter sem código</button>
+              <button className="btn" onClick={() => { setConfirmar(false); gerar("remover"); }}>Remover pendentes</button>
             </>
           }
         >
           <p style={{ marginTop: 0 }}>
-            <b>{pendentes}</b> grupo(s) de cor estão sem nome ou sem abreviação e vão ficar sem Código/Descrição.
-            Deseja continuar mesmo assim?
+            <b>{pendentes}</b> cor(es) estão sem nome ou sem abreviação ({linhasPendentes} linha(s) da planilha).
+          </p>
+          <ul style={{ margin: 0, paddingLeft: 20 }}>
+            <li><b>Remover pendentes</b>: apaga essas linhas da planilha final, para não irem para o Bling.</li>
+            <li><b>Manter sem código</b>: elas continuam na planilha, sem Código/Descrição.</li>
+          </ul>
+        </Modal>
+      )}
+
+      {confirmarCancelar && (
+        <Modal
+          titulo="Descartar este arquivo?"
+          onFechar={() => setConfirmarCancelar(false)}
+          largura={460}
+          rodape={
+            <>
+              <button className="btn sec" onClick={() => setConfirmarCancelar(false)}>Continuar editando</button>
+              <button className="btn danger" onClick={onCancelar}>Descartar tudo</button>
+            </>
+          }
+        >
+          <p style={{ marginTop: 0 }}>
+            Tudo o que você preencheu neste arquivo será perdido. Nada é salvo e nenhuma abreviação nova é aprendida.
           </p>
         </Modal>
       )}
