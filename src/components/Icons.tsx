@@ -46,6 +46,9 @@ export const IconePasta = (p: P) => (
 export const IconeSeta = (p: P) => (
   <Svg {...p}><path d="M5 12h14M13 6l6 6-6 6" /></Svg>
 );
+export const IconeLista = (p: P) => (
+  <Svg {...p}><path d="M8 6h12M8 12h12M8 18h12" /><circle cx="4" cy="6" r="1" /><circle cx="4" cy="12" r="1" /><circle cx="4" cy="18" r="1" /></Svg>
+);
 export const IconeRadar = (p: P) => (
   <Svg {...p}><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4.5" /><path d="M12 12 18 6" /></Svg>
 );

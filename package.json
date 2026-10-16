@@ -1,7 +1,7 @@
 {
   "name": "gradefacil",
   "productName": "GradeFacil",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Preenche planilhas de produtos do Bling: PAI, variações, cores, códigos e descrições.",
   "author": "DL Tech",
   "private": true,

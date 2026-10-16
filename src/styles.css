@@ -181,7 +181,7 @@ button, input, select { font: inherit; color: inherit; }
 .dica span { color: var(--muted); font-size: 13px; }
 
 /* ---------- log ---------- */
-.log { padding: 6px 0; max-height: 240px; overflow: auto; font-size: 13px; }
+.log { padding: 6px 0; overflow: auto; font-size: 13px; }
 .log-linha { display: flex; gap: 10px; align-items: flex-start; padding: 5px 20px; }
 .log-linha .dot { flex: none; margin-top: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--faint); }
 .log-linha.ok .dot { background: var(--success); }

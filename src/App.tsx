@@ -9,7 +9,7 @@ import {
 import { gerarXlsx, lerPlanilha } from "./core/planilha";
 import { plataforma, type ArquivoAberto } from "./platform";
 import { BancoCoresView } from "./components/BancoCoresView";
-import { IconeCheck, IconeLua, IconePaleta, IconeRadar, IconePlanilha, IconeSol, IconeUpload } from "./components/Icons";
+import { IconeCheck, IconeLista, IconeLua, IconePaleta, IconeRadar, IconePlanilha, IconeSol, IconeUpload } from "./components/Icons";
 import { Modal } from "./components/Modal";
 import { NovoPaiDialog } from "./components/NovoPaiDialog";
 import { ScannerView } from "./components/ScannerView";
@@ -17,7 +17,7 @@ import { aplicarAoBanco, type ParAgregado } from "./core/scanner";
 import { Resultado, type ResumoGeracao } from "./components/Resultado";
 import { TelaCores } from "./components/TelaCores";
 
-type Vista = "planilha" | "banco" | "scanner";
+type Vista = "planilha" | "banco" | "scanner" | "registro";
 type Fase = "inicio" | "cores" | "pronto";
 type TipoLog = "info" | "ok" | "aviso" | "erro";
 interface EntradaLog { id: number; tipo: TipoLog; texto: string; hora: string }
@@ -348,6 +348,7 @@ export default function App() {
     planilha: ["Planilha do Bling", "Preenche PAI, variações, cores, códigos e descrições automaticamente."],
     banco: ["Banco de cores", "Abreviações aprendidas — cresce sozinho conforme você usa."],
     scanner: ["Scanner de pastas", "Aprende as abreviações de cores a partir de planilhas que você já finalizou."],
+    registro: ["Registro de atividade", "Tudo o que foi feito no programa, com data e hora."],
   };
 
   return (
@@ -366,6 +367,9 @@ export default function App() {
           </button>
           <button className={vista === "scanner" ? "ativo" : ""} onClick={() => setVista("scanner")}>
             <IconeRadar /> Scanner de pastas
+          </button>
+          <button className={vista === "registro" ? "ativo" : ""} onClick={() => setVista("registro")}>
+            <IconeLista /> Registro de atividade
           </button>
         </nav>
         <div className="grow" />
@@ -479,11 +483,11 @@ export default function App() {
           </div>
         )}
 
-        <div className="content" style={{ paddingTop: 0 }}>
+        {vista === "registro" && (
+        <div className="content">
           <div className="card">
             <div className="card-head">
               <span>Registro de atividade</span>
-              {sessao && vista === "planilha" && <span className="sub">{sessao.nomeArquivo}</span>}
               {log.length > 0 && (
                 <button className="btn sec sm" style={{ marginLeft: "auto" }} onClick={() => setLog([])}>Limpar registro</button>
               )}
@@ -496,6 +500,7 @@ export default function App() {
             </div>
           </div>
         </div>
+        )}
       </main>
 
       {pendentePai && <NovoPaiDialog onConfirmar={aoCriarPai} onCancelar={() => { setPendentePai(null); registrar("Criação do PAI cancelada.", "aviso"); }} />}
