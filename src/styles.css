@@ -188,6 +188,7 @@ button, input, select { font: inherit; color: inherit; }
 .log-linha.aviso .dot { background: var(--warn); }
 .log-linha.erro .dot { background: var(--danger); }
 .log-linha.erro { color: var(--danger); }
+.log-linha .hora { flex: none; color: var(--faint); font-variant-numeric: tabular-nums; }
 .log-vazio { padding: 18px 20px; color: var(--faint); }
 .card-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--border); font-weight: 650; }
 

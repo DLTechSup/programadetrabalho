@@ -6,7 +6,7 @@ import { IconeBusca, IconeLixeira, IconePasta } from "./Icons";
 interface Props {
   banco: BancoCores;
   caminho: string;
-  onAlterar: (fn: (b: BancoCores) => void) => void;
+  onAlterar: (fn: (b: BancoCores) => void, descricao?: string) => void;
   onExportar: () => void;
   onImportar: () => void;
   onMostrarPasta: () => void;
@@ -44,18 +44,18 @@ export function BancoCoresView({ banco, caminho, onAlterar, onExportar, onImport
       const marca = novaMarca.trim().toUpperCase();
       if (marca) b.por_marca[`${marca}|${cor}`] = abrev;
       else b.generico[cor] = abrev;
-    });
+    }, `Banco de cores: adicionada "${cor}" = ${abrev}${novaMarca.trim() ? ` (marca ${novaMarca.trim().toUpperCase()})` : ""}.`);
     setNovaMarca(""); setNovaCor(""); setNovaAbrev("");
   }
 
   function editar(e: Entrada, abrev: string) {
     abrev = abrev.trim().toUpperCase();
     if (!abrev || abrev === e.abrev) return;
-    onAlterar((b) => { (e.tipo === "marca" ? b.por_marca : b.generico)[e.chave] = abrev; });
+    onAlterar((b) => { (e.tipo === "marca" ? b.por_marca : b.generico)[e.chave] = abrev; }, `Banco de cores: "${e.cor}" (${e.abrev}) alterada para ${abrev}.`);
   }
 
   function remover(e: Entrada) {
-    onAlterar((b) => { delete (e.tipo === "marca" ? b.por_marca : b.generico)[e.chave]; });
+    onAlterar((b) => { delete (e.tipo === "marca" ? b.por_marca : b.generico)[e.chave]; }, `Banco de cores: "${e.cor}" (${e.abrev}) removida.`);
   }
 
   return (

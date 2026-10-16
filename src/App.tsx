@@ -20,7 +20,7 @@ import { TelaCores } from "./components/TelaCores";
 type Vista = "planilha" | "banco" | "scanner";
 type Fase = "inicio" | "cores" | "pronto";
 type TipoLog = "info" | "ok" | "aviso" | "erro";
-interface EntradaLog { id: number; tipo: TipoLog; texto: string }
+interface EntradaLog { id: number; tipo: TipoLog; texto: string; hora: string }
 interface Toast { id: number; texto: string; erro?: boolean }
 
 interface Sessao {
@@ -34,6 +34,17 @@ interface Sessao {
   analisadas: Map<number, Analise>;
   grupos: Map<string, Grupo>;
   suspeitos: Set<string>;
+}
+
+const CHAVE_LOG = "bling.registro";
+const MAX_LOG = 300;
+
+function carregarLog(): EntradaLog[] {
+  try {
+    const v = JSON.parse(localStorage.getItem(CHAVE_LOG) || "[]");
+    if (Array.isArray(v)) return v.filter((x) => x && typeof x.texto === "string").slice(-MAX_LOG);
+  } catch { /* sem armazenamento */ }
+  return [];
 }
 
 function carregarTema(): "light" | "dark" {
@@ -51,7 +62,7 @@ export default function App() {
   const [banco, setBanco] = useState<BancoCores>(bancoVazio);
   const [caminhoBanco, setCaminhoBanco] = useState("");
   const [versao, setVersao] = useState("");
-  const [log, setLog] = useState<EntradaLog[]>([]);
+  const [log, setLog] = useState<EntradaLog[]>(carregarLog);
   const [sessao, setSessao] = useState<Sessao | null>(null);
   const [resumo, setResumo] = useState<ResumoGeracao | null>(null);
   const [caminhoSalvo, setCaminhoSalvo] = useState<string | null>(null);
@@ -62,7 +73,7 @@ export default function App() {
   // abreviações digitadas neste arquivo: só entram no banco quando a planilha é SALVA
   const [aprendido, setAprendido] = useState<BancoCores | null>(null);
   const [confirmarNovo, setConfirmarNovo] = useState(false);
-  const contador = useRef(0);
+  const contador = useRef(Date.now());
   const sequenciaSessao = useRef(0);
 
   // ---------- tema ----------
@@ -97,8 +108,14 @@ export default function App() {
 
   // ---------- utilidades ----------
   const registrar = useCallback((texto: string, tipo: TipoLog = "info") => {
-    setLog((l) => [...l, { id: ++contador.current, tipo, texto }]);
+    const hora = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    setLog((l) => [...l, { id: ++contador.current, tipo, texto, hora }].slice(-MAX_LOG));
   }, []);
+
+  // o registro sobrevive a "Novo documento" e a reinícios do programa
+  useEffect(() => {
+    try { localStorage.setItem(CHAVE_LOG, JSON.stringify(log)); } catch { /* ok */ }
+  }, [log]);
 
   const avisar = useCallback((texto: string, erro = false) => {
     const id = ++contador.current;
@@ -118,7 +135,6 @@ export default function App() {
     setConfirmarNovo(false);
     setArrastando(false);
     setToasts([]);
-    setLog([]);
   }
 
   /** Botão "Novo documento": pede confirmação só se houver trabalho que ainda não foi salvo. */
@@ -136,6 +152,7 @@ export default function App() {
 
   function abrir(arquivo: ArquivoAberto) {
     limparTudo();
+    registrar("──────── Novo arquivo ────────");
     setVista("planilha");
     registrar(`Lendo arquivo: ${arquivo.nome}`);
     let planilha: Planilha;
@@ -275,15 +292,16 @@ export default function App() {
   }
 
   // ---------- banco de cores: ações ----------
-  async function alterarBanco(fn: (b: BancoCores) => void) {
+  async function alterarBanco(fn: (b: BancoCores) => void, descricao?: string) {
     const copia = normalizarBanco(banco);
     fn(copia);
     await persistirBanco(copia);
+    if (descricao) registrar(descricao, "ok");
   }
 
   async function exportarBanco() {
     const destino = await plataforma.exportarCores(serializarBanco(banco));
-    if (destino) avisar("Banco de cores exportado.");
+    if (destino) { avisar("Banco de cores exportado."); registrar(`Banco de cores exportado para: ${destino}`, "ok"); }
   }
 
   async function importarBanco() {
@@ -298,7 +316,9 @@ export default function App() {
       const depois = Object.keys(copia.por_marca).length + Object.keys(copia.generico).length;
       await persistirBanco(copia);
       avisar(`Importado! ${depois - antes} abreviação(ões) nova(s) somada(s) ao banco.`);
+      registrar(`Banco de cores importado: ${depois - antes} abreviação(ões) nova(s).`, "ok");
     } catch {
+      registrar("Importação do banco de cores falhou: arquivo inválido.", "erro");
       avisar("Arquivo inválido — escolha um cores_bling.json.", true);
     }
   }
@@ -307,7 +327,9 @@ export default function App() {
     const copia = normalizarBanco(banco);
     const { novas, atualizadas } = aplicarAoBanco(copia, pares, sobrescrever);
     persistirBanco(copia);
-    avisar(`Banco atualizado: ${novas} nova(s)${atualizadas ? ` e ${atualizadas} atualizada(s)` : ""}.`);
+    const resumoScan = `${novas} nova(s)${atualizadas ? ` e ${atualizadas} atualizada(s)` : ""}`;
+    avisar(`Banco atualizado: ${resumoScan}.`);
+    registrar(`Scanner de pastas: banco atualizado — ${resumoScan}.`, "ok");
   }
 
   // ---------- arrastar e soltar ----------
@@ -437,20 +459,6 @@ export default function App() {
             />
           )}
 
-          {fase !== "cores" && (
-            <div className="card">
-              <div className="card-head">
-                <span>Registro de atividade</span>
-                {sessao && <span className="sub">{sessao.nomeArquivo}</span>}
-              </div>
-              <div className="log">
-                {log.length === 0 && <div className="log-vazio">Nenhuma atividade ainda. Selecione um arquivo para começar.</div>}
-                {log.map((l) => (
-                  <div key={l.id} className={`log-linha ${l.tipo}`}><span className="dot" />{l.texto}</div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         {vista === "banco" && (
@@ -470,6 +478,24 @@ export default function App() {
             <ScannerView banco={banco} onAplicar={aplicarScanner} />
           </div>
         )}
+
+        <div className="content" style={{ paddingTop: 0 }}>
+          <div className="card">
+            <div className="card-head">
+              <span>Registro de atividade</span>
+              {sessao && vista === "planilha" && <span className="sub">{sessao.nomeArquivo}</span>}
+              {log.length > 0 && (
+                <button className="btn sec sm" style={{ marginLeft: "auto" }} onClick={() => setLog([])}>Limpar registro</button>
+              )}
+            </div>
+            <div className="log">
+              {log.length === 0 && <div className="log-vazio">Nenhuma atividade ainda. Selecione um arquivo para começar.</div>}
+              {[...log].reverse().map((l) => (
+                <div key={l.id} className={`log-linha ${l.tipo}`}><span className="dot" /><span className="hora">{l.hora}</span>{l.texto}</div>
+              ))}
+            </div>
+          </div>
+        </div>
       </main>
 
       {pendentePai && <NovoPaiDialog onConfirmar={aoCriarPai} onCancelar={() => { setPendentePai(null); registrar("Criação do PAI cancelada.", "aviso"); }} />}
