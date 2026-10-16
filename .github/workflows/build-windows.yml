@@ -29,7 +29,9 @@ jobs:
       - name: Versão do app
         id: ver
         shell: bash
-        run: echo "v=$(node -p \"require('./package.json').version\")" >> "$GITHUB_OUTPUT"
+        run: |
+          V=$(node -p 'require("./package.json").version')
+          echo "v=$V" >> "$GITHUB_OUTPUT"
       - name: Publicar na Release
         uses: softprops/action-gh-release@v2
         with:
