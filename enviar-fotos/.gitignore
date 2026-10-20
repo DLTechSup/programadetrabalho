@@ -1,0 +1,9 @@
+# NUNCA publicar: dão acesso ao Drive do dono
+token.json
+credentials.json
+client_secret*.json
+log_envio.txt*
+build/
+dist/
+*.spec
+__pycache__/
