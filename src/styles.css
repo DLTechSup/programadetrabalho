@@ -287,3 +287,8 @@ table.tabela { width: 100%; border-collapse: collapse; }
 @media (max-width: 1260px) {
   .col-exemplo { display: none; }
 }
+
+/* ---------- edição na pré-visualização ---------- */
+.editavel { display: block; cursor: text; border-radius: 6px; padding: 3px 6px; margin: -3px -6px; border: 1px solid transparent; }
+.editavel:hover, .editavel:focus { border-color: var(--border); background: var(--surface); outline: none; }
+.input.editando { padding: 4px 8px; width: 100%; min-width: 120px; text-transform: none; }

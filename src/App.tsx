@@ -267,6 +267,30 @@ export default function App() {
     avisar("Arquivo descartado. Nada foi salvo nem aprendido.");
   }
 
+  /** Edição manual na pré-visualização; `todas` repete o valor em toda a coluna. */
+  function editarCampo(idx: number, coluna: string, valor: string, todas: boolean): number {
+    if (!sessao) return 0;
+    const { planilha, paiIdx } = sessao;
+    // "Código Pai" não se aplica à própria linha do PAI
+    const alvos = todas
+      ? planilha.linhas.map((_, i) => i).filter((i) => !(coluna === "Código Pai" && i === paiIdx))
+      : [idx];
+    let mudou = 0;
+    for (const i of alvos) {
+      if (limpo(planilha.linhas[i][coluna]) !== valor) { planilha.linhas[i][coluna] = valor; mudou++; }
+    }
+    const novoCodigoPai = coluna === "Código" && alvos.includes(paiIdx) ? valor : sessao.codigoPai;
+    setSessao({ ...sessao, codigoPai: novoCodigoPai }); // novo objeto: força a tabela a redesenhar
+    setCaminhoSalvo(null); // o arquivo salvo antes ficou desatualizado
+    registrar(
+      todas
+        ? `Editado: coluna "${coluna}" alterada em ${mudou} linha(s) para "${valor}".`
+        : `Editado: "${coluna}" da linha ${idx + 2} alterado para "${valor}".`,
+      "ok",
+    );
+    return mudou;
+  }
+
   async function salvar() {
     if (!sessao) return;
     try {
@@ -459,6 +483,7 @@ export default function App() {
               onSalvar={salvar}
               onMostrarPasta={() => caminhoSalvo && plataforma.mostrarNaPasta(caminhoSalvo)}
               onNova={novoDocumento}
+              onEditar={editarCampo}
               abreviacoesAGuardar={aprendido ? Object.keys(aprendido.por_marca).length : 0}
             />
           )}

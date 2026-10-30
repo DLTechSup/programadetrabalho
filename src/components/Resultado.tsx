@@ -1,5 +1,7 @@
-import type { Linha, Planilha } from "../core/nucleo";
+import { useState } from "react";
+import type { Planilha } from "../core/nucleo";
 import { limpo } from "../core/nucleo";
+import { Modal } from "./Modal";
 import { IconeAlerta, IconeCheck, IconePasta, IconeSalvar } from "./Icons";
 
 export interface ResumoGeracao {
@@ -18,15 +20,31 @@ interface Props {
   onSalvar: () => void;
   onMostrarPasta: () => void;
   onNova: () => void;
+  /** Altera um campo; com `todas` repete o valor em toda a coluna. Devolve quantas linhas mudaram. */
+  onEditar: (idx: number, coluna: string, valor: string, todas: boolean) => number;
   abreviacoesAGuardar?: number;
 }
 
 const LIMITE = 80;
 
-export function Resultado({ planilha, paiIdx, codigoPai, resumo, caminhoSalvo, onSalvar, onMostrarPasta, onNova, abreviacoesAGuardar = 0 }: Props) {
+export function Resultado({ planilha, paiIdx, codigoPai, resumo, caminhoSalvo, onSalvar, onMostrarPasta, onNova, onEditar, abreviacoesAGuardar = 0 }: Props) {
+  const [pendente, setPendente] = useState<{ idx: number; coluna: string; valor: string } | null>(null);
   const semCodigo = !codigoPai;
   const aviso = semCodigo || !resumo;
   const mostrar = planilha.linhas.slice(0, LIMITE).map((l, i) => ({ l, i }));
+
+  const nomes: Record<string, string> = { "Categoria do produto": "Categoria" };
+  const nomeColuna = (c: string) => nomes[c] ?? c;
+  const pedir = (idx: number, coluna: string, valor: string) => {
+    if (valor === limpo(planilha.linhas[idx][coluna])) return;
+    setPendente({ idx, coluna, valor });
+  };
+  const aplicar = (todas: boolean) => {
+    if (!pendente) return;
+    onEditar(pendente.idx, pendente.coluna, pendente.valor, todas);
+    setPendente(null);
+  };
+  const total = planilha.linhas.length;
 
   return (
     <>
@@ -100,21 +118,66 @@ export function Resultado({ planilha, paiIdx, codigoPai, resumo, caminhoSalvo, o
               {mostrar.map(({ l, i }) => (
                 <tr key={i} className={i === paiIdx ? "pai" : ""}>
                   <td className="mono">{i + 2}</td>
-                  <td className="mono"><b>{limpo(l["Código"]) || "—"}</b>{i === paiIdx && <span className="badge info" style={{ marginLeft: 8 }}>PAI</span>}</td>
-                  <td>{celula(l, "Descrição")}</td>
-                  <td className="mono">{celula(l, "Cód. no fornecedor")}</td>
-                  <td>{celula(l, "Categoria do produto")}</td>
-                  <td className="mono">{celula(l, "Código Pai")}</td>
+                  <td className="mono"><Editavel valor={limpo(l["Código"])} negrito onConfirmar={(v) => pedir(i, "Código", v)} />{i === paiIdx && <span className="badge info" style={{ marginLeft: 8 }}>PAI</span>}</td>
+                  <td><Editavel valor={limpo(l["Descrição"])} onConfirmar={(v) => pedir(i, "Descrição", v)} /></td>
+                  <td className="mono"><Editavel valor={limpo(l["Cód. no fornecedor"])} onConfirmar={(v) => pedir(i, "Cód. no fornecedor", v)} /></td>
+                  <td><Editavel valor={limpo(l["Categoria do produto"])} onConfirmar={(v) => pedir(i, "Categoria do produto", v)} /></td>
+                  <td className="mono"><Editavel valor={limpo(l["Código Pai"])} onConfirmar={(v) => pedir(i, "Código Pai", v)} /></td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </div>
+
+      {pendente && (
+        <Modal titulo="Aplicar a alteração em toda a coluna?" largura={520} onFechar={() => setPendente(null)}
+          rodape={
+            <>
+              <button className="btn sec" onClick={() => setPendente(null)}>Cancelar</button>
+              <button className="btn sec" onClick={() => aplicar(false)}>Só esta linha</button>
+              <button className="btn" onClick={() => aplicar(true)}>Todas as {total} linhas</button>
+            </>
+          }>
+          <p style={{ marginTop: 0 }}>
+            Você mudou <b>{nomeColuna(pendente.coluna)}</b> da linha {pendente.idx + 2} para:
+          </p>
+          <p className="mono" style={{ wordBreak: "break-all" }}><b>{pendente.valor || "(vazio)"}</b></p>
+          <p style={{ marginBottom: 0 }}>
+            Quer deixar <b>todas as linhas</b> da coluna {nomeColuna(pendente.coluna)} com esse mesmo valor?
+          </p>
+        </Modal>
+      )}
     </>
   );
 }
 
-function celula(l: Linha, coluna: string): string {
-  return limpo(l[coluna]) || "—";
+/** Texto que vira campo de edição ao clicar. Enter/saída do campo confirma, Esc cancela. */
+function Editavel({ valor, onConfirmar, negrito }: { valor: string; onConfirmar: (v: string) => void; negrito?: boolean }) {
+  const [editando, setEditando] = useState(false);
+  const [rascunho, setRascunho] = useState(valor);
+
+  if (!editando) {
+    return (
+      <span className="editavel" title="Clique para editar" tabIndex={0}
+        onClick={() => { setRascunho(valor); setEditando(true); }}
+        onKeyDown={(e) => { if (e.key === "Enter") { setRascunho(valor); setEditando(true); } }}>
+        {negrito ? <b>{valor || "—"}</b> : valor || "—"}
+      </span>
+    );
+  }
+  const fechar = (confirmar: boolean) => {
+    setEditando(false);
+    if (confirmar) onConfirmar(rascunho.trim());
+  };
+  return (
+    <input className="input editando" autoFocus value={rascunho}
+      onChange={(e) => setRascunho(e.target.value)}
+      onFocus={(e) => e.target.select()}
+      onBlur={() => fechar(true)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") fechar(true);
+        else if (e.key === "Escape") { e.stopPropagation(); fechar(false); }
+      }} />
+  );
 }
