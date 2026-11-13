@@ -38,8 +38,58 @@ export interface ConfigCaptura {
   prefixoArquivo: string;
 }
 
+export interface GrupoMonitor {
+  nome: string;
+  tipo: "A" | "B" | "I";
+}
+
+export interface ConfigMonitor {
+  pastaBase: string;
+  grupos: GrupoMonitor[];
+  esperaLegendaSeg: number;
+  pegarAntigas: boolean;
+  todasDoGrupoB: boolean;
+  tentarEscondidas: boolean;
+  notificar: boolean;
+  som: boolean;
+}
+
+export interface ItemListaMonitor {
+  chave: string;
+  hora: string;
+  grupo: string;
+  marca: string;
+  referencia: string;
+  fotos: number;
+  situacao: "ok" | "conferir";
+  pasta: string;
+  observacao: string;
+  feito: boolean;
+}
+
+export interface LinhaLogMonitor {
+  tipo: string;
+  texto: string;
+  quando: number;
+}
+
 export interface Plataforma {
   nome: "electron" | "web";
+  // ---- Monitor de Demandas ----
+  monitorConfigCarregar?(): Promise<ConfigMonitor>;
+  monitorConfigSalvar?(novo: Partial<ConfigMonitor>): Promise<ConfigMonitor>;
+  monitorEscolherPasta?(): Promise<string | null>;
+  monitorIniciar?(): Promise<{ ok: boolean; erro?: string }>;
+  monitorParar?(): Promise<{ ok: boolean }>;
+  monitorEstado?(): Promise<{ rodando: boolean }>;
+  monitorListaDoDia?(grupo: string): Promise<ItemListaMonitor[]>;
+  monitorMarcarFeito?(grupo: string, chave: string, feito: boolean): Promise<void>;
+  monitorLogDeHoje?(): Promise<string>;
+  monitorAbrirPastaDoDia?(grupo: string): Promise<void>;
+  aoMudarLogMonitor?(cb: (l: LinhaLogMonitor) => void): () => void;
+  aoMudarListaMonitor?(cb: () => void): () => void;
+  aoSalvarMonitor?(cb: (d: unknown) => void): () => void;
+  aoMudarEstadoMonitor?(cb: (e: { rodando: boolean }) => void): () => void;
   // ---- Renomeador em Massa ----
   escolherArquivosParaRenomear?(): Promise<ArquivoParaRenomear[]>;
   listarPasta?(pasta: string): Promise<string[]>;

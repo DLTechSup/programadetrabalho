@@ -7,6 +7,7 @@ const { execFile } = require("node:child_process");
 const renomear = require("./renomear.cjs");
 const captura = require("./captura.cjs");
 const notedeck = require("./notedeck.cjs");
+const monitor = require("./monitor.cjs");
 
 const ATALHO_RENOMEADOR = "CommandOrControl+Alt+R";
 let bandeja = null;
@@ -206,6 +207,22 @@ ipcMain.handle("captura:abrirPasta", (_e, pasta) => {
   if (typeof pasta === "string" && fs.existsSync(pasta)) shell.openPath(pasta);
 });
 
+// ---------------------------------------------------------------- Monitor de Demandas
+ipcMain.handle("monitor:configCarregar", () => monitor.obterConfig());
+ipcMain.handle("monitor:configSalvar", (_e, novo) => monitor.salvarConfigMonitor(novo));
+ipcMain.handle("monitor:escolherPasta", async () => {
+  const r = await dialog.showOpenDialog(janela, { title: "Pasta onde salvar as demandas", properties: ["openDirectory", "createDirectory"] });
+  if (r.canceled || !r.filePaths[0]) return null;
+  return r.filePaths[0];
+});
+ipcMain.handle("monitor:iniciar", () => monitor.iniciar());
+ipcMain.handle("monitor:parar", () => monitor.parar());
+ipcMain.handle("monitor:estado", () => monitor.estado());
+ipcMain.handle("monitor:listaDoDia", (_e, grupo) => monitor.listaDoDia(grupo));
+ipcMain.handle("monitor:marcarFeito", (_e, grupo, chave, feito) => monitor.marcarFeito(grupo, chave, feito));
+ipcMain.handle("monitor:logDeHoje", () => monitor.logDeHoje());
+ipcMain.handle("monitor:abrirPastaDoDia", (_e, grupo) => monitor.abrirPastaDoDia(grupo));
+
 // ---------------------------------------------------------------- ciclo de vida
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -223,6 +240,7 @@ if (!app.requestSingleInstanceLock()) {
     captura.carregarConfig();
     captura.iniciarGatilho();
     notedeck.iniciar({ janela, mostrarJanela, aoMudar: criarBandeja });
+    monitor.iniciarModulo({ janela, pastaDadosApp: app.getPath("userData") });
     app.on("activate", () => BrowserWindow.getAllWindows().length === 0 && criarJanela());
   });
   app.on("window-all-closed", () => {
@@ -231,6 +249,7 @@ if (!app.requestSingleInstanceLock()) {
   app.on("will-quit", () => {
     globalShortcut.unregisterAll();
     captura.pararGatilho();
+    monitor.encerrarTudo();
   });
 }
 

@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import App from "./App";
 import { CapturaView } from "./apps/captura/CapturaView";
 import { CodigosFotosView } from "./apps/codigos/CodigosFotosView";
+import { MonitorView } from "./apps/monitor/MonitorView";
 import NoteDeckManager from "./apps/notedeck/Manager.jsx";
 import { RenomeadorView } from "./apps/renomeador/RenomeadorView";
 import {
-  IconeCaptura, IconeCodigo, IconeFerramentas, IconeLogo, IconeNota, IconePlanilha, IconeRenomear, IconeWhats,
+  IconeCaptura, IconeCodigo, IconeLogo, IconeNota, IconePlanilha, IconeRenomear, IconeWhats,
 } from "./components/Icons";
 import { plataforma, type ArquivoParaRenomear } from "./platform";
 
@@ -22,22 +23,10 @@ const ITENS: ItemMenu[] = [
   { id: "gradefacil", nome: "GradeFácil", Icone: IconePlanilha, pronto: true },
   { id: "renomeador", nome: "Renomear em Massa", Icone: IconeRenomear, pronto: true },
   { id: "captura", nome: "Captura de Tela", Icone: IconeCaptura, pronto: true },
-  { id: "monitor", nome: "Monitor de Demandas", Icone: IconeWhats, pronto: false },
+  { id: "monitor", nome: "Monitor de Demandas", Icone: IconeWhats, pronto: true },
   { id: "notedeck", nome: "NoteDeck", Icone: IconeNota, pronto: true },
   { id: "codigos", nome: "Códigos das Fotos", Icone: IconeCodigo, pronto: true },
 ];
-
-function EmBreve({ nome }: { nome: string }) {
-  return (
-    <div className="shell-pagina">
-      <div className="card" style={{ padding: 28, textAlign: "center" }}>
-        <IconeFerramentas size={32} />
-        <h2 style={{ margin: "12px 0 4px" }}>{nome}</h2>
-        <p style={{ color: "var(--muted)", margin: 0 }}>Essa ferramenta ainda vai entrar aqui na central.</p>
-      </div>
-    </div>
-  );
-}
 
 export default function Shell() {
   const [ferramenta, setFerramenta] = useState<Ferramenta>("gradefacil");
@@ -81,7 +70,7 @@ export default function Shell() {
         <RenomeadorView arquivosIniciais={arquivosParaRenomear} onArquivosIniciaisConsumidos={() => setArquivosParaRenomear(null)} />
       )}
       {ferramenta === "captura" && <CapturaView />}
-      {ferramenta === "monitor" && <EmBreve nome="Monitor de Demandas" />}
+      {ferramenta === "monitor" && <MonitorView />}
       {ferramenta === "notedeck" && (
         <div className="shell-pagina" style={{ padding: 0 }}>
           <NoteDeckManager />

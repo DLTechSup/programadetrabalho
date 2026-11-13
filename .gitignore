@@ -4,3 +4,5 @@ release/
 *.log
 .DS_Store
 __pycache__/
+# gerado por "npm run build:electron-logic" (esbuild), não precisa ir pro git
+electron/monitor/logica-pura.cjs
