@@ -29,6 +29,15 @@ export interface ArquivoParaRenomear {
   dataFotoMs?: number;
 }
 
+export interface ConfigCaptura {
+  pastaDestino: string;
+  copiarParaAreaTransferencia: boolean;
+  som: boolean;
+  abrirPastaNoAviso: boolean;
+  ativo: boolean;
+  prefixoArquivo: string;
+}
+
 export interface Plataforma {
   nome: "electron" | "web";
   // ---- Renomeador em Massa ----
@@ -38,6 +47,11 @@ export interface Plataforma {
   renomearDesfazer?(feitos: Array<[string, string]>): Promise<number>;
   abrirPasta?(caminho: string): Promise<void>;
   aoAbrirFerramenta?(cb: (id: string, arquivos?: ArquivoParaRenomear[]) => void): () => void;
+  // ---- Captura de Tela ----
+  capturaConfigCarregar?(): Promise<ConfigCaptura>;
+  capturaConfigSalvar?(novo: Partial<ConfigCaptura>): Promise<ConfigCaptura>;
+  capturaEscolherPasta?(): Promise<string | null>;
+  capturaAbrirPasta?(pasta: string): Promise<void>;
   escolherPasta(): Promise<PastaEscolhida | null>;
   abrirArquivo(): Promise<ArquivoAberto | null>;
   salvarArquivo(nomeSugerido: string, dados: Uint8Array): Promise<string | null>;

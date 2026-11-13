@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import App from "./App";
+import { CapturaView } from "./apps/captura/CapturaView";
 import { RenomeadorView } from "./apps/renomeador/RenomeadorView";
 import {
   IconeCaptura, IconeCodigo, IconeFerramentas, IconeLogo, IconeNota, IconePlanilha, IconeRenomear, IconeWhats,
@@ -18,7 +19,7 @@ interface ItemMenu {
 const ITENS: ItemMenu[] = [
   { id: "gradefacil", nome: "GradeFácil", Icone: IconePlanilha, pronto: true },
   { id: "renomeador", nome: "Renomear em Massa", Icone: IconeRenomear, pronto: true },
-  { id: "captura", nome: "Captura de Tela", Icone: IconeCaptura, pronto: false },
+  { id: "captura", nome: "Captura de Tela", Icone: IconeCaptura, pronto: true },
   { id: "monitor", nome: "Monitor de Demandas", Icone: IconeWhats, pronto: false },
   { id: "notedeck", nome: "NoteDeck", Icone: IconeNota, pronto: false },
   { id: "codigos", nome: "Códigos das Fotos", Icone: IconeCodigo, pronto: false },
@@ -77,7 +78,7 @@ export default function Shell() {
       {ferramenta === "renomeador" && (
         <RenomeadorView arquivosIniciais={arquivosParaRenomear} onArquivosIniciaisConsumidos={() => setArquivosParaRenomear(null)} />
       )}
-      {ferramenta === "captura" && <EmBreve nome="Captura de Tela" />}
+      {ferramenta === "captura" && <CapturaView />}
       {ferramenta === "monitor" && <EmBreve nome="Monitor de Demandas" />}
       {ferramenta === "notedeck" && <EmBreve nome="NoteDeck" />}
       {ferramenta === "codigos" && <EmBreve nome="Códigos das Fotos" />}

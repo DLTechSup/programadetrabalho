@@ -17,6 +17,11 @@ contextBridge.exposeInMainWorld("api", {
   listarPasta: (pasta) => ipcRenderer.invoke("renomear:listarPasta", pasta),
   renomearExecutar: (pares) => ipcRenderer.invoke("renomear:executar", pares),
   renomearDesfazer: (feitos) => ipcRenderer.invoke("renomear:desfazer", feitos),
+  // ---- Captura de Tela ----
+  capturaConfigCarregar: () => ipcRenderer.invoke("captura:configCarregar"),
+  capturaConfigSalvar: (novo) => ipcRenderer.invoke("captura:configSalvar", novo),
+  capturaEscolherPasta: () => ipcRenderer.invoke("captura:escolherPasta"),
+  capturaAbrirPasta: (pasta) => ipcRenderer.invoke("captura:abrirPasta", pasta),
   aoAbrirFerramenta: (cb) => {
     const ouvinte = (_e, id, arquivos) => cb(id, arquivos);
     ipcRenderer.on("ferramenta:abrir", ouvinte);

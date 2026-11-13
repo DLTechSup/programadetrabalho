@@ -5,6 +5,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { execFile } = require("node:child_process");
 const renomear = require("./renomear.cjs");
+const captura = require("./captura.cjs");
 
 const ATALHO_RENOMEADOR = "CommandOrControl+Alt+R";
 let bandeja = null;
@@ -192,6 +193,18 @@ ipcMain.handle("renomear:listarPasta", (_e, pasta) => renomear.listarPasta(pasta
 ipcMain.handle("renomear:executar", (_e, pares) => renomear.executarRenomeacoesSeguro(pares));
 ipcMain.handle("renomear:desfazer", (_e, feitos) => renomear.desfazer(feitos));
 
+// ---------------------------------------------------------------- Captura de Tela
+ipcMain.handle("captura:configCarregar", () => captura.obterConfig());
+ipcMain.handle("captura:configSalvar", (_e, novo) => captura.salvarConfig(novo));
+ipcMain.handle("captura:escolherPasta", async () => {
+  const r = await dialog.showOpenDialog(janela, { title: "Pasta onde salvar as capturas", properties: ["openDirectory", "createDirectory"] });
+  if (r.canceled || !r.filePaths[0]) return null;
+  return r.filePaths[0];
+});
+ipcMain.handle("captura:abrirPasta", (_e, pasta) => {
+  if (typeof pasta === "string" && fs.existsSync(pasta)) shell.openPath(pasta);
+});
+
 // ---------------------------------------------------------------- ciclo de vida
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -206,12 +219,17 @@ if (!app.requestSingleInstanceLock()) {
     criarJanela();
     criarBandeja();
     registrarAtalhoGlobal();
+    captura.carregarConfig();
+    captura.iniciarGatilho();
     app.on("activate", () => BrowserWindow.getAllWindows().length === 0 && criarJanela());
   });
   app.on("window-all-closed", () => {
     if (process.platform !== "darwin") app.quit();
   });
-  app.on("will-quit", () => globalShortcut.unregisterAll());
+  app.on("will-quit", () => {
+    globalShortcut.unregisterAll();
+    captura.pararGatilho();
+  });
 }
 
 function mostrarJanela(aba) {
