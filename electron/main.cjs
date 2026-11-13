@@ -37,7 +37,7 @@ function criarJanela() {
     minWidth: 980,
     minHeight: 660,
     show: false,
-    title: "GradeFácil",
+    title: "Central DLTechSup",
     backgroundColor: "#0f1420",
     autoHideMenuBar: true,
     webPreferences: {

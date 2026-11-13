@@ -1,8 +1,8 @@
 {
-  "name": "gradefacil",
-  "productName": "GradeFacil",
-  "version": "3.0.0",
-  "description": "Preenche planilhas de produtos do Bling: PAI, variações, cores, códigos e descrições.",
+  "name": "central-dltechsup",
+  "productName": "Central DLTechSup",
+  "version": "3.1.0",
+  "description": "Central DLTechSup: GradeFácil, Renomear em Massa, Captura de Tela, Monitor de Demandas, NoteDeck e Códigos das Fotos, tudo num só programa.",
   "author": "DL Tech",
   "private": true,
   "main": "electron/main.cjs",
@@ -48,8 +48,8 @@
     "vitest": "^3.0.0"
   },
   "build": {
-    "appId": "br.com.dltech.gradefacil",
-    "productName": "GradeFacil",
+    "appId": "br.com.dltechsup.central",
+    "productName": "Central DLTechSup",
     "directories": {
       "output": "release"
     },
@@ -85,10 +85,10 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "language": "1046",
-      "artifactName": "GradeFacil-Instalador-${version}.${ext}"
+      "artifactName": "CentralDLTechSup-Instalador-${version}.${ext}"
     },
     "portable": {
-      "artifactName": "GradeFacil-Portatil-${version}.${ext}"
+      "artifactName": "CentralDLTechSup-Portatil-${version}.${ext}"
     }
   }
 }

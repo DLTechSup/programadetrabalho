@@ -20,7 +20,7 @@ jobs:
       - run: npm run dist
       - uses: actions/upload-artifact@v4
         with:
-          name: GradeFacil-windows
+          name: CentralDLTechSup-windows
           path: |
             release/*.exe
           if-no-files-found: error
