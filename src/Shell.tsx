@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import App from "./App";
 import { CapturaView } from "./apps/captura/CapturaView";
+import { CodigosFotosView } from "./apps/codigos/CodigosFotosView";
 import NoteDeckManager from "./apps/notedeck/Manager.jsx";
 import { RenomeadorView } from "./apps/renomeador/RenomeadorView";
 import {
@@ -23,7 +24,7 @@ const ITENS: ItemMenu[] = [
   { id: "captura", nome: "Captura de Tela", Icone: IconeCaptura, pronto: true },
   { id: "monitor", nome: "Monitor de Demandas", Icone: IconeWhats, pronto: false },
   { id: "notedeck", nome: "NoteDeck", Icone: IconeNota, pronto: true },
-  { id: "codigos", nome: "Códigos das Fotos", Icone: IconeCodigo, pronto: false },
+  { id: "codigos", nome: "Códigos das Fotos", Icone: IconeCodigo, pronto: true },
 ];
 
 function EmBreve({ nome }: { nome: string }) {
@@ -86,7 +87,11 @@ export default function Shell() {
           <NoteDeckManager />
         </div>
       )}
-      {ferramenta === "codigos" && <EmBreve nome="Códigos das Fotos" />}
+      {ferramenta === "codigos" && (
+        <div className="shell-pagina" style={{ padding: 0 }}>
+          <CodigosFotosView />
+        </div>
+      )}
     </div>
   );
 }
