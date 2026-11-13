@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import App from "./App";
 import { CapturaView } from "./apps/captura/CapturaView";
+import NoteDeckManager from "./apps/notedeck/Manager.jsx";
 import { RenomeadorView } from "./apps/renomeador/RenomeadorView";
 import {
   IconeCaptura, IconeCodigo, IconeFerramentas, IconeLogo, IconeNota, IconePlanilha, IconeRenomear, IconeWhats,
@@ -21,7 +22,7 @@ const ITENS: ItemMenu[] = [
   { id: "renomeador", nome: "Renomear em Massa", Icone: IconeRenomear, pronto: true },
   { id: "captura", nome: "Captura de Tela", Icone: IconeCaptura, pronto: true },
   { id: "monitor", nome: "Monitor de Demandas", Icone: IconeWhats, pronto: false },
-  { id: "notedeck", nome: "NoteDeck", Icone: IconeNota, pronto: false },
+  { id: "notedeck", nome: "NoteDeck", Icone: IconeNota, pronto: true },
   { id: "codigos", nome: "Códigos das Fotos", Icone: IconeCodigo, pronto: false },
 ];
 
@@ -80,7 +81,11 @@ export default function Shell() {
       )}
       {ferramenta === "captura" && <CapturaView />}
       {ferramenta === "monitor" && <EmBreve nome="Monitor de Demandas" />}
-      {ferramenta === "notedeck" && <EmBreve nome="NoteDeck" />}
+      {ferramenta === "notedeck" && (
+        <div className="shell-pagina" style={{ padding: 0 }}>
+          <NoteDeckManager />
+        </div>
+      )}
       {ferramenta === "codigos" && <EmBreve nome="Códigos das Fotos" />}
     </div>
   );

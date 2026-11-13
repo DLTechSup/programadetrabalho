@@ -6,6 +6,7 @@ const path = require("node:path");
 const { execFile } = require("node:child_process");
 const renomear = require("./renomear.cjs");
 const captura = require("./captura.cjs");
+const notedeck = require("./notedeck.cjs");
 
 const ATALHO_RENOMEADOR = "CommandOrControl+Alt+R";
 let bandeja = null;
@@ -221,6 +222,7 @@ if (!app.requestSingleInstanceLock()) {
     registrarAtalhoGlobal();
     captura.carregarConfig();
     captura.iniciarGatilho();
+    notedeck.iniciar({ janela, mostrarJanela, aoMudar: criarBandeja });
     app.on("activate", () => BrowserWindow.getAllWindows().length === 0 && criarJanela());
   });
   app.on("window-all-closed", () => {
@@ -241,28 +243,38 @@ function mostrarJanela(aba) {
 }
 
 function criarBandeja() {
+  if (bandeja) return atualizarMenuBandeja();
   try {
     const img = nativeImage.createFromPath(path.join(__dirname, "..", "build", "icon.ico"));
     bandeja = new Tray(img.isEmpty() ? nativeImage.createEmpty() : img);
     bandeja.setToolTip(`Central DLTechSup (${ATALHO_RENOMEADOR.replace("CommandOrControl", "Ctrl")} = Renomear)`);
-    bandeja.setContextMenu(
-      Menu.buildFromTemplate([
-        { label: "Abrir a central", click: () => mostrarJanela() },
-        { label: "Renomear arquivos selecionados", click: () => aoApertarAtalhoRenomear() },
-        { type: "separator" },
-        {
-          label: "Sair",
-          click: () => {
-            permitirFechar = true;
-            app.quit();
-          },
-        },
-      ]),
-    );
     bandeja.on("click", () => mostrarJanela());
+    atualizarMenuBandeja();
   } catch {
     /* sem bandeja: a janela continua funcionando normalmente */
   }
+}
+
+/** Remonta o menu da bandeja (chamado de novo sempre que as notas do NoteDeck mudam). */
+function atualizarMenuBandeja() {
+  if (!bandeja) return;
+  bandeja.setContextMenu(
+    Menu.buildFromTemplate([
+      { label: "Abrir a central", click: () => mostrarJanela() },
+      { label: "Renomear arquivos selecionados", click: () => aoApertarAtalhoRenomear() },
+      { type: "separator" },
+      { label: "NoteDeck", enabled: false },
+      ...notedeck.itensBandeja(),
+      { type: "separator" },
+      {
+        label: "Sair",
+        click: () => {
+          permitirFechar = true;
+          app.quit();
+        },
+      },
+    ]),
+  );
 }
 
 function registrarAtalhoGlobal() {

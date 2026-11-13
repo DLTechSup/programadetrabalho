@@ -1,0 +1,463 @@
+// NoteDeck dentro da Central: o "Gerenciador" agora é só uma aba (embutida na janela da
+// Central, veja Manager.jsx), mas cada nota continua sendo sua própria janela flutuante,
+// exatamente como no programa standalone. Portado quase igual do main.cjs original do
+// NoteDeck -- as diferenças são só: sem janela separada para o gerenciador, e a bandeja
+// é compartilhada com o resto da Central (veja main.cjs).
+const {
+  app, BrowserWindow, Menu, ipcMain, dialog, screen, shell, nativeImage,
+} = require("electron");
+const path = require("node:path");
+const fs = require("node:fs");
+const crypto = require("node:crypto");
+const { Store } = require("./notedeck/store.cjs");
+const palette = require("./notedeck/palette.cjs");
+const { readDb, htmlToText } = require("./notedeck/dbimport.cjs");
+
+const ICON = path.join(__dirname, "..", "build", "notedeck-icon.png");
+const DEV = !!process.env.VITE_DEV_SERVER_URL;
+
+let store = null;
+let janelaPrincipal = null; // janela da Central, para enviar "notes:changed"
+let mostrarCentral = (_aba) => {};
+let aoMudarCb = () => {};
+const noteWins = new Map(); // id -> BrowserWindow
+const uid = () => crypto.randomBytes(8).toString("hex");
+const now = () => Date.now();
+
+function loadView(win, hash) {
+  if (DEV) win.loadURL(`${process.env.VITE_DEV_SERVER_URL}#${hash}`);
+  else win.loadFile(path.join(__dirname, "..", "dist", "index.html"), { hash });
+}
+
+const summary = (n) => ({
+  id: n.id, collapsed: !!n.collapsed, title: n.title || "", text: n.text || "", color: n.color, visible: !!n.visible, pinned: !!n.pinned,
+  opacity: n.opacity ?? 1, createdAt: n.createdAt, updatedAt: n.updatedAt,
+  deleted: !!n.deleted, w: n.w, h: n.h,
+});
+const COLLAPSED_H = 32;
+
+const HL_COLORS = [["Amarelo", "#ffff00"], ["Ciano", "#00e5ff"], ["Verde", "#76ff03"], ["Rosa", "#ff80ab"], ["Laranja", "#ffab40"],
+  ["Roxo", "#b388ff"], ["Azul", "#0000ff"], ["Vermelho", "#ff5252"], ["Verde claro", "#c8e6c9"], ["Cinza", "#bdbdbd"]];
+const TXT_COLORS = [["Preto", "#000000"], ["Cinza", "#5f6368"], ["Vermelho", "#d50000"], ["Laranja", "#e65100"], ["Amarelo escuro", "#f9a825"],
+  ["Verde", "#2e7d32"], ["Azul", "#1565c0"], ["Roxo", "#6a1b9a"], ["Rosa", "#c2185b"], ["Branco", "#ffffff"]];
+const swatchCache = {};
+function swatch(hex) {
+  if (swatchCache[hex]) return swatchCache[hex];
+  const S = 16, buf = Buffer.alloc(S * S * 4);
+  const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+  for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+    const o = (y * S + x) * 4, edge = x === 0 || y === 0 || x === S - 1 || y === S - 1;
+    const c = edge ? [110, 110, 110] : [r, g, b];
+    buf[o] = c[2]; buf[o + 1] = c[1]; buf[o + 2] = c[0]; buf[o + 3] = 255; // BGRA
+  }
+  return (swatchCache[hex] = nativeImage.createFromBitmap(buf, { width: S, height: S }));
+}
+
+const findNote = (id) => store.notes.find((n) => n.id === id);
+
+function broadcast() {
+  const list = store.notes.map(summary);
+  if (janelaPrincipal && !janelaPrincipal.isDestroyed()) janelaPrincipal.webContents.send("notes:changed", list);
+  aoMudarCb();
+}
+
+function newNote(opts = {}) {
+  const wa = screen.getPrimaryDisplay().workArea;
+  const off = (store.notes.length % 8) * 28;
+  const n = {
+    id: uid(), html: "<p></p>", text: "", color: opts.color || "yellow",
+    x: opts.x ?? wa.x + 80 + off, y: opts.y ?? wa.y + 80 + off,
+    w: opts.w || 300, h: opts.h || 340, visible: opts.visible ?? true,
+    pinned: false, opacity: 1, createdAt: now(), updatedAt: now(), deleted: false,
+    ...(opts.extra || {}),
+  };
+  store.notes.push(n);
+  store.saveSoon();
+  return n;
+}
+
+function onScreen(b) {
+  return screen.getAllDisplays().some((d) => {
+    const a = d.workArea;
+    return b.x + 60 < a.x + a.width && b.x + b.w - 60 > a.x && b.y + 20 < a.y + a.height && b.y + 30 > a.y;
+  });
+}
+
+function openNoteWindow(id, { focus = false } = {}) {
+  const n = findNote(id);
+  if (!n || n.deleted) return;
+  const existing = noteWins.get(id);
+  if (existing && !existing.isDestroyed()) { existing.show(); if (focus) existing.focus(); return; }
+  if (!onScreen(n)) { const wa = screen.getPrimaryDisplay().workArea; n.x = wa.x + 80; n.y = wa.y + 80; }
+  const c = palette[n.color] || palette.yellow;
+  const win = new BrowserWindow({
+    x: Math.round(n.x), y: Math.round(n.y), width: Math.round(n.w), height: n.collapsed ? COLLAPSED_H : Math.round(n.h),
+    minWidth: n.collapsed ? 140 : 180, minHeight: n.collapsed ? COLLAPSED_H : 140, maxHeight: n.collapsed ? COLLAPSED_H : undefined, frame: false, show: false, skipTaskbar: true,
+    backgroundColor: c.bg, alwaysOnTop: !!n.pinned, opacity: n.opacity ?? 1, icon: ICON,
+    webPreferences: { preload: path.join(__dirname, "preload.cjs"), contextIsolation: true, nodeIntegration: false, spellcheck: true },
+  });
+  win.setMenuBarVisibility(false);
+  noteWins.set(id, win);
+  win.once("ready-to-show", () => { win.showInactive(); if (focus) win.focus(); });
+  loadView(win, `/note/${id}`);
+
+  let t;
+  const saveBounds = () => {
+    clearTimeout(t);
+    t = setTimeout(() => {
+      if (win.isDestroyed()) return;
+      const b = win.getBounds();
+      Object.assign(n, { x: b.x, y: b.y, w: b.width });
+      if (!n.collapsed) n.h = b.height;
+      store.saveSoon();
+    }, 250);
+  };
+  win.on("move", saveBounds);
+  win.on("resize", saveBounds);
+  win.on("closed", () => { noteWins.delete(id); });
+
+  win.webContents.setWindowOpenHandler(({ url }) => { if (/^https?:|^mailto:/.test(url)) shell.openExternal(url); return { action: "deny" }; });
+  win.webContents.on("will-navigate", (e, url) => { if (!url.startsWith(process.env.VITE_DEV_SERVER_URL || "\0") && !url.startsWith("file:")) { e.preventDefault(); shell.openExternal(url); } });
+  win.webContents.on("context-menu", async (_e, p) => {
+    const tpl = [];
+    let onHl = false;
+    try { onHl = await win.webContents.executeJavaScript(`!!document.elementFromPoint(${+p.x || 0}, ${+p.y || 0})?.closest('mark')`); } catch { /* ignora */ }
+    if (win.isDestroyed()) return;
+    const send = (cmd, value) => { if (!win.isDestroyed()) win.webContents.send("editor:cmd", { cmd, value }); };
+    const rmHl = { label: "Remover realce", click: () => send("unhighlightAt", { x: p.x, y: p.y }) };
+    if (!(p.selectionText && p.selectionText.trim()) && onHl) tpl.push(rmHl, { type: "separator" });
+    if (p.selectionText && p.selectionText.trim()) {
+      tpl.push(
+        { label: "Realçar (marca-texto)", submenu: [
+          ...HL_COLORS.map(([name, hex]) => ({ label: name, icon: swatch(hex), click: () => send("highlight", hex) })),
+          { type: "separator" },
+          { label: "Remover realce", click: () => send("unhighlightAt", { x: p.x, y: p.y }) },
+        ] },
+        ...(onHl ? [rmHl] : []),
+        { label: "Cor do texto", submenu: [
+          ...TXT_COLORS.map(([name, hex]) => ({ label: name, icon: swatch(hex), click: () => send("color", hex) })),
+          { type: "separator" },
+          { label: "Cor padrão", click: () => send("color", null) },
+        ] },
+        { label: "Negrito", accelerator: "Ctrl+B", click: () => send("bold") },
+        { type: "separator" },
+      );
+    }
+    if (p.misspelledWord && p.dictionarySuggestions.length) {
+      p.dictionarySuggestions.slice(0, 5).forEach((s) => tpl.push({ label: s, click: () => win.webContents.replaceMisspelling(s) }));
+      tpl.push({ type: "separator" });
+    }
+    tpl.push(
+      { label: "Desfazer", role: "undo", accelerator: "Ctrl+Z" }, { label: "Refazer", role: "redo", accelerator: "Ctrl+Y" },
+      { type: "separator" },
+      { label: "Recortar", role: "cut", enabled: p.editFlags.canCut, accelerator: "Ctrl+X" },
+      { label: "Copiar", role: "copy", enabled: p.editFlags.canCopy, accelerator: "Ctrl+C" },
+      { label: "Colar", role: "paste", enabled: p.editFlags.canPaste, accelerator: "Ctrl+V" },
+      { label: "Colar sem formatação", enabled: p.editFlags.canPaste, accelerator: "Ctrl+Shift+V", click: () => win.webContents.pasteAndMatchStyle() },
+      { type: "separator" },
+      { label: "Selecionar tudo", role: "selectAll", accelerator: "Ctrl+A" },
+    );
+    Menu.buildFromTemplate(tpl).popup({ window: win });
+  });
+}
+
+function closeNoteWindow(id) {
+  const w = noteWins.get(id);
+  if (w && !w.isDestroyed()) w.destroy();
+  noteWins.delete(id);
+}
+
+function setVisible(id, v) {
+  const n = findNote(id);
+  if (!n) return;
+  n.visible = !!v;
+  store.saveSoon();
+  if (v) openNoteWindow(id, { focus: true }); else closeNoteWindow(id);
+  broadcast();
+}
+
+function setAll(v) {
+  store.notes.filter((n) => !n.deleted).forEach((n) => {
+    n.visible = v;
+    if (v) openNoteWindow(n.id); else closeNoteWindow(n.id);
+  });
+  store.saveSoon();
+  broadcast();
+}
+
+// ---------- backup ----------
+function backupPayload() {
+  return { app: "NoteDeck", publisher: "DLTechSup", format: 1, exportedAt: new Date().toISOString(), notes: store.notes };
+}
+const stamp = () => { const d = new Date(); const p = (x) => String(x).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}`; };
+
+function autoBackup(force = false) {
+  const s = store.settings;
+  if (!force && !s.autoBackup) return null;
+  if (!force && now() - (s.lastAutoBackup || 0) < 24 * 3600 * 1000) return null;
+  try {
+    fs.mkdirSync(s.backupDir, { recursive: true });
+    const file = path.join(s.backupDir, `NoteDeck-backup-${stamp()}.json`);
+    fs.writeFileSync(file, JSON.stringify(backupPayload(), null, 2));
+    s.lastAutoBackup = now();
+    store.saveSoon();
+    const olds = fs.readdirSync(s.backupDir).filter((f) => /^NoteDeck-backup-.*\.json$/.test(f)).sort();
+    while (olds.length > Math.max(1, s.backupKeep)) fs.unlinkSync(path.join(s.backupDir, olds.shift()));
+    return file;
+  } catch (e) { console.error("Backup automático do NoteDeck falhou", e); return null; }
+}
+
+function applyImported(list, mode) {
+  if (mode === "replace") { [...noteWins.keys()].forEach(closeNoteWindow); store.notes.length = 0; }
+  let added = 0, updated = 0;
+  for (const raw of list) {
+    const ex = raw.id && findNote(raw.id);
+    if (ex) {
+      if ((raw.updatedAt || 0) > (ex.updatedAt || 0)) { Object.assign(ex, raw); updated++; }
+    } else {
+      store.notes.push({ ...raw, id: raw.id || uid(), deleted: !!raw.deleted }); added++;
+    }
+  }
+  store.saveSoon();
+  store.notes.filter((n) => n.visible && !n.deleted).forEach((n) => {
+    const w = noteWins.get(n.id);
+    if (w && !w.isDestroyed()) w.webContents.send("note:updated", n); else openNoteWindow(n.id);
+  });
+  broadcast();
+  return { added, updated };
+}
+
+// ---------- encaixe (ímã) entre notas ----------
+const SNAP = 14;
+function snapBounds(win, b) {
+  if (!store.settings.snap) return b;
+  const others = [...noteWins.values()].filter((w) => w !== win && !w.isDestroyed() && w.isVisible()).map((w) => w.getBounds());
+  const wa = screen.getDisplayMatching(b).workArea;
+  const best = (cands) => cands.reduce((m, d) => (Math.abs(d) <= SNAP && Math.abs(d) < Math.abs(m) ? d : m), Infinity);
+  const dxs = [wa.x - b.x, wa.x + wa.width - (b.x + b.width)];
+  const dys = [wa.y - b.y, wa.y + wa.height - (b.y + b.height)];
+  for (const o of others) {
+    const nearV = b.y < o.y + o.height + 60 && b.y + b.height > o.y - 60;
+    const nearH = b.x < o.x + o.width + 60 && b.x + b.width > o.x - 60;
+    if (nearV) dxs.push(o.x - b.x, o.x + o.width - (b.x + b.width), o.x + o.width - b.x, o.x - (b.x + b.width));
+    if (nearH) dys.push(o.y - b.y, o.y + o.height - (b.y + b.height), o.y + o.height - b.y, o.y - (b.y + b.height));
+  }
+  const dx = best(dxs), dy = best(dys);
+  return { ...b, x: b.x + (dx === Infinity ? 0 : dx), y: b.y + (dy === Infinity ? 0 : dy) };
+}
+
+function noteFromEvent(e) {
+  for (const [id, w] of noteWins) if (!w.isDestroyed() && w.webContents === e.sender) return id;
+  return null;
+}
+
+async function askMode(win, count, fromDb = false) {
+  const r = await dialog.showMessageBox(win, {
+    type: "question", title: "Importar notas", cancelId: 2, defaultId: 0,
+    message: `${count} nota(s) encontradas${fromDb ? " no arquivo .db" : " no backup"}.`,
+    detail: "Mesclar mantém as notas atuais e adiciona as novas.\nSubstituir apaga as notas atuais (um backup automático é feito antes).",
+    buttons: ["Mesclar", "Substituir tudo", "Cancelar"],
+  });
+  return r.response === 0 ? "merge" : r.response === 1 ? "replace" : null;
+}
+
+function applyAutostart() {
+  if (!app.isPackaged) return;
+  app.setLoginItemSettings({ openAtLogin: !!store.settings.autostart });
+}
+
+function setupIpc() {
+  ipcMain.handle("notes:list", () => store.notes.map(summary));
+  ipcMain.handle("notes:get", (_e, id) => findNote(id));
+  ipcMain.handle("notes:create", (_e, opts) => {
+    const n = newNote(opts || {});
+    if (n.visible) openNoteWindow(n.id, { focus: true });
+    broadcast();
+    return summary(n);
+  });
+  ipcMain.handle("notes:update", (_e, id, patch) => {
+    const n = findNote(id);
+    if (!n) return null;
+    const allowed = ["html", "text", "title", "color", "opacity", "pinned", "collapsed"];
+    for (const k of allowed) if (k in patch) n[k] = patch[k];
+    if ("html" in patch) { n.updatedAt = now(); if (!("text" in patch)) n.text = htmlToText(n.html); }
+    store.saveSoon();
+    const w = noteWins.get(id);
+    if (w && !w.isDestroyed()) {
+      if ("pinned" in patch) w.setAlwaysOnTop(!!n.pinned);
+      if ("opacity" in patch) w.setOpacity(Math.min(1, Math.max(0.3, n.opacity)));
+      if ("color" in patch) w.setBackgroundColor((palette[n.color] || palette.yellow).bg);
+    }
+    if ("collapsed" in patch && w && !w.isDestroyed()) {
+      const b = w.getBounds();
+      if (n.collapsed) {
+        n.h = b.height;
+        w.setMinimumSize(140, COLLAPSED_H); w.setMaximumSize(10000, COLLAPSED_H);
+        w.setBounds({ x: b.x, y: b.y, width: b.width, height: COLLAPSED_H });
+      } else {
+        w.setMaximumSize(0, 0); w.setMinimumSize(180, 140);
+        w.setBounds({ x: b.x, y: b.y, width: b.width, height: Math.max(140, Math.round(n.h || 340)) });
+      }
+    }
+    if ("title" in patch && w && !w.isDestroyed()) w.setTitle(n.title || "Nota");
+    broadcast();
+    return summary(n);
+  });
+  ipcMain.handle("notes:setVisible", (_e, id, v) => setVisible(id, v));
+  ipcMain.handle("notes:setAllVisible", (_e, v) => setAll(v));
+  ipcMain.handle("notes:duplicate", (_e, id) => {
+    const o = findNote(id); if (!o) return;
+    const n = newNote({ color: o.color, x: (o.x || 80) + 30, y: (o.y || 80) + 30, w: o.w, h: o.h, visible: o.visible, extra: { html: o.html, text: o.text, title: o.title ? `${o.title} (cópia)` : "" } });
+    if (n.visible) openNoteWindow(n.id);
+    broadcast();
+  });
+  ipcMain.handle("notes:trash", (_e, id) => {
+    const n = findNote(id); if (!n) return;
+    n.deleted = true; n.visible = false; closeNoteWindow(id); store.saveSoon(); broadcast();
+  });
+  ipcMain.handle("notes:restore", (_e, id) => { const n = findNote(id); if (n) { n.deleted = false; store.saveSoon(); broadcast(); } });
+  ipcMain.handle("notes:delete", (_e, id) => {
+    closeNoteWindow(id);
+    const i = store.notes.findIndex((n) => n.id === id);
+    if (i >= 0) store.notes.splice(i, 1);
+    store.saveSoon(); broadcast();
+  });
+  ipcMain.handle("notes:emptyTrash", () => {
+    for (let i = store.notes.length - 1; i >= 0; i--) if (store.notes[i].deleted) store.notes.splice(i, 1);
+    store.saveSoon(); broadcast();
+  });
+  ipcMain.handle("notes:focus", (_e, id) => openNoteWindow(id, { focus: true }));
+  ipcMain.handle("notes:exportTxt", async (e, id) => {
+    const n = findNote(id); if (!n) return;
+    const win = BrowserWindow.fromWebContents(e.sender);
+    const r = await dialog.showSaveDialog(win, { defaultPath: `${(n.text || "nota").split("\n")[0].slice(0, 30).replace(/[\\/:*?"<>|]/g, "")}.txt`, filters: [{ name: "Texto", extensions: ["txt"] }] });
+    if (!r.canceled) fs.writeFileSync(r.filePath, n.text || "", "utf8");
+  });
+
+  let drag = null;
+  ipcMain.on("win:dragStart", (e) => {
+    const win = BrowserWindow.fromWebContents(e.sender);
+    if (win) drag = { win, b: win.getBounds(), c: screen.getCursorScreenPoint() };
+  });
+  ipcMain.on("win:dragMove", (_e, noSnap) => {
+    if (!drag || drag.win.isDestroyed()) return;
+    const c = screen.getCursorScreenPoint();
+    const nb = { x: drag.b.x + c.x - drag.c.x, y: drag.b.y + c.y - drag.c.y, width: drag.b.width, height: drag.b.height };
+    drag.win.setBounds(noSnap ? nb : snapBounds(drag.win, nb));
+  });
+  ipcMain.on("win:dragEnd", () => { drag = null; });
+
+  ipcMain.handle("win:control", (e, action) => {
+    const win = BrowserWindow.fromWebContents(e.sender);
+    const id = noteFromEvent(e);
+    if (!win) return;
+    if (action === "minimize") win.minimize();
+    else if (action === "maximize") (win.isMaximized() ? win.unmaximize() : win.maximize());
+    else if (action === "hide" && id) setVisible(id, false);
+    else if (action === "close") win.close();
+  });
+  ipcMain.handle("app:openManager", () => mostrarCentral("notedeck"));
+  ipcMain.handle("app:quit", () => app.quit());
+  ipcMain.handle("app:info", () => ({ version: app.getVersion(), dataFile: store.file, packaged: app.isPackaged, platform: process.platform }));
+
+  ipcMain.handle("settings:get", () => store.settings);
+  ipcMain.handle("settings:set", (_e, patch) => {
+    Object.assign(store.settings, patch);
+    store.saveSoon();
+    if ("autostart" in patch) applyAutostart();
+    if (janelaPrincipal && !janelaPrincipal.isDestroyed()) janelaPrincipal.webContents.send("settings:changed", store.settings);
+    return store.settings;
+  });
+
+  ipcMain.handle("backup:export", async (e) => {
+    const win = BrowserWindow.fromWebContents(e.sender);
+    const r = await dialog.showSaveDialog(win, { title: "Exportar backup", defaultPath: `NoteDeck-backup-${stamp()}.json`, filters: [{ name: "Backup NoteDeck", extensions: ["json"] }] });
+    if (r.canceled) return { ok: false };
+    fs.writeFileSync(r.filePath, JSON.stringify(backupPayload(), null, 2));
+    return { ok: true, file: r.filePath, count: store.notes.length };
+  });
+  ipcMain.handle("backup:import", async (e) => {
+    const win = BrowserWindow.fromWebContents(e.sender);
+    const r = await dialog.showOpenDialog(win, { title: "Importar backup NoteDeck", properties: ["openFile"], filters: [{ name: "Backup NoteDeck", extensions: ["json"] }] });
+    if (r.canceled) return { ok: false };
+    let data;
+    try { data = JSON.parse(fs.readFileSync(r.filePaths[0], "utf8")); } catch { return { ok: false, error: "Arquivo inválido." }; }
+    if (!Array.isArray(data.notes)) return { ok: false, error: "Este arquivo não é um backup do NoteDeck." };
+    const mode = await askMode(win, data.notes.length);
+    if (!mode) return { ok: false };
+    autoBackup(true);
+    return { ok: true, ...applyImported(data.notes, mode) };
+  });
+  ipcMain.handle("backup:importDb", async (e) => {
+    const win = BrowserWindow.fromWebContents(e.sender);
+    const r = await dialog.showOpenDialog(win, { title: "Importar backup .db (Simple Sticky Notes)", properties: ["openFile"], filters: [{ name: "Banco de dados", extensions: ["db", "sqlite", "sqlite3"] }, { name: "Todos", extensions: ["*"] }] });
+    if (r.canceled) return { ok: false };
+    try {
+      const { notes, schema } = await readDb(r.filePaths[0], palette);
+      if (!notes.length) return { ok: false, error: "Nenhuma nota foi encontrada neste arquivo.", schema };
+      const mode = await askMode(win, notes.length, true);
+      if (!mode) return { ok: false };
+      autoBackup(true);
+      const list = notes.map((x, i) => {
+        const wa = screen.getPrimaryDisplay().workArea;
+        return {
+          id: uid(), html: x.html, text: htmlToText(x.html), color: x.color || "yellow",
+          x: wa.x + 60 + (i % 10) * 26, y: wa.y + 60 + (i % 10) * 26,
+          w: x.w && x.w > 180 && x.w < 1200 ? x.w : 300, h: x.h && x.h > 140 && x.h < 1200 ? x.h : 340,
+          visible: false, pinned: false, opacity: 1, deleted: false,
+          createdAt: x.createdAt || now(), updatedAt: x.updatedAt || now(),
+        };
+      });
+      return { ok: true, ...applyImported(list, mode), schema };
+    } catch (err) {
+      return { ok: false, error: String(err.message || err) };
+    }
+  });
+  ipcMain.handle("backup:now", () => { const f = autoBackup(true); return f ? { ok: true, file: f } : { ok: false, error: "Não foi possível gravar o backup na pasta escolhida." }; });
+  ipcMain.handle("backup:pickDir", async (e) => {
+    const win = BrowserWindow.fromWebContents(e.sender);
+    const r = await dialog.showOpenDialog(win, { title: "Pasta dos backups automáticos", properties: ["openDirectory", "createDirectory"] });
+    if (r.canceled) return store.settings;
+    store.settings.backupDir = r.filePaths[0]; store.saveSoon();
+    return store.settings;
+  });
+  ipcMain.handle("backup:openDir", () => { fs.mkdirSync(store.settings.backupDir, { recursive: true }); return shell.openPath(store.settings.backupDir); });
+}
+
+/** Chamado uma vez, pelo app.whenReady() da Central. */
+function iniciar({ janela, mostrarJanela, aoMudar }) {
+  janelaPrincipal = janela;
+  mostrarCentral = mostrarJanela;
+  aoMudarCb = aoMudar || (() => {});
+  store = new Store();
+  setupIpc();
+  applyAutostart();
+  store.notes.filter((n) => n.visible && !n.deleted).forEach((n) => openNoteWindow(n.id));
+  if (store.notes.length === 0) {
+    const n = newNote({ extra: { html: "<p><strong>Bem-vindo ao NoteDeck!</strong></p><p>Escolha na aba NoteDeck quais notas ficam na tela.</p>", text: "Bem-vindo ao NoteDeck!\nEscolha na aba NoteDeck quais notas ficam na tela." } });
+    openNoteWindow(n.id);
+  }
+  broadcast();
+  autoBackup();
+  setInterval(() => autoBackup(), 3600 * 1000);
+}
+
+/** Itens de bandeja para o menu da Central (notas + atalhos rápidos). */
+function itensBandeja() {
+  if (!store) return [];
+  const live = store.notes.filter((n) => !n.deleted);
+  const itensNotas = live.slice(0, 20).map((n) => ({
+    label: (n.title || (n.text || "").split("\n")[0] || "Nota vazia").slice(0, 40),
+    type: "checkbox", checked: !!n.visible, click: () => setVisible(n.id, !n.visible),
+  }));
+  return [
+    { label: "Nova nota", click: () => { const n = newNote(); openNoteWindow(n.id, { focus: true }); broadcast(); } },
+    { type: "separator" },
+    ...(itensNotas.length ? itensNotas : [{ label: "Nenhuma nota criada", enabled: false }]),
+    { type: "separator" },
+    { label: "Mostrar todas as notas", click: () => setAll(true) },
+    { label: "Ocultar todas as notas", click: () => setAll(false) },
+  ];
+}
+
+module.exports = { iniciar, itensBandeja };
