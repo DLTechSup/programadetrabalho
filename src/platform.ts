@@ -22,8 +22,22 @@ export interface PastaEscolhida {
   arquivos: ArquivoScan[];
 }
 
+export interface ArquivoParaRenomear {
+  caminho: string;
+  nome: string;
+  mtimeMs: number;
+  dataFotoMs?: number;
+}
+
 export interface Plataforma {
   nome: "electron" | "web";
+  // ---- Renomeador em Massa ----
+  escolherArquivosParaRenomear?(): Promise<ArquivoParaRenomear[]>;
+  listarPasta?(pasta: string): Promise<string[]>;
+  renomearExecutar?(pares: Array<{ antigo: string; novo: string }>): Promise<Array<[string, string]>>;
+  renomearDesfazer?(feitos: Array<[string, string]>): Promise<number>;
+  abrirPasta?(caminho: string): Promise<void>;
+  aoAbrirFerramenta?(cb: (id: string, arquivos?: ArquivoParaRenomear[]) => void): () => void;
   escolherPasta(): Promise<PastaEscolhida | null>;
   abrirArquivo(): Promise<ArquivoAberto | null>;
   salvarArquivo(nomeSugerido: string, dados: Uint8Array): Promise<string | null>;
@@ -146,5 +160,11 @@ function daPastaBruta(api: NonNullable<Window["api"]>): Plataforma["escolherPast
 }
 
 export const plataforma: Plataforma = window.api
-  ? { ...window.api, nome: "electron", escolherPasta: daPastaBruta(window.api) }
+  ? {
+      ...window.api,
+      nome: "electron",
+      escolherPasta: daPastaBruta(window.api),
+      abrirPasta: window.api.mostrarNaPasta,
+      aoAbrirFerramenta: window.api.aoAbrirFerramenta,
+    }
   : web;

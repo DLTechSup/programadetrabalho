@@ -49,3 +49,28 @@ export const IconeSeta = (p: P) => (
 export const IconeRadar = (p: P) => (
   <Svg {...p}><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4.5" /><path d="M12 12 18 6" /></Svg>
 );
+
+export const IconeLogo = (p: P) => (
+  <Svg {...p}><rect x="3" y="3" width="18" height="18" rx="4" /><path d="M8 12h8M12 8v8" /></Svg>
+);
+export const IconeRenomear = (p: P) => (
+  <Svg {...p}><path d="M4 7V5a2 2 0 0 1 2-2h3M4 17v2a2 2 0 0 0 2 2h3M20 7V5a2 2 0 0 0-2-2h-3M20 17v2a2 2 0 0 1-2 2h-3" /><path d="M8 12h8M14 9l3 3-3 3" /></Svg>
+);
+export const IconeCaptura = (p: P) => (
+  <Svg {...p}><path d="M4 8V6a2 2 0 0 1 2-2h2M20 8V6a2 2 0 0 0-2-2h-2M4 16v2a2 2 0 0 0 2 2h2M20 16v2a2 2 0 0 1-2 2h-2" /><circle cx="12" cy="12" r="3" /></Svg>
+);
+export const IconeWhats = (p: P) => (
+  <Svg {...p}><path d="M21 11.5a8.5 8.5 0 0 1-12.3 7.6L4 20l1-4.5A8.5 8.5 0 1 1 21 11.5Z" /><path d="M8.5 10.5c.3 2.5 2.5 4.7 5 5" /></Svg>
+);
+export const IconeNota = (p: P) => (
+  <Svg {...p}><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" /><path d="M14 3v5h5M8 13h8M8 17h5" /></Svg>
+);
+export const IconeCodigo = (p: P) => (
+  <Svg {...p}><path d="m8 6-5 6 5 6M16 6l5 6-5 6" /></Svg>
+);
+export const IconeFerramentas = (p: P) => (
+  <Svg {...p}><path d="M14.7 6.3a4 4 0 0 1 5.6 5.6l-6.6 6.6a2 2 0 0 1-2.8 0L4.5 12a2 2 0 0 1 0-2.8l1.8-1.8" /><path d="m16 7-3-3M4 20l4-1 7-7" /></Svg>
+);
+export const IconeDesfazer = (p: P) => (
+  <Svg {...p}><path d="M9 14 4 9l5-5" /><path d="M4 9h11a5 5 0 0 1 0 10h-1" /></Svg>
+);

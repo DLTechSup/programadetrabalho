@@ -1,8 +1,14 @@
 // Processo principal do Electron: janela, diálogos de arquivo e persistência
 // do banco de cores. Toda a lógica de negócio fica no renderer (src/core).
-const { app, BrowserWindow, dialog, ipcMain, shell, Menu } = require("electron");
+const { app, BrowserWindow, dialog, ipcMain, shell, Menu, Tray, globalShortcut, nativeImage } = require("electron");
 const fs = require("node:fs");
 const path = require("node:path");
+const { execFile } = require("node:child_process");
+const renomear = require("./renomear.cjs");
+
+const ATALHO_RENOMEADOR = "CommandOrControl+Alt+R";
+let bandeja = null;
+let permitirFechar = false;
 
 const ARQUIVO_CORES = "cores_bling.json";
 let janela = null;
@@ -40,6 +46,14 @@ function criarJanela() {
   });
   Menu.setApplicationMenu(null);
   janela.once("ready-to-show", () => janela.show());
+
+  // fechar a janela (X) so minimiza para a bandeja; o atalho global continua funcionando
+  janela.on("close", (e) => {
+    if (!permitirFechar) {
+      e.preventDefault();
+      janela.hide();
+    }
+  });
 
   // nada de abrir janelas/links externos dentro do app
   janela.webContents.setWindowOpenHandler(({ url }) => {
@@ -165,6 +179,19 @@ ipcMain.handle("shell:mostrar", (_e, caminho) => {
 });
 ipcMain.handle("app:versao", () => app.getVersion());
 
+// ---------------------------------------------------------------- Renomeador em Massa
+ipcMain.handle("renomear:escolherArquivos", async () => {
+  const r = await dialog.showOpenDialog(janela, {
+    title: "Escolha os arquivos para renomear",
+    properties: ["openFile", "multiSelections"],
+  });
+  if (r.canceled) return [];
+  return r.filePaths.map((p) => renomear.infoArquivo(p));
+});
+ipcMain.handle("renomear:listarPasta", (_e, pasta) => renomear.listarPasta(pasta));
+ipcMain.handle("renomear:executar", (_e, pares) => renomear.executarRenomeacoesSeguro(pares));
+ipcMain.handle("renomear:desfazer", (_e, feitos) => renomear.desfazer(feitos));
+
 // ---------------------------------------------------------------- ciclo de vida
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -177,9 +204,83 @@ if (!app.requestSingleInstanceLock()) {
   });
   app.whenReady().then(() => {
     criarJanela();
+    criarBandeja();
+    registrarAtalhoGlobal();
     app.on("activate", () => BrowserWindow.getAllWindows().length === 0 && criarJanela());
   });
   app.on("window-all-closed", () => {
     if (process.platform !== "darwin") app.quit();
   });
+  app.on("will-quit", () => globalShortcut.unregisterAll());
+}
+
+function mostrarJanela(aba) {
+  if (!janela) return;
+  if (janela.isMinimized()) janela.restore();
+  janela.show();
+  janela.focus();
+  if (aba) janela.webContents.send("ferramenta:abrir", aba);
+}
+
+function criarBandeja() {
+  try {
+    const img = nativeImage.createFromPath(path.join(__dirname, "..", "build", "icon.ico"));
+    bandeja = new Tray(img.isEmpty() ? nativeImage.createEmpty() : img);
+    bandeja.setToolTip(`Central DLTechSup (${ATALHO_RENOMEADOR.replace("CommandOrControl", "Ctrl")} = Renomear)`);
+    bandeja.setContextMenu(
+      Menu.buildFromTemplate([
+        { label: "Abrir a central", click: () => mostrarJanela() },
+        { label: "Renomear arquivos selecionados", click: () => aoApertarAtalhoRenomear() },
+        { type: "separator" },
+        {
+          label: "Sair",
+          click: () => {
+            permitirFechar = true;
+            app.quit();
+          },
+        },
+      ]),
+    );
+    bandeja.on("click", () => mostrarJanela());
+  } catch {
+    /* sem bandeja: a janela continua funcionando normalmente */
+  }
+}
+
+function registrarAtalhoGlobal() {
+  try {
+    globalShortcut.register(ATALHO_RENOMEADOR, aoApertarAtalhoRenomear);
+  } catch {
+    /* outro programa pode estar usando o mesmo atalho */
+  }
+}
+
+// Le os arquivos selecionados no Explorador de Arquivos no instante do atalho (so' Windows; melhor esforco).
+const SCRIPT_SELECAO = `
+$sh = New-Object -ComObject Shell.Application
+$ativa = $null
+foreach ($w in $sh.Windows()) { try { if ($w.HWND -eq (Get-Process -Id $PID).MainWindowHandle) { continue } } catch {} }
+$candidatas = @($sh.Windows())
+foreach ($w in $candidatas) {
+  try { $n = @($w.Document.SelectedItems()).Count } catch { $n = 0 }
+  if ($n -gt 0) { foreach ($i in $w.Document.SelectedItems()) { if (-not $i.IsFolder) { $i.Path } }; break }
+}
+`;
+
+function lerSelecaoDoExplorer() {
+  return new Promise((resolve) => {
+    if (process.platform !== "win32") return resolve([]);
+    execFile("powershell", ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", SCRIPT_SELECAO],
+      { timeout: 8000, windowsHide: true }, (err, stdout) => {
+        if (err) return resolve([]);
+        resolve(stdout.split(/\r?\n/).map((l) => l.trim()).filter((l) => l && fs.existsSync(l) && fs.statSync(l).isFile()));
+      });
+  });
+}
+
+async function aoApertarAtalhoRenomear() {
+  const selecionados = await lerSelecaoDoExplorer();
+  mostrarJanela();
+  const arquivos = selecionados.map((p) => renomear.infoArquivo(p));
+  janela.webContents.send("ferramenta:abrir", "renomeador", arquivos);
 }
