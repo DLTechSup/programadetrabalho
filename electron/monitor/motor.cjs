@@ -131,7 +131,10 @@ class Processador {
     if (primeira && this.cfg.pegarAntigas && this.nav.rolarParaOInicioDoDia) {
       await this._varredura(g);
     } else {
-      await this._passada(g, primeira && !this.cfg.pegarAntigas);
+      // Sempre processa o que já está visível na tela (mesmo na primeira vez) -- nunca só
+      // "marca como visto" sem olhar o conteúdo. Do contrário, qualquer demanda que já tivesse
+      // chegado antes de o monitor ser ligado seria descartada em silêncio.
+      await this._passada(g);
     }
   }
 
@@ -140,20 +143,16 @@ class Processador {
     this.evento("log", `${g.nome}: lendo tudo o que chegou hoje (pode levar um pouco)...`);
     await this.nav.rolarParaOInicioDoDia(this.hoje());
     for (let i = 0; i < 120; i++) {
-      await this._passada(g, false);
+      await this._passada(g);
       if (!(await this.nav.rolarUmPasso())) break;
     }
-    await this._passada(g, false);
+    await this._passada(g);
     await this.nav.rolarParaOFim();
   }
 
-  async _passada(g, ignorarExistentes = false) {
-    if (g.tipo === "I") return this._conversaIndividual(g, ignorarExistentes);
+  async _passada(g) {
+    if (g.tipo === "I") return this._conversaIndividual(g);
     const estado = this.estados.get(g.nome);
-    if (ignorarExistentes) {
-      await this._marcarHistorico(g);
-      return;
-    }
     const { msgsBrutas } = await this.nav.ler();
     const { brutaParaMensagem, completarDatas, mesmoDia } = require("./logica-pura.cjs");
     const msgs = msgsBrutas.map(brutaParaMensagem);
@@ -189,20 +188,6 @@ class Processador {
       }
       estado.marcar(m.id);
     }
-  }
-
-  /** Marca como 'já visto' tudo o que já está na conversa (espera o WhatsApp terminar de carregar o histórico). */
-  async _marcarHistorico(g) {
-    const estado = this.estados.get(g.nome);
-    let anterior = -1;
-    for (let i = 0; i < 8; i++) {
-      const { msgsBrutas } = await this.nav.ler();
-      for (const m of msgsBrutas) estado.marcar(m.id);
-      if (msgsBrutas.length && msgsBrutas.length === anterior) break;
-      anterior = msgsBrutas.length;
-      if (this.nav.aguardar) await this.nav.aguardar(1000);
-    }
-    this.evento("log", `${g.nome}: pronto. Daqui para frente salvo só o que chegar de novo.`);
   }
 
   async _fotosDaMensagem(m) {
@@ -331,9 +316,8 @@ class Processador {
   }
 
   // ---- Conversa individual: salva o TEXTO do que a pessoa escreveu ----------
-  async _conversaIndividual(g, ignorarExistentes = false) {
+  async _conversaIndividual(g) {
     const estado = this.estados.get(g.nome);
-    if (ignorarExistentes) { await this._marcarHistorico(g); return; }
     const { msgsBrutas } = await this.nav.ler();
     const { nomePastaGrupo } = require("./logica-pura.cjs");
     const mensagens = [];

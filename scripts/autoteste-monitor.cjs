@@ -59,6 +59,19 @@ app.whenReady().then(async () => {
     await p.ciclo();
     const salvos2 = eventos.filter(([t]) => t === "salvo").map(([, d]) => d);
     assert(salvos2.length === 2, "segunda volta do ciclo não duplica nada");
+
+    // ---- bug real relatado pelo usuário: demanda que já estava na tela ANTES de ligar o
+    // monitor (pegarAntigas desligado, o padrão) tem que ser capturada mesmo assim, nunca só
+    // "marcada como vista" sem processar ----
+    await nav.abrirConversa("Só Foto Caixa"); // garante que não fica preso na conversa anterior
+    await nav.abrirConversa("Demandas Fotos");
+    const saida2 = fs.mkdtempSync(path.join(os.tmpdir(), "monitor-saida2-"));
+    const cfg2 = { pastaBase: saida2, pegarAntigas: false, todasDoGrupoB: true, tentarEscondidas: true, esperaLegendaSeg: 120, grupos: [{ nome: "Demandas Fotos", tipo: "A" }] };
+    const eventos3 = [];
+    const p2 = new Processador(cfg2, nav, { evento: (t, d) => eventos3.push([t, d]), regrasRef: new RegrasReferencia() });
+    await p2.ciclo(); // primeiro ciclo, logo depois de "ligar o monitor" -- a demanda já está visível
+    const salvos3 = eventos3.filter(([t]) => t === "salvo").map(([, d]) => d);
+    assert(salvos3.length === 2, `com pegarAntigas desligado, o 1º ciclo já captura o que está visível (veio ${salvos3.length})`);
     nav.fechar();
 
     if (falhas > 0) { console.error(`\n${falhas} verificação(ões) falharam.`); process.exit(1); }
