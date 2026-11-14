@@ -1,0 +1,122 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* Paleta do Encaixe mapeada nas variáveis do shadcn/ui. Tema claro apenas. */
+:root {
+  --radius: 0.75rem;
+  --background: #fafaf9;
+  --foreground: #1c1917;
+  --card: #ffffff;
+  --card-foreground: #1c1917;
+  --popover: #ffffff;
+  --popover-foreground: #1c1917;
+  --primary: #0f766e;
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f4;
+  --secondary-foreground: #1c1917;
+  --muted: #f5f5f4;
+  --muted-foreground: #57534e;
+  --accent: #ccfbf1;
+  --accent-foreground: #134e4a;
+  --destructive: #dc2626;
+  --success: #16a34a;
+  /* Texto verde/âmbar mais escuro para garantir contraste AA sobre fundos claros */
+  --success-foreground: #166534;
+  --warning: #d97706;
+  --warning-foreground: #92400e;
+  --border: #e7e5e4;
+  --input: #d6d3d1;
+  --ring: #0f766e;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    font-size: 16px;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+/* ---------- Identidade visual ---------- */
+:root {
+  --tinta: #0b3b37;
+  --tinta-2: #115e59;
+}
+
+@theme inline {
+  --color-tinta: var(--tinta);
+  --color-tinta-2: var(--tinta-2);
+}
+
+@layer utilities {
+  /* Grade de pontos discreta para fundos */
+  .fundo-pontos {
+    background-image: radial-gradient(circle at 1px 1px, rgb(15 118 110 / 0.12) 1px, transparent 0);
+    background-size: 22px 22px;
+  }
+  /* Brilho suave do topo da página */
+  .fundo-hero {
+    background:
+      radial-gradient(60rem 30rem at 85% -10%, rgb(204 251 241 / 0.9), transparent 60%),
+      radial-gradient(40rem 24rem at -10% 10%, rgb(240 253 250 / 1), transparent 60%),
+      var(--background);
+  }
+  .texto-gradiente {
+    background: linear-gradient(90deg, #0f766e, #0d9488 60%, #14b8a6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .sombra-suave {
+    box-shadow: 0 1px 2px rgb(28 25 23 / 0.04), 0 12px 32px -12px rgb(15 118 110 / 0.25);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .flutuar {
+    animation: flutuar 6s ease-in-out infinite;
+  }
+  @keyframes flutuar {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+}

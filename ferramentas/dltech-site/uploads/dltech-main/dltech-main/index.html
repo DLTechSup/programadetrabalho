@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>DLTech — Suporte remoto via AnyDesk</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #ffffff; }
+  body { -webkit-font-smoothing: antialiased; font-family: 'SF Pro Text', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  a { color: #0066cc; text-decoration: none; }
+  a:hover { color: #0071e3; text-decoration: underline; }
+  ::selection { background: #d3e4f7; }
+</style>
+</helmet>
+
+<div style="font-family: 'SF Pro Text', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #1d1d1f; background: #ffffff; font-feature-settings: 'numr';">
+
+  <header style="position: sticky; top: 0; z-index: 20; background: rgba(250,250,252,0.82); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); borderBottom: 1px solid #d6d6d6;">
+    <div style="max-width: 1200px; margin: 0 auto; height: 52px; padding: 0 40px; display: flex; align-items: center; justify-content: space-between; gap: 24px;">
+      <a href="#topo" style="display: flex; align-items: center; textDecoration: none;" style-hover="text-decoration: none;" aria-label="DLTech — início">
+        <img src="logo-dltech.png" alt="DLTech — Suporte remoto" style="height: 30px; width: auto; display: block;" />
+      </a>
+      <nav style="display: flex; align-items: center; gap: 22px; font-size: 12px; letter-spacing: -0.12px; color: #474747;">
+        <a href="#servicos" style="color: #474747; textDecoration: none;" style-hover="color: #1d1d1f; text-decoration: none;">Serviços</a>
+        <a href="#como-funciona" style="color: #474747; textDecoration: none;" style-hover="color: #1d1d1f; text-decoration: none;">Como funciona</a>
+        <a href="#seguranca" style="color: #474747; textDecoration: none;" style-hover="color: #1d1d1f; text-decoration: none;">Segurança</a>
+        <a href="#planos" style="color: #474747; textDecoration: none;" style-hover="color: #1d1d1f; text-decoration: none;">Preços</a>
+        <a href="#duvidas" style="color: #474747; textDecoration: none;" style-hover="color: #1d1d1f; text-decoration: none;">Dúvidas</a>
+        <button type="button" onClick="{{ openModal }}" style="background: #0071e3; color: #ffffff; padding: 8px 16px; border-radius: 980px; font-size: 12px; border: none; cursor: pointer; font-family: inherit;" style-hover="background: #0062c4;">Pedir ajuda</button>
+      </nav>
+    </div>
+  </header>
+
+  <section id="topo" style="background: #ffffff; padding: 96px 40px 80px;">
+    <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 24px;">
+      <span style="font-size: 14px; font-weight: 500; letter-spacing: -0.224px; color: #b64400;">Atendimento 100% remoto</span>
+      <h1 style="margin: 0; font-family: 'SF Pro Display', ui-sans-serif, system-ui, -apple-system, sans-serif; font-size: 88px; line-height: 0.98; font-weight: 700; letter-spacing: -1.44px; max-width: 900px; text-wrap: balance;">Seu computador resolvido sem sair de casa.</h1>
+      <p style="margin: 0; max-width: 620px; font-size: 21px; line-height: 29px; letter-spacing: 0.231px; color: #707070;">Instalações, problemas de software, lentidão e configurações. Eu me conecto ao seu computador com a sua autorização, resolvo e explico o que foi feito.</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 8px;">
+        <button type="button" onClick="{{ openModal }}" style="background: #0071e3; color: #ffffff; font-size: 17px; padding: 12px 22px; border-radius: 980px; border: none; cursor: pointer; font-family: inherit;" style-hover="background: #0062c4;">Falar no WhatsApp</button>
+        <a href="#servicos" style="border: 1px solid rgba(0,0,0,0.8); color: #1d1d1f; font-size: 17px; padding: 12px 22px; border-radius: 999px; textDecoration: none;" style-hover="background: #e8e8ed; text-decoration: none; color: #1d1d1f;">Ver serviços</a>
+      </div>
+      <p style="margin: 0; font-size: 14px; color: #707070; letter-spacing: -0.224px;">Sem visita presencial. Sem fila de suporte. Você acompanha tudo na tela.</p>
+
+      <div style="width: 100%; margin-top: 40px; border-radius: 28px; background: #f5f5f7; padding: 32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;">
+        <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;">
+          <span style="font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 40px; font-weight: 600; line-height: 1.1;">1 sessão</span>
+          <span style="font-size: 14px; color: #707070;">resolve a maioria dos casos</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;">
+          <span style="font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 40px; font-weight: 600; line-height: 1.1;">Passo a passo</span>
+          <span style="font-size: 14px; color: #707070;">explicado em linguagem simples</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;">
+          <span style="font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 40px; font-weight: 600; line-height: 1.1;">Você autoriza</span>
+          <span style="font-size: 14px; color: #707070;">o acesso começa e termina com você</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="servicos" style="background: #f5f5f7; padding: 110px 40px;">
+    <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px;">
+      <div style="display: flex; flex-direction: column; gap: 12px; max-width: 700px;">
+        <h2 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 56px; line-height: 60px; font-weight: 700; letter-spacing: -0.28px;">Suporte remoto, do começo ao fim.</h2>
+        <p style="margin: 0; font-size: 21px; line-height: 29px; color: #707070;">Aquele erro que não sai da tela, o programa que não instala, a impressora que não aparece. Eu entro pelo AnyDesk, resolvo e deixo funcionando.</p>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+        <div style="background: #ffffff; border-radius: 28px; padding: 36px; display: flex; flex-direction: column; gap: 12px;">
+          <span style="width: 44px; height: 44px; border-radius: 999px; background: #c8d8e0; display: block; margin-bottom: 4px;"></span>
+          <h3 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 28px; line-height: 32px; font-weight: 600;">Instalação e configuração</h3>
+          <p style="margin: 0; font-size: 17px; line-height: 25px; letter-spacing: -0.374px; color: #707070;">Programas, drivers, impressora, Wi-Fi e periféricos instalados e testados na hora.</p>
+        </div>
+        <div style="background: #ffffff; border-radius: 28px; padding: 36px; display: flex; flex-direction: column; gap: 12px;">
+          <span style="width: 44px; height: 44px; border-radius: 999px; background: #dddc8c; display: block; margin-bottom: 4px;"></span>
+          <h3 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 28px; line-height: 32px; font-weight: 600;">Problemas de software</h3>
+          <p style="margin: 0; font-size: 17px; line-height: 25px; letter-spacing: -0.374px; color: #707070;">Computador lento ou travando, erros do Windows, atualizações, vírus e anúncios, limpeza do sistema.</p>
+        </div>
+        <div style="background: #ffffff; border-radius: 28px; padding: 36px; display: flex; flex-direction: column; gap: 12px;">
+          <span style="width: 44px; height: 44px; border-radius: 999px; background: #e8d0d0; display: block; margin-bottom: 4px;"></span>
+          <h3 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 28px; line-height: 32px; font-weight: 600;">Arquivos e backup</h3>
+          <p style="margin: 0; font-size: 17px; line-height: 25px; letter-spacing: -0.374px; color: #707070;">Tentativa de recuperação de arquivos, organização de pastas e uma rotina de backup simples de manter.</p>
+          <p style="margin: 0; font-size: 14px; line-height: 20px; letter-spacing: -0.224px; color: #b64400;">Vale saber: cada caso é diferente. As chances de trazer o arquivo de volta variam conforme a forma como ele foi apagado e o uso do computador depois disso, então me chame o quanto antes. Sempre faço o possível, e te digo com sinceridade o que é possível em cada caso.</p>
+        </div>
+      </div>
+      <p style="margin: 0; font-size: 17px; line-height: 25px; letter-spacing: -0.374px; color: #707070; max-width: 700px;">Se você quiser entender o que foi feito ou aprender a resolver na próxima vez, basta pedir durante o atendimento. A orientação faz parte do serviço.</p>
+    </div>
+  </section>
+
+  <section id="como-funciona" style="background: #ffffff; padding: 110px 40px;">
+    <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 48px;">
+      <div style="display: flex; flex-direction: column; gap: 12px; max-width: 700px;">
+        <h2 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 56px; line-height: 60px; font-weight: 700; letter-spacing: -0.28px;">Como funciona.</h2>
+        <p style="margin: 0; font-size: 21px; line-height: 29px; color: #707070;">Quatro passos. Nenhum deles exige que você entenda de computador.</p>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 32px;">
+        <div style="display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #d6d6d6; padding-top: 20px;">
+          <span style="font-size: 14px; color: #707070;">01</span>
+          <h3 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 28px; line-height: 32px; font-weight: 600;">Você me conta</h3>
+          <p style="margin: 0; font-size: 17px; line-height: 25px; color: #707070;">Manda uma mensagem descrevendo o problema. Foto da tela ajuda, mas não é obrigatória.</p>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #d6d6d6; padding-top: 20px;">
+          <span style="font-size: 14px; color: #707070;">02</span>
+          <h3 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 28px; line-height: 32px; font-weight: 600;">Agendamos o horário</h3>
+          <p style="margin: 0; font-size: 17px; line-height: 25px; color: #707070;">Combinamos o horário, o valor e a forma de pagamento por escrito no WhatsApp antes de qualquer acesso.</p>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #d6d6d6; padding-top: 20px;">
+          <span style="font-size: 14px; color: #707070;">03</span>
+          <h3 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 28px; line-height: 32px; font-weight: 600;">Acesso autorizado</h3>
+          <p style="margin: 0; font-size: 17px; line-height: 25px; color: #707070;">Te guio para instalar e abrir o AnyDesk. Você aprova o acesso, acompanha na tela e pode encerrar quando quiser.</p>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #d6d6d6; padding-top: 20px;">
+          <span style="font-size: 14px; color: #707070;">04</span>
+          <h3 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 28px; line-height: 32px; font-weight: 600;">Resolvido e explicado</h3>
+          <p style="margin: 0; font-size: 17px; line-height: 25px; color: #707070;">Testamos juntos e eu explico o que causou o problema, para não acontecer de novo.</p>
+        </div>
+      </div>
+      <div style="background: #f5f5f7; border-radius: 28px; padding: 40px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 28px;">
+        <h3 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 32px; line-height: 36px; font-weight: 600; max-width: 300px;">Acesso via AnyDesk, com você no controle.</h3>
+        <p style="margin: 0; font-size: 17px; line-height: 25px; color: #707070;">A sessão só abre com o código do AnyDesk que aparece no seu computador. Nada roda em segundo plano depois.</p>
+        <p style="margin: 0; font-size: 17px; line-height: 25px; color: #707070;">Você vê cada clique enquanto eu trabalho e pode interromper a qualquer momento.</p>
+        <p style="margin: 0; font-size: 17px; line-height: 25px; color: #707070;">Não peço senhas de banco, cartão ou documentos. Se algo assim for necessário, você digita.</p>
+      </div>
+
+      <div style="border: 1px solid #d6d6d6; border-radius: 28px; padding: 36px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 28px;">
+        <div style="display: flex; flex-direction: column; gap: 10px; max-width: 620px;">
+          <h3 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 28px; line-height: 32px; font-weight: 600;">Não tem o AnyDesk? Baixe aqui.</h3>
+          <p style="margin: 0; font-size: 17px; line-height: 25px; letter-spacing: -0.374px; color: #707070;">O programa é gratuito e o download vem direto do site oficial. Não precisa instalar nada complicado: o arquivo abre e já mostra o seu código de acesso. Se travar em algum passo, me chame e eu te guio.</p>
+          <p style="margin: 0; font-size: 14px; line-height: 20px; letter-spacing: -0.224px; color: #707070;">Versão para Windows. Baixe apenas de anydesk.com — nunca aceite o programa por anexo ou link de outra pessoa.</p>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <a href="https://anydesk.com/pt/downloads/thank-you?dv=win_exe" target="_blank" rel="noopener noreferrer" style="background: #0071e3; color: #ffffff; font-size: 17px; padding: 12px 22px; border-radius: 980px; textDecoration: none; text-align: center;" style-hover="background: #0062c4; text-decoration: none; color: #ffffff;">Baixar o AnyDesk</a>
+          <a href="https://anydesk.com/pt/downloads" target="_blank" rel="noopener noreferrer" style="font-size: 14px; color: #0066cc; text-align: center; textDecoration: none;" style-hover="text-decoration: underline; color: #0066cc;">Outras versões  →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section id="seguranca" style="background: #f5f5f7; padding: 110px 40px;">
+    <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px;">
+      <div style="display: flex; flex-direction: column; gap: 12px; max-width: 760px;">
+        <span style="font-size: 14px; font-weight: 500; color: #b64400;">Privacidade e segurança</span>
+        <h2 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 56px; line-height: 60px; font-weight: 700; letter-spacing: -0.28px;">Seus dados não passam por aqui.</h2>
+        <p style="margin: 0; font-size: 21px; line-height: 29px; color: #707070;">Este site não tem cadastro, não tem login e não guarda informação nenhuma. O formulário serve apenas para montar a sua mensagem e abrir o WhatsApp no seu próprio aparelho.</p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+        <div style="background: #ffffff; border-radius: 28px; padding: 32px; display: flex; flex-direction: column; gap: 12px;">
+          <h3 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 21px; line-height: 27px; font-weight: 600;">Nada é armazenado</h3>
+          <p style="margin: 0; font-size: 17px; line-height: 25px; letter-spacing: -0.374px; color: #707070;">Não existe banco de dados, cookie de rastreamento ou envio para servidores de terceiros. O que você digita fica só na sua tela até você enviar.</p>
+        </div>
+        <div style="background: #ffffff; border-radius: 28px; padding: 32px; display: flex; flex-direction: column; gap: 12px;">
+          <h3 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 21px; line-height: 27px; font-weight: 600;">Só o necessário</h3>
+          <p style="margin: 0; font-size: 17px; line-height: 25px; letter-spacing: -0.374px; color: #707070;">Peço seu nome e a descrição do problema. Não peço CPF, endereço, dados de cartão ou senhas para agendar o atendimento.</p>
+        </div>
+        <div style="background: #ffffff; border-radius: 28px; padding: 32px; display: flex; flex-direction: column; gap: 12px;">
+          <h3 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 21px; line-height: 27px; font-weight: 600;">Sessão que termina</h3>
+          <p style="margin: 0; font-size: 17px; line-height: 25px; letter-spacing: -0.374px; color: #707070;">O acesso pelo AnyDesk vale só para aquele atendimento. Depois de encerrar, ninguém entra de novo sem você informar o seu ID — e mesmo com o ID, a conexão só abre quando você autoriza na sua tela.</p>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid #d6d6d6; padding-top: 28px; display: flex; flex-direction: column; gap: 20px;">
+        <div style="display: flex; flex-direction: column; gap: 10px; max-width: 760px;">
+          <h3 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 28px; line-height: 32px; font-weight: 600;">Como se proteger de golpes de suporte falso.</h3>
+          <p style="margin: 0; font-size: 17px; line-height: 25px; letter-spacing: -0.374px; color: #707070;">Golpistas se passam por técnicos com frequência. Guarde estas regras, elas valem para mim e para qualquer pessoa que te ofereça suporte remoto.</p>
+        </div>
+        <ul style="margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; font-size: 17px; line-height: 25px; letter-spacing: -0.374px; color: #1d1d1f;">
+          <li style="border-top: 1px solid #d6d6d6; padding-top: 12px;">Nunca peço senha de banco, cartão, Pix ou código que chega por SMS. Se for preciso acessar algo pessoal, você mesmo digita.</li>
+          <li style="border-top: 1px solid #d6d6d6; padding-top: 12px;">Nunca abro o aplicativo do seu banco durante o atendimento. Se eu pedir isso, desconfie e encerre.</li>
+          <li style="border-top: 1px solid #d6d6d6; padding-top: 12px;">Baixe o AnyDesk somente pelo site oficial anydesk.com. Eu te mando o endereço, nunca um arquivo por anexo.</li>
+          <li style="border-top: 1px solid #d6d6d6; padding-top: 12px;">O pagamento é só por Pix para a minha chave, informada por escrito no WhatsApp. Não trabalho com boleto, link de pagamento nem cobrança por telefone.</li>
+          <li style="border-top: 1px solid #d6d6d6; padding-top: 12px;">Feche a sessão do AnyDesk ao final e confira que o ícone saiu da barra de tarefas. Se quiser, pode desinstalar depois.</li>
+          <li style="border-top: 1px solid #d6d6d6; padding-top: 12px;">Eu não ligo do nada dizendo que seu computador está infectado. O contato começa sempre por você.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="planos" style="background: #ffffff; padding: 110px 40px;">
+    <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px;">
+      <div style="display: flex; flex-direction: column; gap: 12px; max-width: 700px;">
+        <h2 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 56px; line-height: 60px; font-weight: 700; letter-spacing: -0.28px;">Um preço, sem surpresa.</h2>
+        <p style="margin: 0; font-size: 21px; line-height: 29px; color: #707070;">Valor fixo por atendimento, dividido em duas partes: o diagnóstico antes de começar e o restante quando o problema estiver resolvido. Se não for possível resolver, você paga apenas o diagnóstico.</p>
+      </div>
+      <div style="background: #f5f5f7; border-radius: 28px; padding: 44px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 36px; align-items: start;">
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <h3 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 28px; line-height: 32px; font-weight: 600;">Atendimento avulso</h3>
+          <span style="font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 80px; line-height: 84px; letter-spacing: -1.2px; font-weight: 700;">{{ priceAvulso }}</span>
+          <p style="margin: 0; font-size: 17px; line-height: 25px; letter-spacing: -0.374px; color: #707070;">Valor total por sessão, pago em duas etapas.</p>
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px;">
+            <div style="display: flex; justify-content: space-between; gap: 16px; font-size: 17px; letter-spacing: -0.374px; border-top: 1px solid #d6d6d6; padding-top: 8px;">
+              <span>Diagnóstico (pago antes da conexão)</span>
+              <span style="font-weight: 600;">{{ priceDiagnostico }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; gap: 16px; font-size: 17px; letter-spacing: -0.374px; border-top: 1px solid #d6d6d6; padding-top: 8px;">
+              <span>Restante, com o problema resolvido</span>
+              <span style="font-weight: 600;">{{ priceServico }}</span>
+            </div>
+          </div>
+          <button type="button" onClick="{{ openModal }}" style="align-self: flex-start; margin-top: 8px; background: #0071e3; color: #ffffff; font-size: 17px; padding: 12px 22px; border-radius: 980px; border: none; cursor: pointer; font-family: inherit;" style-hover="background: #0062c4;">Agendar atendimento</button>
+        </div>
+        <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 12px; font-size: 17px; line-height: 25px; letter-spacing: -0.374px; color: #1d1d1f;">
+          <li>Instalação e configuração de programas</li>
+          <li>Resolução do problema de software na mesma sessão</li>
+          <li>Orientação de como usar, se você precisar</li>
+          <li>Teste final junto com você antes de encerrar</li>
+          <li>Explicação do que causou o problema</li>
+        </ul>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px;">
+        <p style="margin: 0; font-size: 17px; line-height: 25px; letter-spacing: -0.374px; color: #707070; max-width: 620px;">Casos mais específicos ou mais longos são orçados por escrito antes do início. Se o seu caso for diferente do comum, me chame no WhatsApp, me conte a situação e a gente combina o valor juntos.</p>
+        <button type="button" onClick="{{ openModal }}" style="border: 1px solid rgba(0,0,0,0.8); background: none; color: #1d1d1f; font-size: 17px; padding: 12px 22px; border-radius: 999px; cursor: pointer; font-family: inherit;" style-hover="background: #e8e8ed;">Combinar meu caso</button>
+      </div>
+
+      <div style="border-top: 1px solid #d6d6d6; padding-top: 28px; display: flex; flex-direction: column; gap: 20px;">
+        <div style="display: flex; flex-direction: column; gap: 10px; max-width: 720px;">
+          <h3 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 28px; line-height: 32px; font-weight: 600;">Como funciona o pagamento.</h3>
+          <p style="margin: 0; font-size: 17px; line-height: 25px; letter-spacing: -0.374px; color: #707070;">Tudo por Pix, combinado por escrito no WhatsApp antes de qualquer acesso ao seu computador. Você sabe o valor, o que está incluído e o que acontece se o problema não tiver solução.</p>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 28px;">
+          <div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #d6d6d6; padding-top: 16px;">
+            <span style="font-size: 14px; color: #707070;">Antes</span>
+            <h4 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 21px; line-height: 27px; font-weight: 600;">Diagnóstico pago</h4>
+            <p style="margin: 0; font-size: 17px; line-height: 25px; color: #707070;">O valor do diagnóstico é pago por Pix antes de eu conectar. Ao entrar no seu computador, os primeiros minutos são só de análise: eu identifico a causa e te digo com clareza o que pode ser feito, sem alterar nada ainda.</p>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #d6d6d6; padding-top: 16px;">
+            <span style="font-size: 14px; color: #707070;">Durante</span>
+            <h4 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 21px; line-height: 27px; font-weight: 600;">Confirmação antes de mexer</h4>
+            <p style="margin: 0; font-size: 17px; line-height: 25px; color: #707070;">Depois de analisar, eu digo se dá para resolver, quanto tempo leva e confirmo o valor restante. Você decide se quer seguir.</p>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #d6d6d6; padding-top: 16px;">
+            <span style="font-size: 14px; color: #707070;">Depois</span>
+            <h4 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 21px; line-height: 27px; font-weight: 600;">Resolvido, aí sim o restante</h4>
+            <p style="margin: 0; font-size: 17px; line-height: 25px; color: #707070;">Testamos juntos e o restante é pago na conclusão. Se não for possível resolver, nada mais é cobrado além do diagnóstico.</p>
+          </div>
+        </div>
+        <div style="background: #f5f5f7; border-radius: 28px; padding: 32px; display: flex; flex-direction: column; gap: 14px;">
+          <h4 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 21px; line-height: 27px; font-weight: 600;">Deixando claro, nos três cenários possíveis</h4>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div style="display: flex; flex-direction: column; gap: 2px; border-top: 1px solid #d6d6d6; padding-top: 12px;">
+              <span style="font-size: 17px; letter-spacing: -0.374px; font-weight: 600;">O problema é resolvido</span>
+              <span style="font-size: 17px; line-height: 25px; color: #707070;">Você paga o diagnóstico no início e o restante na conclusão, fechando o valor total do atendimento.</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px; border-top: 1px solid #d6d6d6; padding-top: 12px;">
+              <span style="font-size: 17px; letter-spacing: -0.374px; font-weight: 600;">Não tem solução remota</span>
+              <span style="font-size: 17px; line-height: 25px; color: #707070;">Acontece quando o defeito é de peça ou exige assistência presencial. Eu explico o motivo e indico o caminho. O valor restante não é cobrado, e o diagnóstico, por ser o trabalho de análise já realizado, não é devolvido.</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px; border-top: 1px solid #d6d6d6; padding-top: 12px;">
+              <span style="font-size: 17px; letter-spacing: -0.374px; font-weight: 600;">Você prefere não seguir</span>
+              <span style="font-size: 17px; line-height: 25px; color: #707070;">Depois de saber o que é, a decisão é sua. Se escolher não continuar, encerramos ali e você paga apenas o diagnóstico.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid #d6d6d6; padding-top: 28px; display: flex; flex-direction: column; gap: 10px; max-width: 720px;">
+        <h3 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 28px; line-height: 32px; font-weight: 600;">Licenças de programas não estão incluídas.</h3>
+        <p style="margin: 0; font-size: 17px; line-height: 25px; letter-spacing: -0.374px; color: #707070;">O valor cobrado é apenas pelo meu serviço de instalação, configuração e suporte. Programas que exigem licença paga — como Windows, Microsoft Office 365, Adobe Acrobat, AutoCAD, CorelDRAW, antivírus pagos e jogos — devem ser adquiridos pelo cliente, direto no site oficial do fabricante ou em revenda autorizada.</p>
+        <p style="margin: 0; font-size: 17px; line-height: 25px; letter-spacing: -0.374px; color: #707070;">Não instalo programas pirateados ou com ativadores. Quando existir uma alternativa gratuita que resolva o mesmo problema, eu indico antes de você gastar.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="duvidas" style="background: #f5f5f7; padding: 110px 40px;">
+    <div style="max-width: 820px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px;">
+      <h2 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 56px; line-height: 60px; font-weight: 700; letter-spacing: -0.28px;">Dúvidas comuns.</h2>
+      <div style="display: flex; flex-direction: column; gap: 0;">
+        <sc-for list="{{ faqs }}" as="item" hint-placeholder-count="5">
+          <div style="border-top: 1px solid #d6d6d6; padding: 4px 0;">
+            <button type="button" onClick="{{ item.toggle }}" style="width: 100%; background: none; border: none; padding: 22px 4px; display: flex; align-items: center; justify-content: space-between; gap: 20px; cursor: pointer; text-align: left; font-family: inherit;" style-hover="opacity: 0.7;">
+              <span style="font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 24px; line-height: 30px; font-weight: 600; color: #1d1d1f;">{{ item.q }}</span>
+              <span style="font-size: 24px; color: #0066cc; line-height: 1;">{{ item.sign }}</span>
+            </button>
+            <sc-if value="{{ item.open }}" hint-placeholder-val="{{ false }}">
+              <p style="margin: 0; padding: 0 4px 24px; max-width: 640px; font-size: 17px; line-height: 25px; letter-spacing: -0.374px; color: #707070;">{{ item.a }}</p>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section style="background: #ffffff; padding: 120px 40px;">
+    <div style="max-width: 1200px; margin: 0 auto; border-radius: 28px; background: #f5f5f7; padding: 72px 40px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 20px;">
+      <h2 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 80px; line-height: 84px; font-weight: 700; letter-spacing: -1.2px; max-width: 800px; text-wrap: balance;">Conta o problema. O resto é comigo.</h2>
+      <p style="margin: 0; max-width: 560px; font-size: 21px; line-height: 29px; color: #707070;">Responder o que é possível resolver não custa nada. Mande uma mensagem e a gente combina daí.</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 8px;">
+        <button type="button" onClick="{{ openModal }}" style="background: #0071e3; color: #ffffff; font-size: 17px; padding: 12px 22px; border-radius: 980px; border: none; cursor: pointer; font-family: inherit;" style-hover="background: #0062c4;">Falar no WhatsApp</button>
+        <a href="{{ mailLink }}" style="border: 1px solid rgba(0,0,0,0.8); color: #1d1d1f; font-size: 17px; padding: 12px 22px; border-radius: 999px; textDecoration: none;" style-hover="background: #e8e8ed; text-decoration: none; color: #1d1d1f;">Enviar e-mail</a>
+      </div>
+      <p style="margin: 0; font-size: 14px; color: #707070;">{{ hours }}</p>
+    </div>
+  </section>
+
+  <footer style="background: #f5f5f7; padding: 48px 40px; border-top: 1px solid #d6d6d6;">
+    <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 24px; justify-content: space-between; align-items: flex-start; font-size: 12px; line-height: 16px; color: #707070;">
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <img src="logo-dltech.png" alt="DLTech — Suporte remoto" style="height: 28px; width: auto; align-self: flex-start; display: block;" />
+        <span>Suporte remoto via AnyDesk, com orientação incluída.</span>
+        <span>Atendimento somente à distância, em todo o Brasil.</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <a href="{{ whatsLink }}" target="_blank" rel="noopener">WhatsApp {{ phone }}</a>
+        <a href="{{ mailLink }}">{{ email }}</a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <a href="#seguranca">Privacidade e segurança</a>
+        <span>Este site não usa cookies e não coleta dados.</span>
+        <span>© 2026 DLTech. Todos os direitos reservados.</span>
+      </div>
+    </div>
+  </footer>
+
+  <sc-if value="{{ modal }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,0.4); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); display: flex; align-items: flex-start; justify-content: center; padding: 24px; overflow-y: auto;">
+      <div style="margin: auto; background: #ffffff; border-radius: 28px; width: 100%; max-width: 560px; padding: 40px; display: flex; flex-direction: column; gap: 20px;">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 20px;">
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <h2 style="margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; font-size: 32px; line-height: 36px; font-weight: 600;">Pedir atendimento</h2>
+            <p style="margin: 0; font-size: 17px; line-height: 25px; letter-spacing: -0.374px; color: #707070;">Preencha e eu recebo sua mensagem pelo WhatsApp. Respondo dentro do horário de atendimento.</p>
+          </div>
+          <button type="button" onClick="{{ closeModal }}" aria-label="Fechar" style="background: #f5f5f7; border: none; width: 32px; height: 32px; border-radius: 999px; font-size: 17px; color: #474747; cursor: pointer; flex-shrink: 0; font-family: inherit;" style-hover="background: #e8e8ed;">✕</button>
+        </div>
+
+        <label style="display: flex; flex-direction: column; gap: 8px; font-size: 14px; letter-spacing: -0.224px; color: #474747;">
+          Seu nome
+          <input type="text" value="{{ nome }}" onChange="{{ setNome }}" maxlength="60" autocomplete="off" spellcheck="false" placeholder="Como posso te chamar" style="font-family: inherit; font-size: 17px; color: #1d1d1f; background: #f5f5f7; border: 1px solid #d6d6d6; border-radius: 10px; padding: 14px 16px; outline: none; width: 100%;" style-focus="border-color: #0071e3; background: #ffffff;" />
+        </label>
+
+        <label style="display: flex; flex-direction: column; gap: 8px; font-size: 14px; letter-spacing: -0.224px; color: #474747;">
+          Em que você precisa de ajuda?
+          <textarea rows="4" value="{{ problema }}" onChange="{{ setProblema }}" maxlength="600" autocomplete="off" placeholder="Descreva com suas palavras. Ex: o Office não instala e aparece uma mensagem de erro." style="font-family: inherit; font-size: 17px; line-height: 25px; color: #1d1d1f; background: #f5f5f7; border: 1px solid #d6d6d6; border-radius: 10px; padding: 14px 16px; outline: none; width: 100%; resize: vertical;" style-focus="border-color: #0071e3; background: #ffffff;"></textarea>
+        </label>
+
+        <sc-if value="{{ canSend }}" hint-placeholder-val="{{ true }}">
+          <a href="{{ sendLink }}" target="_blank" rel="noopener" onClick="{{ closeModal }}" style="text-align: center; background: #0071e3; color: #ffffff; font-size: 17px; padding: 14px 22px; border-radius: 980px; textDecoration: none;" style-hover="background: #0062c4; text-decoration: none; color: #ffffff;">Enviar ao Suporte</a>
+        </sc-if>
+        <sc-if value="{{ cannotSend }}" hint-placeholder-val="{{ false }}">
+          <span style="text-align: center; background: #e8e8ed; color: #707070; font-size: 17px; padding: 14px 22px; border-radius: 980px;">Enviar ao Suporte</span>
+        </sc-if>
+        <p style="margin: 0; font-size: 12px; line-height: 16px; color: #707070; text-align: center;">Ao enviar, o WhatsApp abre com sua mensagem já escrita. Nada é salvo neste site e nenhuma informação é enviada para outros serviços. Não escreva senhas, dados de cartão ou documentos aqui.</p>
+      </div>
+    </div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;phone&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;85988402761&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Contato&quot;},&quot;email&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;daniloliracontato@hotmail.com&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Contato&quot;},&quot;hours&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Segunda a sexta, 8h às 19h. Sábado, 8h às 15h.&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Contato&quot;},&quot;priceAvulso&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;R$ 120&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Preços&quot;},&quot;priceDiagnostico&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;R$ 40&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Preços&quot;},&quot;priceServico&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;R$ 80&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Preços&quot;}}">
+class Component extends DCLogic {
+  state = { open: 0, modal: false, nome: "", contato: "", problema: "" };
+  openModal = () => this.setState({ modal: true });
+  closeModal = () => this.setState({ modal: false });
+  field = (k) => (e) => this.setState({ [k]: e.target.value });
+  renderVals() {
+    const p = this.props;
+    const phone = p.phone ?? "(11) 90000-0000";
+    const email = p.email ?? "contato@dltech.com.br";
+    const digits = String(phone).replace(/\D/g, "");
+    const msg = encodeURIComponent("Olá! Vi o site da DLTech e preciso de ajuda com o meu computador.");
+    const faqData = [
+      ["Não sei baixar o AnyDesk, e agora?", "Tem um botão de download aqui no site, na seção Como funciona, que leva direto ao site oficial. Se preferir, me chame no WhatsApp e eu te acompanho no passo a passo: baixar, abrir e me passar o código que aparece na tela."],
+      ["Preciso entender de computador para ser atendido?", "Não. Eu te guio por telefone ou mensagem em cada passo, com palavras simples. Se travar, eu explico de outra forma."],
+      ["Como você acessa meu computador?", "Pelo AnyDesk, um programa gratuito de acesso remoto. Eu te ajudo a instalar e a sessão só abre quando você me passa o código que aparece na sua tela."],
+      ["É seguro?", "Você acompanha tudo na tela e encerra quando quiser. Não peço senha de banco, cartão ou documentos, e o acesso não continua depois da sessão."],
+      ["Como funciona o pagamento?", "Em duas partes, por Pix. O diagnóstico é pago antes de eu conectar e o restante somente quando o problema estiver resolvido e testado com você. Combinamos tudo por escrito no WhatsApp antes de começar."],
+      ["Por que o diagnóstico é pago antes?", "Porque a análise já é trabalho: é o tempo em que eu identifico a causa e digo com clareza o que pode ser feito. Pagando essa parte antes, você não corre o risco de pagar o valor cheio por algo sem solução, e eu tenho a segurança de que o tempo dedicado está coberto."],
+      ["E se o problema não for resolvido?", "Eu explico o motivo, indico o caminho (uma assistência local, uma troca de peça, um contato do fabricante) e você paga apenas o diagnóstico. O valor restante não é cobrado."],
+      ["Atende celular e tablet?", "O foco é computador com Windows. Dúvidas simples de celular podem ser tiradas durante o atendimento."],
+      ["O diagnóstico é devolvido se não der para resolver?", "Não, porque ele paga o trabalho de análise que já foi feito: identificar a causa e te dar um parecer claro do que pode ser feito. O que não é cobrado nesse caso é o valor restante do serviço. Tudo isso fica combinado por escrito no WhatsApp antes de você pagar qualquer coisa."],
+      ["E se eu desistir depois do diagnóstico?", "Sem problema. Depois de eu explicar o que é e quanto fica, a decisão de seguir ou não é sua. Se preferir parar ali, encerramos a sessão e você paga apenas o diagnóstico."],
+      ["Quem paga a licença dos programas?", "A licença fica por conta do cliente. Programas pagos como Windows, Office 365, Adobe Acrobat, AutoCAD, CorelDRAW e antivírus precisam ser comprados por você no site oficial ou em revenda autorizada. Eu cobro somente pelo serviço de instalação e configuração, e não instalo versões piratas."],
+      ["Trabalha com empresas?", "Sim, para pequenos negócios: configuração de máquinas, organização de arquivos, rotina de backup e treinamento da equipe."]
+    ];
+    const s = this.state;
+    const nome = s.nome.trim();
+    let problema = s.problema.trim().replace(/\s+/g, " ");
+    problema = problema.replace(/[.!]+$/, "");
+    const linhas = [
+      "Olá! Vim pelo site da DLTech." + (nome ? " Meu nome é " + nome + "." : ""),
+      problema ? "Resumo: " + problema + "." : ""
+    ].filter(Boolean).join("\n\n");
+    return {
+      phone, email,
+      modal: s.modal,
+      nome: s.nome, problema: s.problema,
+      openModal: this.openModal,
+      closeModal: this.closeModal,
+      setNome: this.field("nome"),
+      setProblema: this.field("problema"),
+      canSend: s.nome.trim().length > 1 && s.problema.trim().length > 3,
+      cannotSend: !(s.nome.trim().length > 1 && s.problema.trim().length > 3),
+      sendLink: "https://wa.me/55" + digits + "?text=" + encodeURIComponent(linhas),
+      whatsLink: "https://wa.me/55" + digits + "?text=" + msg,
+      mailLink: "mailto:" + email,
+      hours: p.hours ?? "Segunda a sexta, 8h às 19h. Sábado, 8h às 15h.",
+      priceAvulso: p.priceAvulso ?? "R$ 120",
+      priceDiagnostico: p.priceDiagnostico ?? "R$ 40",
+      priceServico: p.priceServico ?? "R$ 80",
+      faqs: faqData.map(([q, a], i) => ({
+        q, a,
+        open: this.state.open === i,
+        sign: this.state.open === i ? "−" : "+",
+        toggle: () => this.setState(s => ({ open: s.open === i ? -1 : i }))
+      }))
+    };
+  }
+}
+
+</script>
+</body>
+</html>

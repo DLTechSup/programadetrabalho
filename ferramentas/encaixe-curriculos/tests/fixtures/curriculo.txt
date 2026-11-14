@@ -1,0 +1,26 @@
+Maria Souza
+maria.souza@email.com | (11) 91234-5678 | São Paulo, SP | linkedin.com/in/mariasouza
+
+Objetivo
+Atuar como analista de dados em empresa do varejo.
+
+Experiência Profissional
+Assistente de BI
+Empresa Y | 2019 - 2021
+• Elaboração de relatórios em planilhas do Excel para a diretoria comercial
+• Apoio na manutenção de indicadores de desempenho
+
+Analista de Dados Jr
+Empresa X | 2021 - atual
+• Desenvolvimento de consultas em PostgreSQL e sql server
+• Criação de painéis no PowerBI para a área de vendas
+• Participação no projeto de migração do data warehouse
+
+Formação Acadêmica
+Bacharelado em Estatística - USP - 2020
+
+Conhecimentos
+Excel avançado, Postgres, estatística descritiva, raciocínio analítico
+
+Idiomas
+Inglês intermediário

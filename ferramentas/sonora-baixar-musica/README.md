@@ -1,0 +1,125 @@
+# Sonora
+
+**Desenvolvido por DLTechSup**
+
+O Sonora é um aplicativo de desktop para baixar **músicas em MP3** e **vídeos em MP4** de **mais de 1.100 sites**:
+YouTube, YouTube Music, SoundCloud, TikTok, Instagram, Facebook, X (Twitter), Vimeo, Bandcamp, Mixcloud, Twitch,
+Reddit, Palco MP3, Globo e muitos outros. É feito com **Electron + React** e usa o
+[yt-dlp](engine/yt-dlp) como motor de download.
+
+![Ícone](build/icon.png)
+
+## Recursos
+
+- Cole o link de um **vídeo**, **música** ou **playlist** de qualquer site suportado e escolha o que baixar
+- Botão **Sites suportados** com os sites mais populares e a lista completa (com busca) de todos os sites que o motor baixa
+- O site de origem aparece na prévia e na fila de downloads
+- **Login do navegador**: para sites que exigem conta (Instagram, Facebook, conteúdo com restrição de idade…),
+  o Sonora usa o login que você já fez no Chrome, Edge, Firefox, Brave, Opera, Vivaldi ou Safari
+- Alterne entre **Áudio MP3** e **Vídeo MP4** com um clique
+- Áudio em **128, 192, 256 ou 320 kbps**; vídeo em **Máx., 1080p, 720p, 480p ou 360p** (H.264 + AAC, compatível com qualquer player)
+- **Capa/miniatura** e metadados (título e artista) gravados no arquivo
+- Cada item da fila guarda o formato escolhido na hora de adicioná-lo
+- Fila de downloads com progresso, velocidade, tempo restante, cancelar e tentar de novo
+- Escolha da pasta de destino (padrão: `Músicas/Sonora`, para áudio e vídeo)
+- Tudo embutido: o usuário final **não precisa instalar Python, ffmpeg nem nada mais**
+
+## Baixar o instalador
+
+A versão mais recente fica em **[Releases](https://github.com/DLTechSup/baixarmusica/releases/latest)**.
+
+Além disso, a cada push, o GitHub Actions (**Actions → Gerar instaladores**) gera:
+
+| Sistema | Arquivo |
+|---|---|
+| Windows | `Sonora-Setup-1.1.0.exe` (instalador) e `Sonora-Portatil-1.1.0.exe` |
+| macOS | `Sonora-1.1.0-mac-arm64.dmg` |
+| Linux | `Sonora-1.1.0-linux-x86_64.AppImage` e `.deb` |
+
+Abra a execução mais recente do workflow e baixe o artefato **Sonora-Windows** (ou o do seu sistema).
+A cada push na branch principal, o workflow publica (ou atualiza) a release `v<versão do package.json>` em **Releases**. Para lançar uma nova versão, aumente o campo `version` do `package.json`. Criar uma tag `v*` também publica uma release.
+
+> O instalador não é assinado digitalmente, então o Windows SmartScreen pode mostrar um aviso.
+> Clique em **Mais informações → Executar assim mesmo**.
+
+O instalador do Windows é personalizado com a marca DLTechSup: barra lateral e cabeçalho com a
+arte do Sonora, página de boas-vindas em português, e **DLTechSup** como editor em
+"Aplicativos instalados" e nas propriedades do `.exe`. As artes são geradas por
+`scripts/make-installer-art.py` e a personalização fica em `build/installer.nsh`.
+
+## Gerar o instalador no Windows (automático)
+
+Dê **dois cliques em `gerar-instalador.bat`**. Ele faz todo o processo sozinho:
+
+1. Verifica o **Node.js 20+** e o **Python 3.10+**. Se algum faltar, oferece instalar pelo `winget`.
+2. Instala as dependências do projeto.
+3. Baixa o ffmpeg e o deno.
+4. Compila o motor yt-dlp com o PyInstaller.
+5. Gera a interface.
+6. Cria o instalador e a versão portátil na pasta `release`, que abre sozinha no final.
+
+Esse mesmo `.bat` é usado pelo GitHub Actions para gerar o instalador do Windows, então ele é testado a cada build.
+
+## Gerar o instalador na sua máquina (manual)
+
+Pré-requisitos: **Node.js 20+** e **Python 3.10+**. Gere no próprio sistema de destino (o instalador de
+Windows precisa ser gerado no Windows, porque o motor é compilado com PyInstaller).
+
+```bash
+npm install
+npm run dist        # baixa ffmpeg e deno, compila o yt-dlp e gera o instalador em release/
+```
+
+Etapas separadas:
+
+```bash
+npm run deps        # copia o ffmpeg e baixa o deno para resources/bin
+npm run engine      # compila engine/yt-dlp em resources/bin/yt-dlp(.exe) com PyInstaller
+npm run build:ui    # gera a interface React em dist/
+npx electron-builder --win   # ou --mac / --linux
+```
+
+## Desenvolvimento
+
+```bash
+npm install
+npm run deps
+npm run dev
+```
+
+Se `resources/bin/yt-dlp` ainda não existir, o app roda o motor direto do código-fonte
+(`python -m yt_dlp` em `engine/yt-dlp`).
+
+## Estrutura
+
+```
+electron/          processo principal (janela, IPC, execução do motor)
+src/               interface React
+engine/yt-dlp/     código-fonte do motor yt-dlp
+scripts/           scripts de build (motor, dependências, ícone)
+build/             ícone, artes, script e licença do instalador
+resources/bin/     binários empacotados (gerados: yt-dlp, ffmpeg, deno)
+```
+
+## Sites suportados
+
+A lista de sites do app (`src/sites.json`) é gerada a partir do próprio motor, descartando os extratores
+marcados como quebrados, os internos e os de conteúdo adulto (esses continuam funcionando se você colar o link).
+Para atualizar a lista depois de trocar a versão do motor:
+
+```bash
+npm run sites
+```
+
+Conteúdo protegido contra cópia (DRM), como Spotify, Deezer, Apple Music e Netflix, não pode ser baixado.
+
+## Sobre o motor
+
+`engine/yt-dlp` é o código-fonte do yt-dlp 2026.08.19, com uma única alteração: o extrator do site
+Shahid (`shahid.py`) foi removido porque contém chaves de API públicas que o *push protection* do GitHub
+bloqueia. Ele não tem relação com o YouTube.
+
+## Aviso
+
+Use o programa apenas para baixar conteúdo que você tem direito de baixar, respeitando os termos de uso
+do YouTube e as leis de direitos autorais.

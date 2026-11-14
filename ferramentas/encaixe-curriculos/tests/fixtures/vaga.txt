@@ -1,0 +1,17 @@
+Analista de Dados Pleno
+Sobre a empresa
+Somos uma varejista com 200 lojas e cultura de dados.
+Responsabilidades
+- Construir dashboards em Power BI para as áreas de negócio
+- Garantir a qualidade dos dados e documentar processos de ETL
+Requisitos
+- Experiência com SQL e modelagem de dados
+- Conhecimento em Python (pandas)
+- Experiência com precificação de produtos no varejo
+- Boa comunicação com stakeholders
+Diferenciais
+- Inglês avançado
+- Conhecimento em Databricks ou Airflow
+- Certificação em Power BI
+Benefícios
+- Vale refeição, plano de saúde, Gympass

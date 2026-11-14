@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="#0a0c0b"/><circle cx="100" cy="100" r="52" fill="none" stroke="#2f97ff" stroke-width="6"/><text x="100" y="114" text-anchor="middle" font-family="monospace" font-size="38" font-weight="700" fill="#2f97ff">DLL</text></svg></template>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0c0b">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+  html, body { margin:0; padding:0; background:#0a0c0b; overflow-x:hidden; }
+  body { -webkit-font-smoothing:antialiased; -webkit-text-size-adjust:100%; overscroll-behavior-y:none; }
+  * { -webkit-tap-highlight-color:rgba(47,151,255,0.2); }
+  button { min-height:46px; touch-action:manipulation; }
+  input { font-size:16px; }
+  a { color:#2f97ff; text-decoration:none; }
+  a:hover { color:#8cc4ff; }
+  @keyframes pt-pulse { 0%,100% { opacity:1 } 50% { opacity:.35 } }
+  @keyframes pt-spin { to { transform:rotate(360deg) } }
+</style>
+</helmet>
+<div style="min-height:100vh; background:#0a0c0b; color:#e8ecea; font-family:'Space Grotesk',system-ui,sans-serif; padding:clamp(16px,4vw,28px) clamp(14px,4vw,20px) 64px; box-sizing:border-box; display:flex; flex-direction:column; align-items:center; gap:clamp(18px,4vw,28px)">
+
+  <div style="width:100%; max-width:820px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap">
+    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+      <img src="dll-logo-small.png" alt="DLL — Digital Link Load" style="height:clamp(60px,15vw,84px); width:auto; border-radius:12px; display:block">
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#2f97ff; border:1px solid #1d3b5e; background:#0c1724; border-radius:999px; padding:4px 9px; letter-spacing:0.06em; white-space:nowrap">{{ t.e2e }}</span>
+    </div>
+    <div style="display:flex; gap:6px; align-items:center">
+      <button onClick="{{ goHome }}" style="border:1px solid #2b3230; border-radius:8px; padding:7px 12px; cursor:pointer; background:#151a19; color:#e8ecea; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.06em">{{ t.home }}</button>
+      <button onClick="{{ setPt }}" style="{{ ptBtn }}">PT</button>
+      <button onClick="{{ setEn }}" style="{{ enBtn }}">EN</button>
+    </div>
+  </div>
+
+  <sc-if value="{{ isSend }}" hint-placeholder-val="{{ true }}">
+  <div style="width:100%; max-width:820px; display:flex; flex-direction:column; gap:18px">
+
+    <div style="display:flex; flex-direction:column; gap:8px">
+      <h1 style="margin:0; font-size:clamp(26px,6.4vw,38px); line-height:1.08; font-weight:700; letter-spacing:-0.03em; text-wrap:pretty">{{ t.h1 }}</h1>
+      <p style="margin:0; max-width:56ch; color:#9aa4a0; font-size:15px; line-height:1.55; text-wrap:pretty">{{ t.sub }}</p>
+    </div>
+
+    <label onDragOver="{{ onDragOver }}" onDragLeave="{{ onDragLeave }}" onDrop="{{ onDrop }}" style="{{ dropStyle }}">
+      <input type="file" multiple="{{ true }}" onChange="{{ onPick }}" style="display:none">
+      <div style="font-size:17px; font-weight:500">{{ t.drop }}</div>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#7d8883">{{ t.dropHint }}</div>
+    </label>
+
+    <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px; background:#0d100f; border:1px solid #1c2221; border-radius:14px; padding:16px 18px">
+      <div style="display:flex; flex-direction:column; gap:3px; flex:1 1 220px; min-width:0">
+        <span style="font-size:14px; font-weight:500">{{ t.enterCode }}</span>
+        <span style="font-size:12px; color:#7d8883">{{ t.enterHint }}</span>
+      </div>
+      <input value="{{ typed }}" onChange="{{ onType }}" onKeyDown="{{ onTypeKey }}" placeholder="XXXX-XXXX-XXXX" maxLength="20" autoCapitalize="characters" autoCorrect="off" autoComplete="off" spellCheck="{{ false }}" inputMode="text" enterKeyHint="go" style="flex:0 1 220px; min-width:0; background:#0a0c0b; border:1px solid #262d2b; border-radius:10px; padding:12px 14px; color:#e8ecea; font-family:'IBM Plex Mono',monospace; font-size:14px; letter-spacing:0.08em; text-transform:uppercase; box-sizing:border-box">
+      <button onClick="{{ openCode }}" style="border:0; border-radius:10px; padding:12px 22px; background:#2f97ff; color:#04121f; font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:700; cursor:pointer">{{ t.go }} ↓</button>
+    </div>
+
+    <sc-if value="{{ hasFiles }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex; flex-direction:column; gap:14px">
+
+      <div style="background:#101413; border:1px solid #222827; border-radius:14px; padding:clamp(14px,3.4vw,18px); display:flex; flex-direction:column; gap:14px">
+        <div style="display:flex; align-items:center; gap:9px">
+          <div style="width:8px; height:8px; border-radius:50%; background:#2f97ff; animation:pt-pulse 1.6s ease-in-out infinite"></div>
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:#9aa4a0">{{ statusLabel }}</span>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:16px; border-bottom:1px solid #1c2221; padding-bottom:16px">
+          <div style="display:flex; flex-direction:column; gap:5px">
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:#7d8883">{{ t.codeLabel }}</span>
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:clamp(20px,5.6vw,30px); font-weight:500; letter-spacing:0.05em; color:#2f97ff; word-break:break-all">{{ code }}</span>
+          </div>
+          <button onClick="{{ copyCode }}" style="border:0; border-radius:10px; padding:11px 18px; background:#2f97ff; color:#04121f; font-weight:700; font-family:'Space Grotesk',sans-serif; font-size:13px; cursor:pointer">{{ t.copyCode }}</button>
+          <span style="flex:1 1 200px; min-width:0; font-size:12px; color:#7d8883; line-height:1.5; text-wrap:pretty">{{ t.codeHint }}</span>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center">
+          <button onClick="{{ copy }}" style="flex:1 1 auto; border:1px solid #2b3230; border-radius:10px; padding:13px 18px; background:#151a19; color:#e8ecea; font-family:'Space Grotesk',sans-serif; font-size:14px; cursor:pointer">{{ copyLabel }}</button>
+          <button onClick="{{ stop }}" style="flex:1 1 auto; border:1px solid #3a2a2a; border-radius:10px; padding:13px 18px; background:transparent; color:#e8a3a3; font-family:'Space Grotesk',sans-serif; font-size:14px; cursor:pointer">{{ t.stop }}</button>
+        </div>
+        <div style="font-size:13px; color:#7d8883; line-height:1.5; text-wrap:pretty">{{ t.keepOpen }}</div>
+      </div>
+
+      <sc-for list="{{ items }}" as="it" hint-placeholder-count="1">
+        <div style="background:#101413; border:1px solid #222827; border-radius:14px; padding:clamp(13px,3.2vw,16px) clamp(14px,3.4vw,18px); display:flex; flex-direction:column; gap:10px; margin-bottom:10px">
+          <div style="display:flex; justify-content:space-between; gap:14px; align-items:baseline">
+            <span style="font-size:15px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ it.name }}</span>
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#7d8883; flex:0 0 auto">{{ it.size }}</span>
+          </div>
+          <div style="height:5px; border-radius:3px; background:#1d2322; overflow:hidden">
+            <div style="height:100%; background:#2f97ff; border-radius:3px; width:{{ it.pct }}"></div>
+          </div>
+          <div style="display:flex; justify-content:space-between; gap:12px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7d8883">
+            <span>{{ it.left }}</span>
+            <span>{{ it.right }}</span>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    </sc-if>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isRecv }}" hint-placeholder-val="{{ false }}">
+  <div style="width:100%; max-width:820px; display:flex; flex-direction:column; gap:18px">
+    <div style="display:flex; flex-direction:column; gap:8px">
+      <h1 style="margin:0; font-size:clamp(24px,5.8vw,34px); line-height:1.1; font-weight:700; letter-spacing:-0.03em">{{ t.rh1 }}</h1>
+      <p style="margin:0; max-width:56ch; color:#9aa4a0; font-size:15px; line-height:1.55; text-wrap:pretty">{{ t.rsub }}</p>
+    </div>
+
+    <div style="background:#101413; border:1px solid #222827; border-radius:14px; padding:clamp(14px,3.4vw,18px); display:flex; flex-direction:column; gap:12px">
+      <div style="display:flex; align-items:center; gap:9px">
+        <div style="width:8px; height:8px; border-radius:50%; background:{{ dotColor }}; animation:pt-pulse 1.6s ease-in-out infinite"></div>
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:#9aa4a0">{{ statusLabel }}</span>
+      </div>
+      <sc-if value="{{ needsSave }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ pickSave }}" style="align-self:flex-start; border:0; border-radius:10px; padding:13px 20px; background:#2f97ff; color:#04121f; font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:700; cursor:pointer">{{ t.saveTo }}</button>
+      </sc-if>
+      <sc-if value="{{ canRetry }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ retry }}" style="align-self:flex-start; border:1px solid #2b3230; border-radius:10px; padding:12px 18px; background:transparent; color:#e8ecea; font-family:'Space Grotesk',sans-serif; font-size:14px; cursor:pointer">{{ t.retry }}</button>
+      </sc-if>
+    </div>
+
+    <sc-for list="{{ items }}" as="it" hint-placeholder-count="1">
+      <div style="background:#101413; border:1px solid #222827; border-radius:14px; padding:clamp(13px,3.2vw,16px) clamp(14px,3.4vw,18px); display:flex; flex-direction:column; gap:10px; margin-bottom:10px">
+        <div style="display:flex; justify-content:space-between; gap:14px; align-items:baseline">
+          <span style="font-size:15px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ it.name }}</span>
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#7d8883; flex:0 0 auto">{{ it.size }}</span>
+        </div>
+        <div style="height:5px; border-radius:3px; background:#1d2322; overflow:hidden">
+          <div style="height:100%; background:#2f97ff; border-radius:3px; width:{{ it.pct }}"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; gap:12px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7d8883">
+          <span>{{ it.left }}</span>
+          <span>{{ it.right }}</span>
+        </div>
+        <sc-if value="{{ it.url }}" hint-placeholder-val="{{ false }}">
+          <a href="{{ it.url }}" download="{{ it.name }}" style="font-family:'IBM Plex Mono',monospace; font-size:13px">{{ t.download }} ↓</a>
+        </sc-if>
+      </div>
+    </sc-for>
+  </div>
+  </sc-if>
+
+  <div style="width:100%; max-width:820px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#5d6663; line-height:1.7; border-top:1px solid #1a1f1e; padding-top:16px">{{ t.foot }}</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#2f97ff&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#2f97ff&quot;,&quot;#56e08c&quot;,&quot;#e8c15a&quot;,&quot;#f0f2f1&quot;]},&quot;chunkKB&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:64,&quot;tsType&quot;:&quot;number&quot;,&quot;options&quot;:[16,64,256]}}">
+const CHUNK = 64 * 1024;
+const HIGH = 8 * 1024 * 1024;
+const MAX_PEERS = 8;
+const TE = new TextEncoder();
+
+const b64u = u => { let s = ""; const a = new Uint8Array(u); for (let i = 0; i < a.length; i++) s += String.fromCharCode(a[i]); return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); };
+const unb64u = s => { const t = String(s).replace(/-/g, "+").replace(/_/g, "/"); const bin = atob(t); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; };
+const rand = n => crypto.getRandomValues(new Uint8Array(n));
+const eqBytes = (a, b) => { if (!a || !b || a.length !== b.length) return false; let d = 0; for (let i = 0; i < a.length; i++) d |= a[i] ^ b[i]; return d === 0; };
+
+const ALPHA = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+const genCode = () => { const r = rand(12); let s = ""; for (let i = 0; i < 12; i++) s += ALPHA[r[i] & 31]; return s; };
+const normCode = c => String(c || "").toUpperCase().replace(/[^0-9A-Z]/g, "").replace(/O/g, "0").replace(/[IL]/g, "1").replace(/U/g, "V");
+const fmtCode = c => (c ? c.replace(/(.{4})(.{4})(.{4})/, "$1-$2-$3") : "");
+const okCode = c => /^[0-9A-HJKMNP-TV-Z]{12}$/.test(c);
+
+async function deriveAll(code) {
+  const base = await crypto.subtle.importKey("raw", TE.encode("dll/v1/" + code), "HKDF", false, ["deriveKey", "deriveBits"]);
+  const kdf = info => ({ name: "HKDF", hash: "SHA-256", salt: new Uint8Array(0), info: TE.encode(info) });
+  const bits = await crypto.subtle.deriveBits(kdf("dll/id/v1"), base, 72);
+  let id = "d";
+  new Uint8Array(bits).forEach(b => { id += b.toString(36).padStart(2, "0"); });
+  const enc = await crypto.subtle.deriveKey(kdf("passthru/enc/v1"), base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+  const mac = await crypto.subtle.deriveKey(kdf("passthru/auth/v1"), base, { name: "HMAC", hash: "SHA-256", length: 256 }, false, ["sign"]);
+  return { id: id.slice(0, 19), enc, mac };
+}
+const macOf = async (key, label, nonce) => new Uint8Array(await crypto.subtle.sign("HMAC", key, new Uint8Array([...TE.encode(label), ...nonce])));
+const aadOf = (i, off) => { const b = new ArrayBuffer(16); const v = new DataView(b); v.setUint32(0, i >>> 0); v.setFloat64(4, off); v.setUint32(12, 0x50545231); return new Uint8Array(b); };
+const ivOf = (salt, ctr) => { const b = new Uint8Array(12); b.set(salt, 0); new DataView(b.buffer).setUint32(8, ctr >>> 0); return b; };
+const safeName = n => (String(n == null ? "" : n).replace(/[\\/:*?"<>|\u0000-\u001f]/g, "_").replace(/^\.+/, "_").trim().slice(0, 180)) || "arquivo";
+const safeSize = s => (typeof s === "number" && isFinite(s) && s >= 0 ? Math.floor(s) : 0);
+const safeMime = m => (typeof m === "string" && /^[a-z0-9!#$&^_.+-]{1,60}\/[a-z0-9!#$&^_.+-]{1,80}$/i.test(m) ? m : "application/octet-stream");
+const STR = {
+  pt: { tagline: "transferência direta", h1: "Envie arquivos direto do seu navegador para outro.", sub: "Nada passa por um servidor. Escolha os arquivos, mande o link e a transferência acontece ponto a ponto — sem limite de tamanho, e se a conexão cair ela retoma de onde parou.", drop: "Arraste arquivos aqui ou clique para escolher", dropHint: "qualquer quantidade · qualquer tamanho", stop: "Parar", copy: "Copiar link com o código", copied: "Copiado", home: "Início", keepOpen: "Mantenha esta aba aberta enquanto alguém estiver baixando. Ao fechar, o link para de funcionar.", waiting: "Aguardando o link ser aberto…", connected: "Conectado — enviando", idle: "Pronto", stopped: "Transferência encerrada", rh1: "Alguém está te enviando arquivos.", rsub: "O download vem direto do navegador de quem enviou. Deixe esta aba aberta até terminar; se a conexão cair, ela volta sozinha.", saveTo: "Escolher onde salvar", retry: "Tentar de novo", download: "Baixar arquivo", connecting: "Conectando ao remetente…", receiving: "Recebendo", done: "Concluído", lost: "Conexão caiu — reconectando…", failed: "Não foi possível conectar. O remetente pode ter fechado a aba.", foot: "WebRTC + AES-256-GCM ponta a ponta · a chave vive só no fragmento do link e nunca é enviada a servidor nenhum", waitFile: "Aguardando os arquivos…", verifying: "Verificando identidade…", badkey: "Link inválido ou incompleto — a chave está faltando", tampered: "Integridade falhou: os dados foram alterados no caminho. Transferência abortada.", rejected: "Acesso negado — a chave do link não confere", e2e: "Criptografado ponta a ponta", codeLabel: "Código de download", codeHint: "Passe o endereço do site e este código. Se preferir, copie o link — ele já abre com o código preenchido.", copyCode: "Copiar código", enterCode: "Recebeu um código?", enterHint: "Digite os 12 caracteres e toque em Baixar.", go: "Baixar", secure: "Requer HTTPS para criptografar. Abra a página por https:// ou localhost." },
+  en: { tagline: "direct transfer", h1: "Send files straight from your browser to someone else's.", sub: "Nothing passes through a server. Pick the files, share the link, and the transfer runs peer to peer — no size cap, and it resumes where it stopped if the connection drops.", drop: "Drop files here or click to choose", dropHint: "any number · any size", stop: "Stop", copy: "Copy link with the code", copied: "Copied", home: "Home", keepOpen: "Keep this tab open while someone is downloading. Closing it kills the link.", waiting: "Waiting for the link to be opened…", connected: "Connected — sending", idle: "Ready", stopped: "Transfer ended", rh1: "Someone is sending you files.", rsub: "The download comes straight from the sender's browser. Keep this tab open until it finishes; it reconnects on its own if the link drops.", saveTo: "Choose where to save", retry: "Try again", download: "Download file", connecting: "Connecting to sender…", receiving: "Receiving", done: "Done", lost: "Connection dropped — reconnecting…", failed: "Could not connect. The sender may have closed their tab.", foot: "WebRTC + AES-256-GCM end to end · the key lives only in the link fragment and is never sent to any server", waitFile: "Waiting for files…", verifying: "Verifying identity…", badkey: "Invalid or truncated link — the key is missing", tampered: "Integrity check failed: data was altered in transit. Transfer aborted.", rejected: "Access denied — the link key does not match", e2e: "End-to-end encrypted", codeLabel: "Download code", codeHint: "Share the site address and this code. Or copy the link — it opens with the code already filled in.", copyCode: "Copy code", enterCode: "Got a code?", enterHint: "Type the 12 characters and tap Download.", go: "Download", secure: "Encryption needs HTTPS. Open this page over https:// or localhost." }
+};
+
+class Component extends DCLogic {
+  state = { lang: "pt", mode: "send", link: "", copied: false, phase: "idle", drag: false, tick: 0, needsSave: false, canRetry: false };
+  tr = [];
+  files = [];
+  conns = new Set();
+  chain = Promise.resolve();
+
+  componentDidMount() {
+    const hash = (location.hash || "").replace(/^#/, "").trim();
+    if (navigator.language && navigator.language.slice(0, 2) !== "pt") this.setState({ lang: "en" });
+    const code = normCode(hash);
+    if (hash && okCode(code)) this.setState({ typed: fmtCode(code), prefilled: true });
+    else if (hash) this.setState({ phase: "badkey" });
+    this.ticker = setInterval(() => {
+      if (this.dirty) { this.dirty = false; this.setState(s => ({ tick: s.tick + 1 })); }
+      if (this.state.mode === "recv" && this.authed && !this.aborted && this.askedAt && Date.now() - this.askedAt > 6000) {
+        const tr = this.tr[this.cur];
+        if (tr && !tr.done && tr.moved === this.askedBytes) this.ask();
+      }
+    }, 350);
+    this.onUnload = () => this.teardown();
+    window.addEventListener("beforeunload", this.onUnload);
+  }
+  componentWillUnmount() { clearInterval(this.ticker); window.removeEventListener("beforeunload", this.onUnload); this.teardown(); }
+
+  waitPeer(fn) {
+    if (window.Peer) return fn();
+    setTimeout(() => this.waitPeer(fn), 120);
+  }
+  teardown() {
+    try { this.conns.forEach(c => c.close()); } catch (e) {}
+    try { if (this.peer) this.peer.destroy(); } catch (e) {}
+  }
+  t() { return STR[this.state.lang]; }
+  fmt(b) {
+    if (b == null) return "";
+    const u = ["B", "KB", "MB", "GB", "TB"];
+    let i = 0, n = b;
+    while (n >= 1024 && i < u.length - 1) { n /= 1024; i++; }
+    return (n < 10 && i > 0 ? n.toFixed(1) : Math.round(n)) + " " + u[i];
+  }
+  eta(rem, rate) {
+    if (!rate || rem <= 0) return "";
+    let s = Math.round(rem / rate);
+    if (s < 60) return s + "s";
+    const m = Math.floor(s / 60);
+    if (m < 60) return m + "m " + (s % 60) + "s";
+    return Math.floor(m / 60) + "h " + (m % 60) + "m";
+  }
+  bump(tr, n) {
+    const now = Date.now();
+    tr.moved += n;
+    if (!tr.t0) { tr.t0 = now; tr.mark = now; tr.markBytes = tr.moved; }
+    if (now - tr.mark > 600) {
+      tr.rate = (tr.moved - tr.markBytes) / ((now - tr.mark) / 1000);
+      tr.mark = now; tr.markBytes = tr.moved;
+      this.dirty = true;
+    }
+  }
+
+  addFiles(list) {
+    const add = Array.from(list || []);
+    if (!add.length) return;
+    add.forEach(f => {
+      this.files.push(f);
+      this.tr.push({ name: f.name, size: f.size, moved: 0, rate: 0, done: false });
+    });
+    this.dirty = true;
+    this.setState({ tick: this.state.tick + 1 });
+    if (!this.peer && !this.starting) { this.starting = true; this.waitPeer(() => this.startSend()); }
+    else this.broadcastMeta();
+  }
+
+  async startSend() {
+    if (!window.isSecureContext || !crypto.subtle) { this.setState({ phase: "secure" }); return; }
+    if (!this.code) { this.code = genCode(); const d = await deriveAll(this.code); this.keys = { enc: d.enc, mac: d.mac }; this.myId = d.id; }
+    this.peer = new window.Peer(this.myId, { debug: 1 });
+    this.peer.on("open", () => {
+      this.starting = false;
+      const base = location.href.split("#")[0];
+      this.setState({ link: base + "#" + this.code, code: fmtCode(this.code), phase: "waiting" });
+    });
+    this.peer.on("error", e => { if (String(e && e.type) === "unavailable-id") { this.code = null; this.startSend(); } });
+    this.peer.on("connection", conn => this.onConn(conn));
+  }
+
+  meta() {
+    return { type: "meta", files: this.tr.map((tr, i) => ({ i, name: tr.name, size: tr.size, mime: this.files[i].type })) };
+  }
+  broadcastMeta() {
+    this.conns.forEach(c => { if (c.open && c.auth) try { c.send(this.meta()); } catch (e) {} });
+  }
+
+  onConn(conn) {
+    if (this.conns.size >= MAX_PEERS || this.stopped) { try { conn.close(); } catch (e) {} return; }
+    this.conns.add(conn);
+    conn.auth = false;
+    conn.nonce = rand(16);
+    const drop = () => { this.conns.delete(conn); conn.dead = true; try { conn.close(); } catch (e) {} if (!this.conns.size && this.state.phase !== "stopped") this.setState({ phase: "waiting" }); };
+    conn.on("open", () => {
+      this.setState({ phase: "verifying" });
+      conn.authTimer = setTimeout(() => { if (!conn.auth) drop(); }, 10000);
+      try { conn.send({ type: "challenge", nonce: b64u(conn.nonce) }); } catch (e) {}
+    });
+    conn.on("data", async msg => {
+      if (!msg || typeof msg !== "object" || typeof msg.type !== "string") return;
+      if (!conn.auth) {
+        if (msg.type !== "proof" || typeof msg.mac !== "string" || typeof msg.nonce !== "string") return;
+        if (msg.mac.length > 64 || msg.nonce.length > 64) return;
+        let ok = false, back = null;
+        try {
+          ok = eqBytes(await macOf(this.keys.mac, "receiver", conn.nonce), unb64u(msg.mac));
+          if (ok) back = b64u(await macOf(this.keys.mac, "sender", unb64u(msg.nonce)));
+        } catch (e) { ok = false; }
+        if (!ok) { try { conn.close(); } catch (e) {} return; }
+        conn.auth = true;
+        if (conn.authTimer) { clearTimeout(conn.authTimer); conn.authTimer = null; }
+        this.setState({ phase: "connected" });
+        try { conn.send({ type: "ok", mac: back }); conn.send(this.meta()); } catch (e) {}
+        return;
+      }
+      if (msg.type === "get") {
+        const i = msg.i | 0, f = this.files[i];
+        if (!f || i < 0 || i >= this.files.length) return;
+        let off = typeof msg.offset === "number" && isFinite(msg.offset) ? Math.floor(msg.offset) : 0;
+        off = Math.max(0, Math.min(off, f.size));
+        const now = Date.now();
+        if (conn.lastIdx === i && conn.lastGet && now - conn.lastGet < 200) return;
+        conn.lastIdx = i; conn.lastGet = now;
+        if (conn.busy) return;
+        this.pump(conn, i, off);
+      }
+    });
+    const gone = () => {
+      if (conn.authTimer) { clearTimeout(conn.authTimer); conn.authTimer = null; }
+      this.conns.delete(conn);
+      conn.dead = true;
+      if (!this.conns.size && this.state.phase !== "stopped") this.setState({ phase: "waiting" });
+    };
+    conn.on("close", gone);
+    conn.on("error", gone);
+  }
+
+  async pump(conn, i, offset) {
+    const file = this.files[i], tr = this.tr[i];
+    if (!file || !tr || !conn.auth) return;
+    conn.busy = true;
+    if (!conn.prog) conn.prog = {};
+    const p = conn.prog[i] = { moved: offset, rate: 0, t0: 0, done: false };
+    this.rollup(i);
+    const salt = rand(8);
+    let pos = offset, ctr = 0;
+    while (pos < file.size) {
+      if (conn.dead || !conn.open || this.stopped) { conn.busy = false; return; }
+      const dc = conn.dataChannel;
+      if (dc && dc.bufferedAmount > HIGH) { await new Promise(r => setTimeout(r, 40)); continue; }
+      const slice = file.slice(pos, Math.min(pos + CHUNK, file.size));
+      let plain, ct;
+      const iv = ivOf(salt, ctr++);
+      try {
+        plain = await slice.arrayBuffer();
+        ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv, additionalData: aadOf(i, pos), tagLength: 128 }, this.keys.enc, plain);
+      } catch (e) { conn.busy = false; return; }
+      if (conn.dead || !conn.open) { conn.busy = false; return; }
+      const out = new Uint8Array(12 + ct.byteLength);
+      out.set(iv, 0); out.set(new Uint8Array(ct), 12);
+      try { conn.send(out.buffer); } catch (e) { conn.busy = false; return; }
+      pos += plain.byteLength;
+      this.bump(p, plain.byteLength);
+      this.rollup(i);
+    }
+    conn.busy = false;
+    p.done = true;
+    this.rollup(i);
+    this.dirty = true;
+    try { conn.send({ type: "end", i }); } catch (e) {}
+  }
+
+  rollup(i) {
+    const tr = this.tr[i];
+    if (!tr) return;
+    let best = 0, rate = 0, done = false;
+    this.conns.forEach(c => {
+      const p = c.prog && c.prog[i];
+      if (!p) return;
+      if (p.done) done = true;
+      if (p.moved >= best) { best = p.moved; rate = p.rate || 0; }
+    });
+    if (done || tr.everDone) { tr.everDone = true; tr.done = true; tr.moved = tr.size; tr.rate = 0; }
+    else { tr.done = false; tr.moved = best; tr.rate = rate; }
+    this.dirty = true;
+  }
+
+  goHome() {
+    if (this.state.mode === "recv") {
+      this.aborted = true;
+      if (this.retryTimer) { clearTimeout(this.retryTimer); this.retryTimer = null; }
+      this.teardown();
+      this.peer = null; this.authed = false; this.everOpen = false;
+      this.tr = []; this.parts = {}; this.cur = -1; this.chain = Promise.resolve();
+      this.aborted = false; this.code = null;
+    }
+    try { history.replaceState(null, "", location.pathname + location.search); } catch (e) { location.hash = ""; }
+    this.setState({ mode: "send", phase: this.files.length ? "waiting" : "idle", typed: "", prefilled: false, canRetry: false, needsSave: false });
+  }
+
+  openCode() {
+    const c = normCode(this.state.typed);
+    if (!okCode(c)) return this.setState({ phase: "badkey" });
+    location.hash = c;
+    this.setState({ mode: "recv", phase: "connecting" }, () => this.waitPeer(() => this.startRecv(c)));
+  }
+
+  stopAll() {
+    this.stopped = true;
+    this.teardown();
+    this.peer = null;
+    this.starting = false;
+    this.conns = new Set();
+    this.setState({ phase: "stopped", link: "" });
+  }
+  async startRecv(code) {
+    const c = normCode(code || this.code);
+    if (!okCode(c)) return this.setState({ phase: "badkey" });
+    this.code = c;
+    try { const d = await deriveAll(c); this.hostId = d.id; this.keys = { enc: d.enc, mac: d.mac }; } catch (e) { return this.setState({ phase: "badkey" }); }
+    this.cur = -1;
+    this.parts = {};
+    this.chain = Promise.resolve();
+    if (this.writer) { try { await this.writer.close(); } catch (e) {} }
+    this.writer = null; this.writeIdx = -1;
+    this.tr.forEach(tr => { if (tr && !tr.done) { tr.moved = 0; tr.rate = 0; tr.t0 = 0; } });
+    this.dirty = true;
+    this.everOpen = false;
+    this.tries = 0;
+    this.setState({ phase: "connecting", needsSave: false });
+    this.peer = new window.Peer({ debug: 1 });
+    this.peer.on("open", () => this.dial());
+    this.peer.on("error", e => {
+      if (this.allDone()) return;
+      const type = String((e && e.type) || "");
+      if (!this.everOpen && (type === "peer-unavailable" || type === "network" || type === "server-error")) {
+        if (this.tries >= 3) { this.setState({ phase: "failed", canRetry: true }); return; }
+        this.requeue();
+        return;
+      }
+      this.setState({ phase: "lost", canRetry: true });
+      this.requeue();
+    });
+  }
+
+  allDone() { return this.tr.length > 0 && this.tr.every(x => x.done); }
+
+  requeue() {
+    if (this.retryTimer || this.allDone() || this.aborted) return;
+    if (!this.everOpen && this.tries >= 3) { this.setState({ phase: "failed", canRetry: true }); return; }
+    this.retryTimer = setTimeout(() => { this.retryTimer = null; this.dial(); }, 2000);
+  }
+
+  dial() {
+    if (!this.peer || this.peer.destroyed) return this.startRecv(this.code);
+    this.tries++;
+    this.setState({ canRetry: false, phase: this.everOpen ? "lost" : "connecting" });
+    let conn;
+    try { conn = this.peer.connect(this.hostId, { reliable: true }); } catch (e) { return this.requeue(); }
+    this.conn = conn;
+    this.conns.add(conn);
+    const guard = setTimeout(() => { if (!conn.open) { try { conn.close(); } catch (e) {} this.setState({ phase: "failed", canRetry: true }); this.requeue(); } }, 12000);
+    conn.on("open", () => {
+      clearTimeout(guard);
+      this.everOpen = true;
+      this.tries = 0;
+      this.authed = false;
+      this.setState({ phase: "verifying", canRetry: false });
+    });
+    conn.on("data", d => this.onData(d));
+    const gone = () => {
+      clearTimeout(guard);
+      this.conns.delete(conn);
+      this.authed = false;
+      if (this.aborted) return;
+      if (this.allDone()) { this.setState({ phase: "done" }); return; }
+      this.setState({ phase: "lost" });
+      this.requeue();
+    };
+    conn.on("close", gone);
+    conn.on("error", gone);
+  }
+
+  ask() {
+    if (!this.tr.length || !this.conn || !this.conn.open || !this.authed) return;
+    const next = this.tr.findIndex(x => !x.done);
+    if (next < 0) { this.setState({ phase: "done" }); return; }
+    this.cur = next;
+    if (!this.parts[next]) this.parts[next] = [];
+    const have = this.tr[next].moved || 0;
+    this.tr[next].t0 = 0; this.tr[next].rate = 0;
+    this.askedAt = Date.now(); this.askedBytes = have;
+    try { this.conn.send({ type: "get", i: next, offset: have }); } catch (e) {}
+  }
+
+  async onData(d) {
+    if (d && typeof d === "object" && typeof d.type === "string" && !(d instanceof Blob) && !(d instanceof ArrayBuffer)) {
+      if (d.type === "challenge") {
+        if (typeof d.nonce !== "string" || d.nonce.length > 64) return;
+        try {
+          this.myNonce = rand(16);
+          const mac = b64u(await macOf(this.keys.mac, "receiver", unb64u(d.nonce)));
+          this.conn.send({ type: "proof", mac, nonce: b64u(this.myNonce) });
+        } catch (e) { this.setState({ phase: "rejected" }); }
+        return;
+      }
+      if (d.type === "ok") {
+        let ok = false;
+        try { ok = typeof d.mac === "string" && eqBytes(await macOf(this.keys.mac, "sender", this.myNonce), unb64u(d.mac)); } catch (e) {}
+        if (!ok) { this.authed = false; try { this.conn.close(); } catch (e) {} this.setState({ phase: "rejected", canRetry: true }); return; }
+        this.authed = true;
+        this.setState({ phase: this.tr.length ? "receiving" : "waitFile" });
+        this.ask();
+        return;
+      }
+      if (!this.authed) return;
+    } else if (!this.authed) { return; }
+    if (d && d.type === "meta") {
+      if (!Array.isArray(d.files) || d.files.length > 500) return;
+      d.files.forEach(f => {
+        if (!f || typeof f !== "object") return;
+        const i = f.i | 0;
+        if (i < 0 || i > 499) return;
+        if (!this.tr[i]) this.tr[i] = { name: safeName(f.name), size: safeSize(f.size), mime: safeMime(f.mime), moved: 0, rate: 0, done: false };
+      });
+      this.dirty = true;
+      this.setState({ phase: "receiving", needsSave: !!window.showSaveFilePicker && !this.writer });
+      if (this.cur < 0) this.ask();
+      return;
+    }
+    if (d && d.type === "end") {
+      const done = d.i | 0;
+      this.chain = this.chain.then(() => this.finish(done)).catch(() => {});
+      return;
+    }
+    if (this.cur < 0 || !this.tr[this.cur]) return;
+    const raw = d, at = this.cur;
+    this.chain = this.chain.then(() => this.accept(raw, at)).catch(() => {});
+  }
+
+  async accept(raw, i) {
+    const tr = this.tr[i];
+    if (!tr || tr.done || this.aborted) return;
+    let buf = raw;
+    if (raw instanceof Blob) buf = await raw.arrayBuffer();
+    if (buf instanceof Uint8Array) buf = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+    if (!(buf instanceof ArrayBuffer) || buf.byteLength <= 12) return;
+    const iv = new Uint8Array(buf, 0, 12);
+    const ct = new Uint8Array(buf, 12);
+    let plain;
+    try {
+      plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv, additionalData: aadOf(i, tr.moved), tagLength: 128 }, this.keys.enc, ct);
+    } catch (e) {
+      this.aborted = true;
+      try { this.conn.close(); } catch (e2) {}
+      if (this.retryTimer) { clearTimeout(this.retryTimer); this.retryTimer = null; }
+      this.setState({ phase: "tampered", canRetry: false });
+      return;
+    }
+    if (this.writer && this.writeIdx === i) {
+      try { await this.writer.write(new Uint8Array(plain)); } catch (e) {}
+    } else {
+      this.parts[i].push(new Blob([plain]));
+    }
+    this.bump(tr, plain.byteLength);
+  }
+
+  async finish(i) {
+    const tr = this.tr[i];
+    if (!tr || this.aborted) return;
+    if (tr.size && tr.moved !== tr.size) {
+      this.setState({ phase: "lost", canRetry: true });
+      this.requeue();
+      return;
+    }
+    tr.done = true; tr.moved = tr.size;
+    if (this.writer && this.writeIdx === i) {
+      try { await this.writer.close(); } catch (e) {}
+      this.writer = null; this.writeIdx = -1;
+    } else {
+      const blob = new Blob(this.parts[i] || [], { type: tr.mime || "application/octet-stream" });
+      tr.url = URL.createObjectURL(blob);
+      delete this.parts[i];
+      const a = document.createElement("a");
+      a.href = tr.url; a.download = tr.name;
+      document.body.appendChild(a); a.click(); a.remove();
+    }
+    this.dirty = true;
+    this.setState({ tick: this.state.tick + 1 });
+    this.ask();
+  }
+
+  async pickSave() {
+    const tr = this.tr[Math.max(this.cur, 0)];
+    if (!window.showSaveFilePicker) return;
+    try {
+      const h = await window.showSaveFilePicker({ suggestedName: tr ? tr.name : "download" });
+      this.writer = await h.createWritable();
+      this.writeIdx = Math.max(this.cur, 0);
+      this.setState({ needsSave: false });
+    } catch (e) {}
+  }
+
+  renderVals() {
+    const t = this.t(), s = this.state;
+    const btn = on => "border:0;border-radius:8px;padding:7px 12px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.06em;background:" + (on ? "#2f97ff" : "#151a19") + ";color:" + (on ? "#04121f" : "#8b9691");
+    const phaseKey = { idle: "idle", waiting: "waiting", connected: "connected", stopped: "stopped", connecting: "connecting", receiving: "receiving", done: "done", lost: "lost", failed: "failed", waitFile: "waitFile", verifying: "verifying", badkey: "badkey", tampered: "tampered", rejected: "rejected", secure: "secure" };
+    const items = (this.tr || []).filter(Boolean).map(tr => {
+      const pct = tr.size ? Math.min(100, (tr.moved / tr.size) * 100) : 0;
+      const done = tr.done;
+      return {
+        name: tr.name, size: this.fmt(tr.size), pct: pct.toFixed(1) + "%", url: tr.url || false,
+        left: done ? t.done : Math.floor(pct) + "% · " + this.fmt(tr.moved),
+        right: done ? "" : (tr.rate ? this.fmt(tr.rate) + "/s · " + this.eta(tr.size - tr.moved, tr.rate) : "…")
+      };
+    });
+    return {
+      t, items, link: s.link, isSend: s.mode === "send", isRecv: s.mode === "recv",
+      code: s.code || "", typed: s.typed || "", codeOk: okCode(normCode(s.typed || "")),
+      onType: e => this.setState({ typed: e.target.value }),
+      onTypeKey: e => { if (e.key === "Enter") this.openCode(); },
+      openCode: () => this.openCode(),
+      goHome: () => this.goHome(),
+      prefilled: !!s.prefilled,
+      copyCode: () => { try { navigator.clipboard.writeText(fmtCode(this.code)); } catch (e) {} this.setState({ copied: true }); setTimeout(() => this.setState({ copied: false }), 1600); },
+      hasFiles: (this.files || []).length > 0, needsSave: s.needsSave, canRetry: s.canRetry,
+      statusLabel: t[phaseKey[s.phase]] || t.idle,
+      dotColor: s.phase === "failed" ? "#e8a3a3" : s.phase === "done" ? "#2f97ff" : "#e8d3a3",
+      copyLabel: s.copied ? t.copied : t.copy,
+      ptBtn: btn(s.lang === "pt"), enBtn: btn(s.lang === "en"),
+      setPt: () => this.setState({ lang: "pt" }), setEn: () => this.setState({ lang: "en" }),
+      dropStyle: "display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;text-align:center;min-height:150px;border-radius:16px;cursor:pointer;padding:24px;border:1.5px dashed " + (s.drag ? "#2f97ff" : "#2b3230") + ";background:" + (s.drag ? "#0c1826" : "#0d100f"),
+      onDragOver: e => { e.preventDefault(); if (!this.state.drag) this.setState({ drag: true }); },
+      onDragLeave: () => this.setState({ drag: false }),
+      onDrop: e => { e.preventDefault(); this.setState({ drag: false }); this.addFiles(e.dataTransfer.files); },
+      onPick: e => this.addFiles(e.target.files),
+      selectAll: e => e.target.select(),
+      copy: () => { try { navigator.clipboard.writeText(this.state.link); } catch (e) {} this.setState({ copied: true }); setTimeout(() => this.setState({ copied: false }), 1600); },
+      stop: () => this.stopAll(),
+      pickSave: () => this.pickSave(),
+      retry: () => this.dial()
+    };
+  }
+}
+</script>
+</body>
+</html>

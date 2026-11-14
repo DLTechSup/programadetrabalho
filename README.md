@@ -1,4 +1,20 @@
-# GradeFácil v3 (antes "Automação Bling") (React + Electron)
+# Central DLTechSup
+
+Programa único (Electron) que reúne as ferramentas do dia a dia em abas: **GradeFácil**,
+**Renomear em Massa**, **Captura de Tela**, **Monitor de Demandas**, **NoteDeck** e
+**Códigos das Fotos**. Código de todas elas vive neste mesmo repositório (`src/apps/`,
+`electron/`).
+
+As demais ferramentas da DLTechSup (ainda não portadas para dentro da Central, mas já
+reunidas aqui para não ficarem espalhadas em repositórios separados) estão em
+[`ferramentas/`](ferramentas) — Sonora (baixar música), Projeta Móveis, Catálogo da loja,
+DLL, site da dltech, DeskLink, Encaixe, Separador de Fotos, Nomes e Descrições de Calçados e
+a v2 do Códigos das Fotos. Veja o índice completo (com imagem de cada uma) em
+[`ferramentas/README.md`](ferramentas/README.md).
+
+---
+
+## GradeFácil v3 (antes "Automação Bling") (React + Electron)
 
 Versão nova do programa em **React + TypeScript**, empacotada como aplicativo de desktop
 (Electron) — instala no Windows com atalho na área de trabalho. Mantém **todas as funções**

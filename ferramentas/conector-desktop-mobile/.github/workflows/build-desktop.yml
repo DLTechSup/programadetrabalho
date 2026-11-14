@@ -1,0 +1,40 @@
+name: Build Desktop (.exe)
+
+on:
+  push:
+    paths: ["desktop/**", ".github/workflows/build-desktop.yml"]
+  workflow_dispatch:
+
+jobs:
+  exe:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python -m pytest tests -q
+        continue-on-error: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Build interface React
+        working-directory: desktop/ui
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+      - name: Build DeskLink.exe
+        run: >
+          pyinstaller --noconfirm --clean --onefile --noconsole --name DeskLink
+          --icon ../assets/icon.ico
+          --add-data "ui/dist;ui/dist" --add-data "../assets/icon.ico;assets"
+          --hidden-import pystray._win32 --collect-submodules websockets
+          --collect-submodules pynput --collect-all webview --collect-all soundcard main.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DeskLink-exe
+          path: desktop/dist/DeskLink.exe

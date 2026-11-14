@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="catalogo-remoto" content="1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Catálogo · Calçados 24h</title>
+<meta name="description" content="Catálogo de fotos das marcas e referências da Calçados 24h. Veja e baixe as fotos dos modelos.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#111111;--on-ink:#ffffff;--canvas:#ffffff;--cloud:#f5f5f5;
+  --charcoal:#39393b;--mute:#707072;--stone:#9e9ea0;
+  --hair:#cacacb;--hair-soft:#e5e5e5;--sale:#d30005;--ok:#007d48;--info:#1151ff;
+  --display:'Bebas Neue','Anton',Impact,'Arial Narrow',sans-serif;
+  --ui:'Inter','Helvetica Neue',Helvetica,Arial,sans-serif;
+  --max:1440px;--gut:48px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--canvas);color:var(--ink);font:400 16px/1.5 var(--ui);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+img{display:block;max-width:100%}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 var(--gut)}
+.hidden{display:none!important}
+
+/* barra utilitária + navegação */
+.util{background:var(--cloud);font:500 12px/36px var(--ui);height:36px}
+.util .wrap{display:flex;justify-content:space-between;gap:16px;white-space:nowrap;overflow:hidden}
+.nav{position:sticky;top:0;z-index:30;background:var(--canvas);box-shadow:inset 0 -1px 0 var(--hair-soft)}
+.nav .wrap{display:flex;align-items:center;gap:24px;height:64px}
+.logo{display:flex;align-items:center;white-space:nowrap;font:800 22px/1 var(--ui);letter-spacing:-.5px;color:#1d1d3b}
+.logo i{font-style:normal;color:#e30613;margin-left:5px}
+.logo span{font:600 12px/1 var(--ui);letter-spacing:.12em;text-transform:uppercase;color:var(--mute);border-left:1px solid var(--hair);padding:4px 0 4px 12px;margin-left:12px}
+.nav .sp{flex:1}
+.search{position:relative;display:flex;align-items:center;background:var(--cloud);border-radius:24px;height:40px;padding:0 16px 0 40px;width:min(320px,100%);transition:box-shadow .15s,background .15s}
+.search svg{position:absolute;left:12px;width:20px;height:20px}
+.search input{border:0;background:transparent;outline:0;font:400 16px var(--ui);width:100%;color:var(--ink)}
+.search input::placeholder{color:var(--mute)}
+.search:focus-within{background:var(--canvas);box-shadow:0 0 0 2px var(--ink),0 0 0 12px var(--cloud)}
+.search .x{position:absolute;right:8px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--hair-soft)}
+
+/* botões */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 28px;border-radius:30px;font:500 16px/1 var(--ui);white-space:nowrap;transition:transform .12s,opacity .12s,background .15s}
+.btn:active{transform:scale(.96);opacity:.7}
+.btn-p{background:var(--ink);color:var(--on-ink)}
+.btn-p:hover{background:#2b2b2b}
+.btn-s{background:var(--cloud);color:var(--ink)}
+.btn-s:hover{background:var(--hair-soft)}
+.btn-o{background:var(--canvas);border:1px solid var(--hair)}
+.btn-o:hover{border-color:var(--ink)}
+.btn-sm{height:40px;padding:0 18px;font-size:14px}
+.btn[disabled]{opacity:.35;pointer-events:none}
+.ico{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--cloud);flex:none}
+.ico:hover{background:var(--hair-soft)}
+.ico svg{width:20px;height:20px}
+.chip{height:40px;padding:0 16px;border-radius:30px;border:1px solid var(--hair);font:500 14px/1 var(--ui);display:inline-flex;align-items:center;gap:6px;background:var(--canvas)}
+.chip.on{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.chip:not(.on):hover{border-color:var(--ink)}
+
+/* tipografia */
+.disp{font:400 clamp(56px,9vw,128px)/.88 var(--display);text-transform:uppercase;letter-spacing:.3px}
+.h-xl{font:500 32px/1.2 var(--ui);letter-spacing:-.3px}
+.h-lg{font:500 24px/1.2 var(--ui)}
+.cap{font:500 14px/1.5 var(--ui);color:var(--mute)}
+.crumb{font:500 14px/1.5 var(--ui);color:var(--mute);padding:20px 0 0}
+.crumb a:hover{color:var(--ink)}
+
+/* cartões com foto */
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px 8px}
+.card{display:block;min-width:0}
+.card .ph{aspect-ratio:4/5;background:var(--cloud);overflow:hidden;position:relative}
+.card .ph img{width:100%;height:100%;object-fit:cover;transition:transform .5s cubic-bezier(.2,.7,.2,1),opacity .3s;opacity:0}
+.card .ph img.ok{opacity:1}
+.card:hover .ph img{transform:scale(1.04)}
+.card .meta{padding:12px 0 24px}
+.card .nm{font:500 16px/1.4 var(--ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ph .vazio{position:absolute;inset:0;display:grid;place-items:center;font:400 44px/1 var(--display);color:var(--stone)}
+
+.sec{padding:48px 0 0}
+.foot{margin-top:96px;border-top:1px solid var(--hair);padding:24px 0 40px;font:500 14px/1.5 var(--ui);color:var(--mute)}
+.foot .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.foot a:hover{color:var(--ink)}
+
+.msg{padding:96px 0;text-align:center}
+.msg p{color:var(--mute);margin-top:12px}
+.skel{background:linear-gradient(90deg,var(--cloud) 0,#ededed 50%,var(--cloud) 100%);background-size:200% 100%;animation:sk 1.2s linear infinite}
+@keyframes sk{to{background-position:-200% 0}}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:30px;font:500 14px var(--ui);opacity:0;transition:.25s;z-index:99;pointer-events:none;max-width:calc(100% - 32px);text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media (max-width:1023px){.grid{grid-template-columns:repeat(3,1fr)}:root{--gut:32px}}
+@media (max-width:767px){.grid{grid-template-columns:repeat(2,1fr);gap:4px}:root{--gut:16px}.h-xl{font-size:26px}.card .meta{padding:8px 0 18px}.util .r{display:none}}
+
+
+/* ---------- home ---------- */
+.hero{padding-top:56px;padding-bottom:8px}
+.hero .disp span{display:block}
+.eyebrow{font:600 13px var(--ui);letter-spacing:.14em;text-transform:uppercase;color:#e30613;margin-bottom:20px}
+.sub{font:400 18px/1.5 var(--ui);color:var(--charcoal);margin-top:20px;max-width:520px}
+.hero-row{display:flex;align-items:flex-end;justify-content:space-between;gap:32px;flex-wrap:wrap}
+.stats{display:flex;gap:40px;padding-bottom:6px}
+.stat b{display:block;font:400 56px/1 var(--display)}
+.stat span{font:500 14px/1.4 var(--ui);color:var(--mute)}
+.bigsearch{margin-top:40px;width:100%;height:64px;border-radius:32px;padding-left:60px}
+.bigsearch svg{left:22px;width:24px;height:24px}
+.bigsearch input{font-size:18px}
+.bigsearch .x{right:14px;width:36px;height:36px}
+
+.az{position:sticky;top:64px;z-index:20;background:var(--canvas);box-shadow:inset 0 -1px 0 var(--hair-soft);margin-top:32px}
+.az .wrap{display:flex;align-items:center;gap:16px;height:60px}
+.letras{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;flex:1}
+.letras::-webkit-scrollbar{display:none}
+.letras a{min-width:32px;height:36px;display:grid;place-items:center;font:500 14px var(--ui);border-radius:18px;flex:none}
+.letras a:hover{background:var(--cloud)}
+.letras a.off{color:var(--hair);pointer-events:none}
+.letras a.on{background:var(--ink);color:#fff}
+.modos{display:flex;gap:8px;flex:none}
+
+#corpo [data-l]{scroll-margin-top:150px}
+.grupo-h{display:flex;align-items:baseline;gap:16px;border-bottom:1px solid var(--hair);padding-bottom:8px;margin-bottom:16px}
+.grupo-h b{font:400 64px/.9 var(--display)}
+.grupo-h span{font:500 14px var(--ui);color:var(--mute)}
+
+/* modo lista: nome grande na tela */
+.lista{border-top:1px solid var(--hair)}
+.linha{display:flex;align-items:center;justify-content:space-between;gap:24px;border-bottom:1px solid var(--hair);padding:14px 0 10px;position:relative}
+.linha .nm{font:400 clamp(40px,6.4vw,92px)/.92 var(--display);text-transform:uppercase;transition:transform .35s cubic-bezier(.2,.7,.2,1),color .2s;transform-origin:left center}
+.linha .q{font:500 14px var(--ui);color:var(--mute);white-space:nowrap}
+.lista:hover .linha .nm{color:var(--hair)}
+.lista .linha:hover .nm{color:var(--ink);transform:translateX(16px)}
+.prev{position:fixed;right:max(48px,calc((100vw - 1440px)/2 + 48px));top:50%;width:min(320px,24vw);aspect-ratio:4/5;background:var(--cloud);transform:translateY(-40%) scale(.96);opacity:0;pointer-events:none;transition:opacity .2s,transform .3s cubic-bezier(.2,.7,.2,1);z-index:15;overflow:hidden}
+.prev.on{opacity:1;transform:translateY(-40%) scale(1)}
+.prev img{width:100%;height:100%;object-fit:cover}
+.prev span{position:absolute;left:12px;bottom:12px;background:#fff;border-radius:30px;padding:6px 14px;font:500 13px var(--ui)}
+
+/* resultados da busca */
+.res-h{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--hair);padding:40px 0 8px;margin-bottom:16px}
+.refs-res{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0 24px}
+.refs-res a{display:flex;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--hair-soft)}
+.refs-res a:hover b{text-decoration:underline}
+.refs-res b{font:500 16px var(--ui)}
+.refs-res span{font:500 14px var(--ui);color:var(--mute);text-align:right}
+
+/* ---------- botão voltar ---------- */
+.topo{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-top:20px}
+.topo .crumb{padding:0}
+.voltar{display:inline-flex;align-items:center;gap:10px;font:500 15px var(--ui);padding-right:14px;border-radius:30px;transition:background .15s}
+.voltar:hover{background:var(--cloud)}
+.voltar .ico{width:40px;height:40px}
+@media (max-width:767px){.topo .crumb{display:none}}
+
+/* ---------- marca ---------- */
+.mhead{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;padding:24px 0 32px}
+.mhead .cap{margin-top:12px}
+.mbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;border-bottom:1px solid var(--hair-soft);padding-bottom:16px;margin-bottom:16px}
+.mbar .search{width:min(380px,100%)}
+
+/* ---------- referência ---------- */
+.rlay{display:grid;grid-template-columns:1fr 360px;gap:48px;padding-top:24px;align-items:start}
+.fotos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.fotos button{aspect-ratio:4/5;background:var(--cloud);overflow:hidden;position:relative}
+.fotos img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .3s,transform .5s cubic-bezier(.2,.7,.2,1)}
+.fotos img.ok{opacity:1}
+.fotos button:hover img{transform:scale(1.04)}
+.painel{position:sticky;top:96px}
+.painel .marca{font:500 16px var(--ui);color:var(--mute)}
+.painel h1{font:400 64px/.9 var(--display);margin:8px 0 16px;word-break:break-word}
+.painel .acoes{display:flex;flex-direction:column;gap:12px;margin-top:24px}
+.painel .acoes .btn{width:100%}
+.painel .dica{margin-top:20px;border-top:1px solid var(--hair);padding-top:16px;font:400 14px/1.6 var(--ui);color:var(--charcoal)}
+.outras{padding-top:72px}
+.outras .h-xl{margin-bottom:16px}
+.trilho{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 32px)/5);gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.trilho::-webkit-scrollbar{display:none}
+.trilho .card{scroll-snap-align:start}
+
+/* visualizador */
+.lb{position:fixed;inset:0;background:rgba(255,255,255,.98);z-index:50;display:grid;grid-template-rows:64px 1fr 88px;opacity:0;pointer-events:none;transition:opacity .2s}
+.lb.on{opacity:1;pointer-events:auto}
+.lb-top{display:flex;align-items:center;justify-content:space-between;padding:0 24px;font:500 14px var(--ui)}
+.lb-img{position:relative;display:grid;place-items:center;min-height:0;overflow:hidden;padding:0 88px}
+.lb-img img{max-width:100%;max-height:calc(100vh - 152px);max-height:calc(100dvh - 152px);object-fit:contain;user-select:none}
+.lb-img .ico{position:absolute;top:50%;transform:translateY(-50%)}
+.lb-img .esq{left:24px}.lb-img .dir{right:24px}
+.lb-bot{display:flex;align-items:center;justify-content:center;gap:12px}
+.spin{width:28px;height:28px;border:3px solid var(--hair-soft);border-top-color:var(--ink);border-radius:50%;animation:gira .8s linear infinite;position:absolute}
+@keyframes gira{to{transform:rotate(360deg)}}
+
+@media (max-width:1023px){
+  .rlay{grid-template-columns:1fr;gap:24px}
+  .painel{position:static;order:-1}
+  .painel h1{font-size:52px}
+  .painel .acoes{flex-direction:row}
+  .trilho{grid-auto-columns:calc((100% - 16px)/3)}
+  .prev{display:none}
+}
+@media (max-width:767px){
+  .hero{padding-top:32px}
+  .sub{font-size:16px}
+  .stats{gap:24px}.stat b{font-size:40px}
+  .bigsearch{height:56px;margin-top:28px}
+  .bigsearch input{font-size:16px}
+  .az{top:64px}
+  .modos .chip{padding:0 12px}
+  .grupo-h b{font-size:48px}
+  .fotos{grid-template-columns:repeat(2,1fr);gap:4px}
+  .painel .acoes{flex-direction:column}
+  .trilho{grid-auto-columns:calc((100% - 8px)/2.2)}
+  .lb-img{padding:0 8px}
+  .lb-img .ico{display:none}
+  .linha{padding:10px 0 6px}
+}
+</style>
+</head>
+<body>
+<div class="util"><div class="wrap"><span id="u-esq">Veja e baixe as fotos de todos os modelos</span><span class="r" id="u-dir"></span></div></div>
+<header class="nav"><div class="wrap">
+  <a class="logo" href="#/"><b>Calçados</b><i>24h</i><span>Catálogo</span></a>
+  <span class="sp"></span>
+  <label class="search hidden" id="nav-busca"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="nav-q" type="search" placeholder="Buscar marca ou referência" autocomplete="off"></label>
+</div></header>
+
+<main id="app"></main>
+
+<footer class="foot"><div class="wrap"><span>© <span id="ano"></span> Calçados 24h · Catálogo</span><a href="/admin" id="link-admin">Área do administrador</a></div></footer>
+
+<div class="prev" id="prev"><img alt=""><span></span></div>
+
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Foto ampliada">
+  <div class="lb-top"><span id="lb-cont"></span><button class="ico" id="lb-fechar" aria-label="Fechar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="lb-img"><div class="spin" id="lb-spin"></div><img id="lb-img" alt=""><button class="ico esq" id="lb-ant" aria-label="Anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button><button class="ico dir" id="lb-prox" aria-label="Próxima"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></button></div>
+  <div class="lb-bot"><button class="btn btn-p" id="lb-baixar">Baixar esta foto</button></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+const compacto=s=>norm(s).replace(/[^a-z0-9]/g,'');
+const REMOTO=!!document.querySelector('meta[name="catalogo-remoto"]');
+let BASE='',CONECTADO=!REMOTO;
+const foto=k=>BASE+'/f/'+k;
+const num=n=>n.toLocaleString('pt-BR');
+const plural=(n,s,p)=>num(n)+' '+(n===1?s:p);
+const lerPref=(k,d)=>{try{return localStorage.getItem(k)||d}catch(e){return d}};
+const salvarPref=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const IC_BUSCA='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>';
+$('#ano').textContent=new Date().getFullYear();
+if(REMOTO) $('#link-admin').classList.add('hidden');
+
+const S={idx:null,marcas:{},modo:lerPref('modo','grade'),q:''};
+
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),2600)}
+function imgOk(root){root.querySelectorAll('img[data-src]').forEach(i=>{i.onload=()=>i.classList.add('ok');i.onerror=()=>i.classList.add('ok');i.src=i.dataset.src;i.removeAttribute('data-src')})}
+
+async function getIdx(){
+  if(S.idx&&Date.now()-S.idxEm<60000) return S.idx;
+  const r=await fetch(BASE+'/data/index.json',{cache:'no-cache'});
+  if(!r.ok) throw new Error('vazio');
+  S.idx=await r.json();S.idxEm=Date.now();S.marcas={};
+  S.idx.marcas=S.idx.marcas.filter(m=>m.q>0&&!m.h);
+  if(!S.idx.marcas.length) throw new Error('vazio');
+  S.idx.marcas.sort((a,b)=>a.n.localeCompare(b.n,'pt-BR'));
+  const refs=S.idx.marcas.reduce((t,m)=>t+m.q,0);
+  $('#u-dir').textContent=plural(S.idx.marcas.length,'marca','marcas')+' · '+plural(refs,'modelo','modelos');
+  return S.idx;
+}
+async function getMarca(s){
+  if(S.marcas[s]&&Date.now()-S.marcas[s]._em<60000) return S.marcas[s];
+  const r=await fetch(BASE+'/data/m/'+s+'.json',{cache:'no-cache'});
+  if(!r.ok) throw new Error('nao');
+  const m=await r.json();
+  if(m.oculta) throw new Error('nao');
+  m.refs=m.refs.filter(x=>x.f&&x.f.length&&!x.oc);
+  m._em=Date.now();return S.marcas[s]=m;
+}
+
+/* ---------------- rotas ---------------- */
+/* Versão do GitHub: descobre onde está o computador do catálogo agora. */
+async function conectar(){
+  const comTempo=(u,ms)=>{const c=new AbortController();const t=setTimeout(()=>c.abort(),ms);return fetch(u,{cache:'no-store',signal:c.signal}).finally(()=>clearTimeout(t))};
+  // 1º: o arquivo do próprio site; 2º: direto da API do GitHub (atualiza na hora, sem esperar o cache)
+  const fontes=['servidor.json?t='+Date.now()];
+  const dono=location.hostname.split('.')[0],repo=location.pathname.split('/').filter(Boolean)[0];
+  if(location.hostname.endsWith('github.io')&&repo) fontes.push('https://api.github.com/repos/'+dono+'/'+repo+'/contents/servidor.json?t='+Date.now());
+  const tentados=new Set();
+  for(const f of fontes){
+    try{
+      const r0=await comTempo(f,8000);if(!r0.ok)continue;
+      let j=await r0.json();
+      if(j.content) j=JSON.parse(atob(j.content.replace(/\s/g,'')));
+      const url=(j.url||'').replace(/\/$/,'');
+      if(!url||tentados.has(url))continue;tentados.add(url);
+      const r=await comTempo(url+'/api/ping',12000);
+      await r.text();if(!r.ok)continue;
+      BASE=url;$('#link-admin').href='admin.html';$('#link-admin').classList.remove('hidden');return true;
+    }catch(e){}
+  }
+  return false;
+}
+function telaOffline(app){
+  app.innerHTML='<div class="wrap msg"><p class="eyebrow" style="margin-bottom:16px">Catálogo Calçados 24h</p><div class="disp" style="font-size:clamp(56px,9vw,96px)">Voltamos já</div><p>O catálogo está temporariamente indisponível. Tente novamente em alguns minutos.</p><p style="margin-top:28px"><button class="btn btn-p" id="tentar">Tentar de novo</button></p></div>';
+  $('#tentar').onclick=()=>rota();
+}
+async function rota(){
+  if(!CONECTADO){
+    $('#app').innerHTML='<div class="wrap msg"><div class="spin" style="position:static;margin:0 auto"></div><p>Conectando ao catálogo…</p></div>';
+    CONECTADO=await conectar();
+    if(!CONECTADO) return telaOffline($('#app'));
+  }
+  const p=location.hash.replace(/^#\/?/,'').split('/').filter(Boolean).map(decodeURIComponent);
+  fecharLB();$('#prev').classList.remove('on');
+  const app=$('#app');
+  try{
+    if(p[0]==='m'&&p[1]&&p[2]) await telaRef(app,p[1],p[2]);
+    else if(p[0]==='m'&&p[1]) await telaMarca(app,p[1]);
+    else await telaHome(app);
+  }catch(e){
+    if(REMOTO&&e instanceof TypeError){CONECTADO=false;S.idx=null;S.marcas={};return telaOffline(app)}
+    app.innerHTML='<div class="wrap msg"><div class="disp" style="font-size:72px">Nada por aqui</div><p>'+(e.message==='vazio'?'O catálogo ainda está sendo preparado. Volte em breve.':'Não encontramos essa página.')+'</p><p style="margin-top:24px"><a class="btn btn-p" href="#/">Ver todas as marcas</a></p></div>';
+  }
+}
+window.addEventListener('hashchange',()=>{rota();window.scrollTo(0,0)});
+
+/* ---------------- home ---------------- */
+async function telaHome(app){
+  $('#nav-busca').classList.add('hidden');
+  app.innerHTML='<section class="wrap hero"><div class="disp skel" style="height:220px;width:70%"></div></section>';
+  const idx=await getIdx();
+  const refs=idx.marcas.reduce((t,m)=>t+m.q,0);
+  document.title='Catálogo · Calçados 24h';
+  app.innerHTML=`
+  <section class="wrap hero">
+    <div class="hero-row">
+      <div><p class="eyebrow">Catálogo Calçados 24h</p><h1 class="disp"><span>Todas as marcas.</span><span>Todos os modelos.</span></h1><p class="sub">Escolha a marca, veja as fotos de cada modelo e baixe as que quiser.</p></div>
+      <div class="stats"><div class="stat"><b>${num(idx.marcas.length)}</b><span>marcas</span></div><div class="stat"><b>${num(refs)}</b><span>modelos</span></div></div>
+    </div>
+    <label class="search bigsearch">${IC_BUSCA}<input id="q" type="search" placeholder="Digite a marca ou o número da referência" autocomplete="off" value="${esc(S.q)}"><button class="x hidden" id="qx" aria-label="Limpar busca"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></label>
+  </section>
+  <nav class="az" id="az"><div class="wrap"><div class="letras" id="letras"></div><div class="modos"><button class="chip" data-m="grade">Fotos</button><button class="chip" data-m="lista">Nomes</button></div></div></nav>
+  <section class="wrap" id="corpo"></section>`;
+  const q=$('#q'),qx=$('#qx');
+  q.addEventListener('input',()=>{S.q=q.value;qx.classList.toggle('hidden',!S.q);desenhar()});
+  qx.addEventListener('click',e=>{e.preventDefault();q.value='';S.q='';qx.classList.add('hidden');desenhar();q.focus()});
+  qx.classList.toggle('hidden',!S.q);
+  app.querySelectorAll('.modos .chip').forEach(b=>b.addEventListener('click',()=>{S.modo=b.dataset.m;salvarPref('modo',S.modo);desenhar()}));
+  desenhar();
+}
+function letraDe(n){const c=norm(n)[0]||'#';return /[a-z]/.test(c)?c.toUpperCase():'#'}
+function desenhar(){
+  const idx=S.idx,corpo=$('#corpo');if(!corpo)return;
+  document.querySelectorAll('.modos .chip').forEach(b=>b.classList.toggle('on',b.dataset.m===S.modo));
+  const termo=S.q.trim();
+  const az=$('#az');
+  if(termo){az.querySelector('.letras').innerHTML='';return busca(termo)}
+  const ms=idx.marcas;const tem=new Set(ms.map(m=>letraDe(m.n)));
+  const todas=['#',...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'];
+  $('#letras').innerHTML=todas.map(l=>`<a href="javascript:void 0" data-l="${l}" class="${tem.has(l)?'':'off'}">${l}</a>`).join('');
+  $('#letras').querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{const g=document.getElementById('g-'+a.dataset.l);g&&g.scrollIntoView({behavior:'smooth',block:'start'})}));
+  corpo.innerHTML='<div style="height:32px"></div>'+(S.modo==='lista'?lista(ms,true):grade(ms,true))+'<div style="height:24px"></div>';
+  imgOk(corpo);ligarLista(corpo);marcarLetra();
+}
+function grade(ms,ancora){const vistos=new Set();const id=m=>{const l=letraDe(m.n);if(!ancora||vistos.has(l))return '';vistos.add(l);return ` id="g-${l}" data-l="${l}"`};return '<div class="grid">'+ms.map(m=>`<a class="card"${id(m)} href="#/m/${m.s}"><div class="ph">${m.c?`<img data-src="${foto(m.c)}" alt="${esc(m.n)}" loading="lazy">`:`<div class="vazio">${esc(m.n[0])}</div>`}</div><div class="meta"><div class="nm">${esc(m.n)}</div><div class="cap">${plural(m.q,'modelo','modelos')}</div></div></a>`).join('')+'</div>'}
+function lista(ms,ancora){const vistos=new Set();const id=m=>{const l=letraDe(m.n);if(!ancora||vistos.has(l))return '';vistos.add(l);return ` id="g-${l}" data-l="${l}"`};return '<div class="lista">'+ms.map(m=>`<a class="linha"${id(m)} href="#/m/${m.s}" data-c="${m.c?esc(foto(m.c)):''}" data-q="${plural(m.q,'modelo','modelos')}"><span class="nm">${esc(m.n)}</span><span class="q">${plural(m.q,'modelo','modelos')}</span></a>`).join('')+'</div>'}
+function ligarLista(root){
+  const pv=$('#prev'),im=pv.querySelector('img'),tx=pv.querySelector('span');
+  root.querySelectorAll('.linha').forEach(a=>{
+    a.addEventListener('mouseenter',()=>{if(!a.dataset.c||matchMedia('(hover:none)').matches)return;im.src=a.dataset.c;tx.textContent=a.dataset.q;pv.classList.add('on')});
+    a.addEventListener('mouseleave',()=>pv.classList.remove('on'));
+  });
+}
+let obs;
+function marcarLetra(){
+  obs&&obs.disconnect();
+  obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){const l=e.target.id.slice(2);document.querySelectorAll('#letras a').forEach(a=>a.classList.toggle('on',a.dataset.l===l))}})},{rootMargin:'-140px 0px -55% 0px'});
+  document.querySelectorAll('#corpo [data-l]').forEach(g=>obs.observe(g));
+}
+function busca(termo){
+  const t=norm(termo),tc=compacto(termo),corpo=$('#corpo');
+  const ms=S.idx.marcas.filter(m=>norm(m.n).includes(t)||compacto(m.n).includes(tc));
+  const rs=[];
+  if(tc.length>=2) S.idx.marcas.forEach(m=>m.r.forEach(r=>{if(compacto(r).includes(tc))rs.push([r,m])}));
+  rs.sort((a,b)=>compacto(a[0]).indexOf(tc)-compacto(b[0]).indexOf(tc));
+  let h='';
+  if(ms.length) h+=`<div class="res-h"><span class="h-lg">Marcas</span><span class="cap">${ms.length}</span></div>${S.modo==='lista'?lista(ms):grade(ms)}`;
+  if(rs.length) h+=`<div class="res-h"><span class="h-lg">Referências</span><span class="cap">${rs.length>200?'200 de '+num(rs.length):num(rs.length)}</span></div><div class="refs-res">${rs.slice(0,200).map(([r,m])=>`<a href="#/m/${m.s}/${encodeURIComponent(slug(r))}"><b>${esc(r)}</b><span>${esc(m.n)}</span></a>`).join('')}</div>`;
+  if(!h) h=`<div class="msg"><div class="h-xl">Nada encontrado para “${esc(termo)}”</div><p>Confira a grafia da marca ou digite só uma parte do número da referência.</p></div>`;
+  corpo.innerHTML=h;imgOk(corpo);ligarLista(corpo);
+}
+function slug(s){return norm(s).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'x'}
+
+/* ---------------- marca ---------------- */
+async function telaMarca(app,s){
+  navBusca();
+  app.innerHTML='<div class="wrap"><div class="crumb">&nbsp;</div><div class="mhead"><div class="disp skel" style="height:110px;width:50%"></div></div><div class="grid">'+'<div class="card"><div class="ph skel"></div></div>'.repeat(8)+'</div></div>';
+  const m=await getMarca(s);
+  document.title=m.n+' · Catálogo · Calçados 24h';
+  app.innerHTML=`<div class="wrap">
+    <div class="topo"><a class="voltar" href="#/"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></span>Voltar para as marcas</a><div class="crumb"><a href="#/">Marcas</a> / ${esc(m.n)}</div></div>
+    <div class="mhead"><div><h1 class="disp">${esc(m.n)}</h1><div class="cap">${plural(m.refs.length,'modelo','modelos')} · do mais novo para o mais antigo</div></div></div>
+    <div class="mbar"><label class="search">${IC_BUSCA}<input id="mq" type="search" placeholder="Buscar referência nesta marca" autocomplete="off"></label><span class="cap" id="mcont"></span></div>
+    <div class="grid" id="mgrid"></div></div>`;
+  const desenha=()=>{
+    const tc=compacto($('#mq').value);
+    const rs=m.refs.filter(r=>!tc||compacto(r.r).includes(tc));
+    $('#mcont').textContent=tc?plural(rs.length,'resultado','resultados'):'';
+    $('#mgrid').innerHTML=rs.map(r=>`<a class="card" href="#/m/${m.s}/${encodeURIComponent(r.s)}"><div class="ph"><img data-src="${foto(r.f[0].t)}" alt="${esc(r.r)}" loading="lazy"></div><div class="meta"><div class="nm">${esc(r.r)}</div><div class="cap">${plural(r.f.length,'foto','fotos')}</div></div></a>`).join('')||'<div class="msg" style="grid-column:1/-1"><div class="h-xl">Nenhuma referência encontrada</div></div>';
+    imgOk($('#mgrid'));
+  };
+  $('#mq').addEventListener('input',desenha);desenha();
+}
+function navBusca(){
+  const nb=$('#nav-busca');nb.classList.remove('hidden');
+  const i=$('#nav-q');i.value='';
+  i.onkeydown=e=>{if(e.key==='Enter'&&i.value.trim()){S.q=i.value.trim();location.hash='#/'}};
+}
+
+/* ---------------- referência ---------------- */
+let LB={fotos:[],i:0,ref:null};
+async function telaRef(app,s,rs){
+  navBusca();
+  app.innerHTML='<div class="wrap"><div class="crumb">&nbsp;</div><div class="rlay"><div class="fotos">'+'<button class="skel"></button>'.repeat(6)+'</div><aside class="painel"><div class="skel" style="height:200px"></div></aside></div></div>';
+  const m=await getMarca(s);
+  const pos=m.refs.findIndex(x=>x.s===rs);
+  if(pos<0) throw new Error('nao');
+  const r=m.refs[pos];
+  document.title=r.r+' · '+m.n+' · Calçados 24h';
+  const outras=m.refs.slice(Math.max(0,pos-5),pos).concat(m.refs.slice(pos+1,pos+11)).slice(0,10);
+  app.innerHTML=`<div class="wrap">
+    <div class="topo"><a class="voltar" href="#/m/${m.s}"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></span>Voltar para ${esc(m.n)}</a><div class="crumb"><a href="#/">Marcas</a> / <a href="#/m/${m.s}">${esc(m.n)}</a> / ${esc(r.r)}</div></div>
+    <div class="rlay">
+      <div class="fotos">${r.f.map((f,i)=>`<button data-i="${i}" aria-label="Ampliar foto ${i+1}"><img data-src="${foto(f.t)}" alt="${esc(r.r)} foto ${i+1}" loading="lazy"></button>`).join('')}</div>
+      <aside class="painel">
+        <a class="marca" href="#/m/${m.s}">${esc(m.n)}</a>
+        <h1>${esc(r.r)}</h1>
+        <div class="cap">${plural(r.f.length,'foto','fotos')}</div>
+        <div class="acoes">
+          <button class="btn btn-p" id="zip">Baixar todas as fotos</button>
+          <button class="btn btn-s" id="link">Copiar link deste modelo</button>
+        </div>
+        <p class="dica">Toque numa foto para ver em tamanho grande e baixar só ela. “Baixar todas” salva um arquivo .zip com as ${r.f.length} fotos.</p>
+      </aside>
+    </div>
+    ${outras.length?`<section class="outras"><div class="h-xl">Mais da ${esc(m.n)}</div><div class="trilho">${outras.map(o=>`<a class="card" href="#/m/${m.s}/${encodeURIComponent(o.s)}"><div class="ph"><img data-src="${foto(o.f[0].t)}" alt="${esc(o.r)}" loading="lazy"></div><div class="meta"><div class="nm">${esc(o.r)}</div><div class="cap">${plural(o.f.length,'foto','fotos')}</div></div></a>`).join('')}</div></section>`:''}
+  </div>`;
+  imgOk(app);
+  LB={fotos:r.f,i:0,ref:r.r};
+  app.querySelectorAll('.fotos button').forEach(b=>b.addEventListener('click',()=>abrirLB(+b.dataset.i)));
+  $('#zip').addEventListener('click',()=>baixarTodas(r,m));
+  $('#link').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(location.href);toast('Link copiado')}catch(e){prompt('Copie o link:',location.href)}});
+}
+function nomeArq(ref,i){return (ref+' - '+(i+1)).replace(/[\\/:*?"<>|]/g,'-')+'.jpg'}
+async function baixarBlob(url,nome){
+  const r=await fetch(url);if(!r.ok)throw new Error('falha');
+  const b=await r.blob();
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=nome;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+}
+function carregarJSZip(){return window.JSZip?Promise.resolve():new Promise((ok,er)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';s.onload=ok;s.onerror=er;document.head.appendChild(s)})}
+async function baixarTodas(r,m){
+  const b=$('#zip'),txt=b.textContent;b.disabled=true;
+  try{
+    await carregarJSZip();
+    const z=new JSZip();let feitos=0;
+    await Promise.all(r.f.map(async(f,i)=>{const x=await fetch(foto(f.g));z.file(nomeArq(r.r,i),await x.blob());b.textContent='Preparando '+(++feitos)+' de '+r.f.length+'…'}));
+    b.textContent='Gerando arquivo…';
+    const blob=await z.generateAsync({type:'blob'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(m.n+' '+r.r).replace(/[\\/:*?"<>|]/g,'-')+'.zip';document.body.appendChild(a);a.click();a.remove();
+    toast('Download iniciado');
+  }catch(e){toast('Não foi possível baixar agora. Tente de novo.')}
+  b.textContent=txt;b.disabled=false;
+}
+
+/* visualizador */
+const lb=$('#lb'),lbImg=$('#lb-img');
+function abrirLB(i){LB.i=i;lb.classList.add('on');document.body.style.overflow='hidden';mostrar()}
+function fecharLB(){lb.classList.remove('on');document.body.style.overflow=''}
+function mostrar(){
+  const f=LB.fotos[LB.i];$('#lb-cont').textContent=LB.ref+' · '+(LB.i+1)+' de '+LB.fotos.length;
+  $('#lb-spin').classList.remove('hidden');lbImg.style.opacity=.15;lbImg.src=foto(f.t);
+  const g=new Image();g.onload=()=>{if(LB.fotos[LB.i]===f){lbImg.src=g.src;lbImg.style.opacity=1;$('#lb-spin').classList.add('hidden')}};g.src=foto(f.g);
+}
+function passo(d){LB.i=(LB.i+d+LB.fotos.length)%LB.fotos.length;mostrar()}
+$('#lb-fechar').onclick=fecharLB;$('#lb-ant').onclick=()=>passo(-1);$('#lb-prox').onclick=()=>passo(1);
+$('#lb-baixar').onclick=async()=>{try{await baixarBlob(foto(LB.fotos[LB.i].g),nomeArq(LB.ref,LB.i));toast('Foto baixada')}catch(e){toast('Não foi possível baixar.')}};
+document.addEventListener('keydown',e=>{if(!lb.classList.contains('on'))return;if(e.key==='Escape')fecharLB();if(e.key==='ArrowLeft')passo(-1);if(e.key==='ArrowRight')passo(1)});
+let tx=null;lb.addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
+lb.addEventListener('touchend',e=>{if(tx===null)return;const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>50)passo(d<0?1:-1);tx=null});
+
+rota();
+</script>
+</body>
+</html>
